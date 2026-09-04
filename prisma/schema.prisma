@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id            Int         @id @default(autoincrement())
+  email         String      @unique @db.VarChar(255)
+  password      String      @db.VarChar(255)
+  tipo          TipoUsuario @map("tipo")
+  activo        Boolean     @default(true)
+  fechaCreacion DateTime    @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+
+  ofertas    Oferta[]
+  postulante Postulante?
+  socio      Socio?
+
+  @@map("usuario")
+}
+
+model Socio {
+  id        Int       @id @default(autoincrement())
+  usuarioId Int       @unique @map("usuario_id")
+  nombre    String    @db.VarChar(255)
+  rut       String    @unique @db.VarChar(20)
+  email     String?   @db.VarChar(255)
+  telefono  String?   @db.VarChar(50)
+  direccion String?   @db.VarChar(255)
+  tipo      TipoSocio @default(COMUN)
+  activo    Boolean   @default(true)
+
+  usuario Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_socio_usuario")
+  ofertas Oferta[]
+
+  @@map("socio")
+}
+
+model Postulante {
+  id        Int     @id @default(autoincrement())
+  usuarioId Int     @unique @map("usuario_id")
+  nombre    String  @db.VarChar(100)
+  apellido  String  @db.VarChar(100)
+  telefono  String? @db.VarChar(50)
+
+  usuario       Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
+  cv            Cv?
+  postulaciones Postulacion[]
+
+  @@map("postulante")
+}
+
+model Cv {
+  id                 Int      @id @default(autoincrement())
+  postulanteId       Int      @unique @map("postulante_id")
+  archivoUrl         String?  @map("archivo_url") @db.VarChar(500)
+  descripcion        String?
+  fechaActualizacion DateTime @default(now()) @map("fecha_actualizacion") @db.Timestamp(6)
+
+  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_cv_postulante")
+
+  @@map("cv")
+}
+
+model Categoria {
+  id          Int     @id @default(autoincrement())
+  nombre      String  @unique @db.VarChar(100)
+  descripcion String? @db.VarChar(255)
+  activa      Boolean @default(true)
+
+  ofertas OfertaCategoria[]
+
+  @@map("categoria")
+}
+
+model Oferta {
+  id               Int          @id @default(autoincrement())
+  socioId          Int          @map("socio_id")
+  creadaPor        Int          @map("creada_por")
+  titulo           String       @db.VarChar(255)
+  descripcion      String
+  ubicacion        String?      @db.VarChar(255)
+  modalidad        String?      @db.VarChar(100)
+  cantidadVacantes Int          @default(1) @map("cantidad_vacantes")
+  fechaPublicacion DateTime     @default(now()) @map("fecha_publicacion") @db.Timestamp(6)
+  fechaCierre      DateTime?    @map("fecha_cierre") @db.Timestamp(6)
+  estado           EstadoOferta @default(ACTIVA)
+
+  creador       Usuario           @relation(fields: [creadaPor], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_oferta_creador")
+  socio         Socio             @relation(fields: [socioId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_oferta_socio")
+  categorias    OfertaCategoria[]
+  postulaciones Postulacion[]
+
+  @@map("oferta")
+}
+
+model OfertaCategoria {
+  ofertaId    Int @map("oferta_id")
+  categoriaId Int @map("categoria_id")
+
+  oferta    Oferta    @relation(fields: [ofertaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_oferta_categoria_oferta")
+  categoria Categoria @relation(fields: [categoriaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_oferta_categoria_categoria")
+
+  @@id([ofertaId, categoriaId])
+  @@map("oferta_categoria")
+}
+
+model Postulacion {
+  id               Int               @id @default(autoincrement())
+  ofertaId         Int               @map("oferta_id")
+  postulanteId     Int               @map("postulante_id")
+  fechaPostulacion DateTime          @default(now()) @map("fecha_postulacion") @db.Timestamp(6)
+  estado           EstadoPostulacion @default(ENVIADA)
+  observaciones    String?
+
+  oferta     Oferta     @relation(fields: [ofertaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulacion_oferta")
+  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulacion_postulante")
+
+  @@unique([ofertaId, postulanteId], map: "uq_postulacion")
+  @@map("postulacion")
+}
+
+enum EstadoOferta {
+  ACTIVA
+  CERRADA
+
+  @@map("estado_oferta")
+}
+
+enum EstadoPostulacion {
+  ENVIADA
+  EN_REVISION
+  SELECCIONADO
+  NO_SELECCIONADO
+  FINALIZADA
+
+  @@map("estado_postulacion")
+}
+
+enum TipoSocio {
+  COMUN
+  DIRECTIVO
+
+  @@map("tipo_socio")
+}
+
+enum TipoUsuario {
+  BACKOFFICE
+  POSTULANTE
+  SOCIO
+
+  @@map("tipo_usuario")
+}
