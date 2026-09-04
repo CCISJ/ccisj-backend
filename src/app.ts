@@ -1,10 +1,12 @@
 import express from 'express';
-import usuarioRoutes from './modules/users/user.route';
+import userRoutes from './modules/users/user.routes';
+import memberRoutes from './modules/members/member.routes';
 
 const app = express();
 
 app.use(express.json());
 
-app.use('/usuarios', usuarioRoutes);
+app.use('/usuarios', userRoutes);
+app.use('/socios', memberRoutes);
 
 export default app;
