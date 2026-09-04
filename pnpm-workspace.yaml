@@ -1,5 +1,6 @@
 allowBuilds:
+  '@prisma/engines': true
   esbuild: true
-
-onlyBuiltDependencies:
-  - esbuild
+  msgpackr-extract: true
+  prisma: true
+  workerd: true
