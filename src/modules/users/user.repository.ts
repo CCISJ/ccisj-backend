@@ -43,6 +43,15 @@ export function findByIdWithMember(id: number) {
   });
 }
 
+export function findByIdWithApplicant(id: number) {
+  return prisma.usuario.findUnique({
+    where: { id },
+    include: {
+      postulante: true,
+    },
+  });
+}
+
 export function create(data: {
   email: string;
   password: string;
