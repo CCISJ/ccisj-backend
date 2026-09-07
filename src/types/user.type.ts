@@ -1,4 +1,4 @@
-export type TipoUsuario = 'BACKOFFICE' | 'POSTULANTE' | 'SOCIO';
+export type TipoUsuario = 'ADMIN' | 'POSTULANTE' | 'SOCIO';
 
 export type MemberType = 'COMUN' | 'DIRECTIVO';
 

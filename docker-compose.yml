@@ -19,6 +19,8 @@ services:
       context: ../frontend
       dockerfile: Dockerfile
     container_name: ccisj-frontend
+    env_file:
+      - ../frontend/.env
     ports:
       - '5173:5173'
     volumes:

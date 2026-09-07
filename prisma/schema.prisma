@@ -148,7 +148,7 @@ enum TipoSocio {
 }
 
 enum TipoUsuario {
-  BACKOFFICE
+  ADMIN
   POSTULANTE
   SOCIO
 

@@ -11,7 +11,7 @@ CREATE TYPE "estado_postulacion" AS ENUM ('ENVIADA', 'EN_REVISION', 'SELECCIONAD
 CREATE TYPE "tipo_socio" AS ENUM ('COMUN', 'DIRECTIVO');
 
 -- CreateEnum
-CREATE TYPE "tipo_usuario" AS ENUM ('BACKOFFICE', 'POSTULANTE', 'SOCIO');
+CREATE TYPE "tipo_usuario" AS ENUM ('ADMIN', 'POSTULANTE', 'SOCIO');
 
 -- CreateTable
 CREATE TABLE "usuario" (

@@ -55,7 +55,7 @@ export function findByIdWithApplicant(id: number) {
 export function create(data: {
   email: string;
   password: string;
-  tipo: 'BACKOFFICE' | 'POSTULANTE' | 'SOCIO';
+  tipo: 'ADMIN' | 'POSTULANTE' | 'SOCIO';
 }) {
   return prisma.usuario.create({
     data,
@@ -73,7 +73,7 @@ export function update(
   id: number,
   data: {
     email?: string;
-    tipo?: 'BACKOFFICE' | 'POSTULANTE' | 'SOCIO';
+    tipo?: 'ADMIN' | 'POSTULANTE' | 'SOCIO';
     activo?: boolean;
   },
 ) {
