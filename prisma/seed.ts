@@ -19,7 +19,7 @@ async function main() {
     create: {
       email: 'admin@ccisj.uy',
       password: 'password_test',
-      tipo: 'BACKOFFICE',
+      tipo: 'ADMIN',
     },
   });
 
