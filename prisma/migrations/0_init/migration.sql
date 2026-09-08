@@ -26,18 +26,26 @@ CREATE TABLE "usuario" (
 );
 
 -- CreateTable
-CREATE TABLE "socio" (
+CREATE TABLE "Socio" (
     "id" SERIAL NOT NULL,
-    "usuario_id" INTEGER NOT NULL,
-    "nombre" VARCHAR(255) NOT NULL,
-    "rut" VARCHAR(20) NOT NULL,
-    "email" VARCHAR(255),
-    "telefono" VARCHAR(50),
-    "direccion" VARCHAR(255),
-    "tipo" "tipo_socio" NOT NULL DEFAULT 'COMUN',
+    "usuarioId" INTEGER NOT NULL,
+    "razonSocial" TEXT NOT NULL,
+    "titular" TEXT NOT NULL,
+    "giroComercial" TEXT NOT NULL,
+    "tipo" "tipo_socio" NOT NULL,
+    "rut" TEXT NOT NULL,
+    "numeroBps" TEXT NOT NULL,
+    "fechaInicioEmpresa" TIMESTAMP(3) NOT NULL,
+    "fechaAfiliacion" TIMESTAMP(3) NOT NULL,
+    "direccion" TEXT NOT NULL,
+    "ciudad" TEXT NOT NULL,
+    "celular" TEXT NOT NULL,
+    "telefono" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "observaciones" TEXT,
     "activo" BOOLEAN NOT NULL DEFAULT true,
 
-    CONSTRAINT "socio_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Socio_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -113,10 +121,13 @@ CREATE TABLE "postulacion" (
 CREATE UNIQUE INDEX "usuario_email_key" ON "usuario"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "socio_usuario_id_key" ON "socio"("usuario_id");
+CREATE UNIQUE INDEX "Socio_usuarioId_key" ON "Socio"("usuarioId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "socio_rut_key" ON "socio"("rut");
+CREATE UNIQUE INDEX "Socio_rut_key" ON "Socio"("rut");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Socio_numeroBps_key" ON "Socio"("numeroBps");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "postulante_usuario_id_key" ON "postulante"("usuario_id");
@@ -131,7 +142,7 @@ CREATE UNIQUE INDEX "categoria_nombre_key" ON "categoria"("nombre");
 CREATE UNIQUE INDEX "uq_postulacion" ON "postulacion"("oferta_id", "postulante_id");
 
 -- AddForeignKey
-ALTER TABLE "socio" ADD CONSTRAINT "fk_socio_usuario" FOREIGN KEY ("usuario_id") REFERENCES "usuario"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
+ALTER TABLE "Socio" ADD CONSTRAINT "Socio_usuarioId_fkey" FOREIGN KEY ("usuarioId") REFERENCES "usuario"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "postulante" ADD CONSTRAINT "fk_postulante_usuario" FOREIGN KEY ("usuario_id") REFERENCES "usuario"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
@@ -143,7 +154,7 @@ ALTER TABLE "cv" ADD CONSTRAINT "fk_cv_postulante" FOREIGN KEY ("postulante_id")
 ALTER TABLE "oferta" ADD CONSTRAINT "fk_oferta_creador" FOREIGN KEY ("creada_por") REFERENCES "usuario"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
-ALTER TABLE "oferta" ADD CONSTRAINT "fk_oferta_socio" FOREIGN KEY ("socio_id") REFERENCES "socio"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
+ALTER TABLE "oferta" ADD CONSTRAINT "fk_oferta_socio" FOREIGN KEY ("socio_id") REFERENCES "Socio"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 -- AddForeignKey
 ALTER TABLE "oferta_categoria" ADD CONSTRAINT "fk_oferta_categoria_oferta" FOREIGN KEY ("oferta_id") REFERENCES "oferta"("id") ON DELETE CASCADE ON UPDATE NO ACTION;
