@@ -1,4 +1,4 @@
-import { CreateMemberData, UpdateMemberData } from '@/types/user.type';
+import { CreateMemberData, UpdateMemberData } from '@/types/member.type';
 import * as memberRepository from './member.repository';
 import * as usuarioRepository from '../users/user.repository';
 
@@ -17,22 +17,22 @@ export async function getById(id: number) {
 }
 
 export async function create(data: CreateMemberData) {
-  if (!data.usuarioId || !data.nombre || !data.rut) {
+  if (
+    !data.razonSocial ||
+    !data.titular ||
+    !data.giroComercial ||
+    !data.tipo ||
+    !data.rut ||
+    !data.numeroBps ||
+    !data.fechaInicioEmpresa ||
+    !data.fechaAfiliacion ||
+    !data.direccion ||
+    !data.ciudad ||
+    !data.celular ||
+    !data.telefono ||
+    !data.email
+  ) {
     throw new Error('Faltan datos obligatorios');
-  }
-
-  const usuario = await usuarioRepository.findByIdWithMember(data.usuarioId);
-
-  if (!usuario) {
-    throw new Error('Usuario no encontrado');
-  }
-
-  if (usuario.tipo !== 'SOCIO') {
-    throw new Error('El usuario debe ser de tipo SOCIO');
-  }
-
-  if (usuario.socio) {
-    throw new Error('El usuario ya tiene un socio asociado');
   }
 
   const existingMember = await memberRepository.findByRut(data.rut);
@@ -41,7 +41,22 @@ export async function create(data: CreateMemberData) {
     throw new Error('El RUT ya está registrado');
   }
 
-  return memberRepository.create(data);
+  const existingUser = await usuarioRepository.findByEmail(data.email);
+
+  if (existingUser) {
+    throw new Error('El email ya está registrado');
+  }
+
+  const passwordInicial = data.email;
+
+  const socio = await memberRepository.createWithUser(data, passwordInicial);
+
+  return {
+    socio,
+    passwordInicial,
+  };
+
+  return socio;
 }
 
 export async function update(id: number, data: UpdateMemberData) {

@@ -36,7 +36,17 @@ export async function getById(req: Request, res: Response) {
 
 export async function create(req: Request, res: Response) {
   try {
-    const member = await memberService.create(req.body);
+    const data = {
+      ...req.body,
+      fechaInicioEmpresa: req.body.fechaInicioEmpresa
+        ? new Date(req.body.fechaInicioEmpresa)
+        : undefined,
+      fechaAfiliacion: req.body.fechaAfiliacion
+        ? new Date(req.body.fechaAfiliacion)
+        : undefined,
+    };
+
+    const member = await memberService.create(data);
 
     res.status(201).json(member);
   } catch (error) {

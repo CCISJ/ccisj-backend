@@ -1,28 +1,5 @@
 export type TipoUsuario = 'ADMIN' | 'POSTULANTE' | 'SOCIO';
 
-export type MemberType = 'COMUN' | 'DIRECTIVO';
-
-// MEMBERS
-export type CreateMemberData = {
-  usuarioId: number;
-  nombre: string;
-  rut: string;
-  email?: string;
-  telefono?: string;
-  direccion?: string;
-  tipo?: MemberType;
-};
-
-export type UpdateMemberData = {
-  nombre?: string;
-  rut?: string;
-  email?: string;
-  telefono?: string;
-  direccion?: string;
-  tipo?: MemberType;
-  activo?: boolean;
-};
-
 // APPLICANTS
 export type CreateApplicantData = {
   usuarioId: number;

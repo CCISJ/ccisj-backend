@@ -92,12 +92,20 @@ export type UsuarioScalarFieldEnum = (typeof UsuarioScalarFieldEnum)[keyof typeo
 export const SocioScalarFieldEnum = {
   id: 'id',
   usuarioId: 'usuarioId',
-  nombre: 'nombre',
-  rut: 'rut',
-  email: 'email',
-  telefono: 'telefono',
-  direccion: 'direccion',
+  razonSocial: 'razonSocial',
+  titular: 'titular',
+  giroComercial: 'giroComercial',
   tipo: 'tipo',
+  rut: 'rut',
+  numeroBps: 'numeroBps',
+  fechaInicioEmpresa: 'fechaInicioEmpresa',
+  fechaAfiliacion: 'fechaAfiliacion',
+  direccion: 'direccion',
+  ciudad: 'ciudad',
+  celular: 'celular',
+  telefono: 'telefono',
+  email: 'email',
+  observaciones: 'observaciones',
   activo: 'activo'
 } as const
 

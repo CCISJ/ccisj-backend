@@ -39,36 +39,60 @@ export type SocioSumAggregateOutputType = {
 export type SocioMinAggregateOutputType = {
   id: number | null
   usuarioId: number | null
-  nombre: string | null
-  rut: string | null
-  email: string | null
-  telefono: string | null
-  direccion: string | null
+  razonSocial: string | null
+  titular: string | null
+  giroComercial: string | null
   tipo: $Enums.TipoSocio | null
+  rut: string | null
+  numeroBps: string | null
+  fechaInicioEmpresa: Date | null
+  fechaAfiliacion: Date | null
+  direccion: string | null
+  ciudad: string | null
+  celular: string | null
+  telefono: string | null
+  email: string | null
+  observaciones: string | null
   activo: boolean | null
 }
 
 export type SocioMaxAggregateOutputType = {
   id: number | null
   usuarioId: number | null
-  nombre: string | null
-  rut: string | null
-  email: string | null
-  telefono: string | null
-  direccion: string | null
+  razonSocial: string | null
+  titular: string | null
+  giroComercial: string | null
   tipo: $Enums.TipoSocio | null
+  rut: string | null
+  numeroBps: string | null
+  fechaInicioEmpresa: Date | null
+  fechaAfiliacion: Date | null
+  direccion: string | null
+  ciudad: string | null
+  celular: string | null
+  telefono: string | null
+  email: string | null
+  observaciones: string | null
   activo: boolean | null
 }
 
 export type SocioCountAggregateOutputType = {
   id: number
   usuarioId: number
-  nombre: number
-  rut: number
-  email: number
-  telefono: number
-  direccion: number
+  razonSocial: number
+  titular: number
+  giroComercial: number
   tipo: number
+  rut: number
+  numeroBps: number
+  fechaInicioEmpresa: number
+  fechaAfiliacion: number
+  direccion: number
+  ciudad: number
+  celular: number
+  telefono: number
+  email: number
+  observaciones: number
   activo: number
   _all: number
 }
@@ -87,36 +111,60 @@ export type SocioSumAggregateInputType = {
 export type SocioMinAggregateInputType = {
   id?: true
   usuarioId?: true
-  nombre?: true
-  rut?: true
-  email?: true
-  telefono?: true
-  direccion?: true
+  razonSocial?: true
+  titular?: true
+  giroComercial?: true
   tipo?: true
+  rut?: true
+  numeroBps?: true
+  fechaInicioEmpresa?: true
+  fechaAfiliacion?: true
+  direccion?: true
+  ciudad?: true
+  celular?: true
+  telefono?: true
+  email?: true
+  observaciones?: true
   activo?: true
 }
 
 export type SocioMaxAggregateInputType = {
   id?: true
   usuarioId?: true
-  nombre?: true
-  rut?: true
-  email?: true
-  telefono?: true
-  direccion?: true
+  razonSocial?: true
+  titular?: true
+  giroComercial?: true
   tipo?: true
+  rut?: true
+  numeroBps?: true
+  fechaInicioEmpresa?: true
+  fechaAfiliacion?: true
+  direccion?: true
+  ciudad?: true
+  celular?: true
+  telefono?: true
+  email?: true
+  observaciones?: true
   activo?: true
 }
 
 export type SocioCountAggregateInputType = {
   id?: true
   usuarioId?: true
-  nombre?: true
-  rut?: true
-  email?: true
-  telefono?: true
-  direccion?: true
+  razonSocial?: true
+  titular?: true
+  giroComercial?: true
   tipo?: true
+  rut?: true
+  numeroBps?: true
+  fechaInicioEmpresa?: true
+  fechaAfiliacion?: true
+  direccion?: true
+  ciudad?: true
+  celular?: true
+  telefono?: true
+  email?: true
+  observaciones?: true
   activo?: true
   _all?: true
 }
@@ -210,12 +258,20 @@ export type SocioGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type SocioGroupByOutputType = {
   id: number
   usuarioId: number
-  nombre: string
-  rut: string
-  email: string | null
-  telefono: string | null
-  direccion: string | null
+  razonSocial: string
+  titular: string
+  giroComercial: string
   tipo: $Enums.TipoSocio
+  rut: string
+  numeroBps: string
+  fechaInicioEmpresa: Date
+  fechaAfiliacion: Date
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones: string | null
   activo: boolean
   _count: SocioCountAggregateOutputType | null
   _avg: SocioAvgAggregateOutputType | null
@@ -245,12 +301,20 @@ export type SocioWhereInput = {
   NOT?: Prisma.SocioWhereInput | Prisma.SocioWhereInput[]
   id?: Prisma.IntFilter<"Socio"> | number
   usuarioId?: Prisma.IntFilter<"Socio"> | number
-  nombre?: Prisma.StringFilter<"Socio"> | string
-  rut?: Prisma.StringFilter<"Socio"> | string
-  email?: Prisma.StringNullableFilter<"Socio"> | string | null
-  telefono?: Prisma.StringNullableFilter<"Socio"> | string | null
-  direccion?: Prisma.StringNullableFilter<"Socio"> | string | null
+  razonSocial?: Prisma.StringFilter<"Socio"> | string
+  titular?: Prisma.StringFilter<"Socio"> | string
+  giroComercial?: Prisma.StringFilter<"Socio"> | string
   tipo?: Prisma.EnumTipoSocioFilter<"Socio"> | $Enums.TipoSocio
+  rut?: Prisma.StringFilter<"Socio"> | string
+  numeroBps?: Prisma.StringFilter<"Socio"> | string
+  fechaInicioEmpresa?: Prisma.DateTimeFilter<"Socio"> | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFilter<"Socio"> | Date | string
+  direccion?: Prisma.StringFilter<"Socio"> | string
+  ciudad?: Prisma.StringFilter<"Socio"> | string
+  celular?: Prisma.StringFilter<"Socio"> | string
+  telefono?: Prisma.StringFilter<"Socio"> | string
+  email?: Prisma.StringFilter<"Socio"> | string
+  observaciones?: Prisma.StringNullableFilter<"Socio"> | string | null
   activo?: Prisma.BoolFilter<"Socio"> | boolean
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   ofertas?: Prisma.OfertaListRelationFilter
@@ -259,12 +323,20 @@ export type SocioWhereInput = {
 export type SocioOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   usuarioId?: Prisma.SortOrder
-  nombre?: Prisma.SortOrder
-  rut?: Prisma.SortOrder
-  email?: Prisma.SortOrderInput | Prisma.SortOrder
-  telefono?: Prisma.SortOrderInput | Prisma.SortOrder
-  direccion?: Prisma.SortOrderInput | Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  titular?: Prisma.SortOrder
+  giroComercial?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
+  rut?: Prisma.SortOrder
+  numeroBps?: Prisma.SortOrder
+  fechaInicioEmpresa?: Prisma.SortOrder
+  fechaAfiliacion?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  ciudad?: Prisma.SortOrder
+  celular?: Prisma.SortOrder
+  telefono?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
   activo?: Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
   ofertas?: Prisma.OfertaOrderByRelationAggregateInput
@@ -274,28 +346,44 @@ export type SocioWhereUniqueInput = Prisma.AtLeast<{
   id?: number
   usuarioId?: number
   rut?: string
+  numeroBps?: string
   AND?: Prisma.SocioWhereInput | Prisma.SocioWhereInput[]
   OR?: Prisma.SocioWhereInput[]
   NOT?: Prisma.SocioWhereInput | Prisma.SocioWhereInput[]
-  nombre?: Prisma.StringFilter<"Socio"> | string
-  email?: Prisma.StringNullableFilter<"Socio"> | string | null
-  telefono?: Prisma.StringNullableFilter<"Socio"> | string | null
-  direccion?: Prisma.StringNullableFilter<"Socio"> | string | null
+  razonSocial?: Prisma.StringFilter<"Socio"> | string
+  titular?: Prisma.StringFilter<"Socio"> | string
+  giroComercial?: Prisma.StringFilter<"Socio"> | string
   tipo?: Prisma.EnumTipoSocioFilter<"Socio"> | $Enums.TipoSocio
+  fechaInicioEmpresa?: Prisma.DateTimeFilter<"Socio"> | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFilter<"Socio"> | Date | string
+  direccion?: Prisma.StringFilter<"Socio"> | string
+  ciudad?: Prisma.StringFilter<"Socio"> | string
+  celular?: Prisma.StringFilter<"Socio"> | string
+  telefono?: Prisma.StringFilter<"Socio"> | string
+  email?: Prisma.StringFilter<"Socio"> | string
+  observaciones?: Prisma.StringNullableFilter<"Socio"> | string | null
   activo?: Prisma.BoolFilter<"Socio"> | boolean
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   ofertas?: Prisma.OfertaListRelationFilter
-}, "id" | "usuarioId" | "rut">
+}, "id" | "usuarioId" | "rut" | "numeroBps">
 
 export type SocioOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   usuarioId?: Prisma.SortOrder
-  nombre?: Prisma.SortOrder
-  rut?: Prisma.SortOrder
-  email?: Prisma.SortOrderInput | Prisma.SortOrder
-  telefono?: Prisma.SortOrderInput | Prisma.SortOrder
-  direccion?: Prisma.SortOrderInput | Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  titular?: Prisma.SortOrder
+  giroComercial?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
+  rut?: Prisma.SortOrder
+  numeroBps?: Prisma.SortOrder
+  fechaInicioEmpresa?: Prisma.SortOrder
+  fechaAfiliacion?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  ciudad?: Prisma.SortOrder
+  celular?: Prisma.SortOrder
+  telefono?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
   activo?: Prisma.SortOrder
   _count?: Prisma.SocioCountOrderByAggregateInput
   _avg?: Prisma.SocioAvgOrderByAggregateInput
@@ -310,22 +398,38 @@ export type SocioScalarWhereWithAggregatesInput = {
   NOT?: Prisma.SocioScalarWhereWithAggregatesInput | Prisma.SocioScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Socio"> | number
   usuarioId?: Prisma.IntWithAggregatesFilter<"Socio"> | number
-  nombre?: Prisma.StringWithAggregatesFilter<"Socio"> | string
-  rut?: Prisma.StringWithAggregatesFilter<"Socio"> | string
-  email?: Prisma.StringNullableWithAggregatesFilter<"Socio"> | string | null
-  telefono?: Prisma.StringNullableWithAggregatesFilter<"Socio"> | string | null
-  direccion?: Prisma.StringNullableWithAggregatesFilter<"Socio"> | string | null
+  razonSocial?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  titular?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  giroComercial?: Prisma.StringWithAggregatesFilter<"Socio"> | string
   tipo?: Prisma.EnumTipoSocioWithAggregatesFilter<"Socio"> | $Enums.TipoSocio
+  rut?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  numeroBps?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  fechaInicioEmpresa?: Prisma.DateTimeWithAggregatesFilter<"Socio"> | Date | string
+  fechaAfiliacion?: Prisma.DateTimeWithAggregatesFilter<"Socio"> | Date | string
+  direccion?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  ciudad?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  celular?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  telefono?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  email?: Prisma.StringWithAggregatesFilter<"Socio"> | string
+  observaciones?: Prisma.StringNullableWithAggregatesFilter<"Socio"> | string | null
   activo?: Prisma.BoolWithAggregatesFilter<"Socio"> | boolean
 }
 
 export type SocioCreateInput = {
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutSocioInput
   ofertas?: Prisma.OfertaCreateNestedManyWithoutSocioInput
@@ -334,23 +438,39 @@ export type SocioCreateInput = {
 export type SocioUncheckedCreateInput = {
   id?: number
   usuarioId: number
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutSocioInput
 }
 
 export type SocioUpdateInput = {
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutSocioNestedInput
   ofertas?: Prisma.OfertaUpdateManyWithoutSocioNestedInput
@@ -359,12 +479,20 @@ export type SocioUpdateInput = {
 export type SocioUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutSocioNestedInput
 }
@@ -372,34 +500,58 @@ export type SocioUncheckedUpdateInput = {
 export type SocioCreateManyInput = {
   id?: number
   usuarioId: number
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
 }
 
 export type SocioUpdateManyMutationInput = {
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SocioUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -411,12 +563,20 @@ export type SocioNullableScalarRelationFilter = {
 export type SocioCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuarioId?: Prisma.SortOrder
-  nombre?: Prisma.SortOrder
-  rut?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  telefono?: Prisma.SortOrder
-  direccion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  titular?: Prisma.SortOrder
+  giroComercial?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
+  rut?: Prisma.SortOrder
+  numeroBps?: Prisma.SortOrder
+  fechaInicioEmpresa?: Prisma.SortOrder
+  fechaAfiliacion?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  ciudad?: Prisma.SortOrder
+  celular?: Prisma.SortOrder
+  telefono?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  observaciones?: Prisma.SortOrder
   activo?: Prisma.SortOrder
 }
 
@@ -428,24 +588,40 @@ export type SocioAvgOrderByAggregateInput = {
 export type SocioMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuarioId?: Prisma.SortOrder
-  nombre?: Prisma.SortOrder
-  rut?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  telefono?: Prisma.SortOrder
-  direccion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  titular?: Prisma.SortOrder
+  giroComercial?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
+  rut?: Prisma.SortOrder
+  numeroBps?: Prisma.SortOrder
+  fechaInicioEmpresa?: Prisma.SortOrder
+  fechaAfiliacion?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  ciudad?: Prisma.SortOrder
+  celular?: Prisma.SortOrder
+  telefono?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  observaciones?: Prisma.SortOrder
   activo?: Prisma.SortOrder
 }
 
 export type SocioMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   usuarioId?: Prisma.SortOrder
-  nombre?: Prisma.SortOrder
-  rut?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  telefono?: Prisma.SortOrder
-  direccion?: Prisma.SortOrder
+  razonSocial?: Prisma.SortOrder
+  titular?: Prisma.SortOrder
+  giroComercial?: Prisma.SortOrder
   tipo?: Prisma.SortOrder
+  rut?: Prisma.SortOrder
+  numeroBps?: Prisma.SortOrder
+  fechaInicioEmpresa?: Prisma.SortOrder
+  fechaAfiliacion?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  ciudad?: Prisma.SortOrder
+  celular?: Prisma.SortOrder
+  telefono?: Prisma.SortOrder
+  email?: Prisma.SortOrder
+  observaciones?: Prisma.SortOrder
   activo?: Prisma.SortOrder
 }
 
@@ -491,12 +667,12 @@ export type SocioUncheckedUpdateOneWithoutUsuarioNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SocioUpdateToOneWithWhereWithoutUsuarioInput, Prisma.SocioUpdateWithoutUsuarioInput>, Prisma.SocioUncheckedUpdateWithoutUsuarioInput>
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumTipoSocioFieldUpdateOperationsInput = {
   set?: $Enums.TipoSocio
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type SocioCreateNestedOneWithoutOfertasInput = {
@@ -514,24 +690,40 @@ export type SocioUpdateOneRequiredWithoutOfertasNestedInput = {
 }
 
 export type SocioCreateWithoutUsuarioInput = {
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
   ofertas?: Prisma.OfertaCreateNestedManyWithoutSocioInput
 }
 
 export type SocioUncheckedCreateWithoutUsuarioInput = {
   id?: number
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutSocioInput
 }
@@ -553,35 +745,59 @@ export type SocioUpdateToOneWithWhereWithoutUsuarioInput = {
 }
 
 export type SocioUpdateWithoutUsuarioInput = {
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaUpdateManyWithoutSocioNestedInput
 }
 
 export type SocioUncheckedUpdateWithoutUsuarioInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutSocioNestedInput
 }
 
 export type SocioCreateWithoutOfertasInput = {
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutSocioInput
 }
@@ -589,12 +805,20 @@ export type SocioCreateWithoutOfertasInput = {
 export type SocioUncheckedCreateWithoutOfertasInput = {
   id?: number
   usuarioId: number
-  nombre: string
+  razonSocial: string
+  titular: string
+  giroComercial: string
+  tipo: $Enums.TipoSocio
   rut: string
-  email?: string | null
-  telefono?: string | null
-  direccion?: string | null
-  tipo?: $Enums.TipoSocio
+  numeroBps: string
+  fechaInicioEmpresa: Date | string
+  fechaAfiliacion: Date | string
+  direccion: string
+  ciudad: string
+  celular: string
+  telefono: string
+  email: string
+  observaciones?: string | null
   activo?: boolean
 }
 
@@ -615,12 +839,20 @@ export type SocioUpdateToOneWithWhereWithoutOfertasInput = {
 }
 
 export type SocioUpdateWithoutOfertasInput = {
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutSocioNestedInput
 }
@@ -628,12 +860,20 @@ export type SocioUpdateWithoutOfertasInput = {
 export type SocioUncheckedUpdateWithoutOfertasInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
-  nombre?: Prisma.StringFieldUpdateOperationsInput | string
-  rut?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  razonSocial?: Prisma.StringFieldUpdateOperationsInput | string
+  titular?: Prisma.StringFieldUpdateOperationsInput | string
+  giroComercial?: Prisma.StringFieldUpdateOperationsInput | string
   tipo?: Prisma.EnumTipoSocioFieldUpdateOperationsInput | $Enums.TipoSocio
+  rut?: Prisma.StringFieldUpdateOperationsInput | string
+  numeroBps?: Prisma.StringFieldUpdateOperationsInput | string
+  fechaInicioEmpresa?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  fechaAfiliacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  direccion?: Prisma.StringFieldUpdateOperationsInput | string
+  ciudad?: Prisma.StringFieldUpdateOperationsInput | string
+  celular?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
@@ -671,12 +911,20 @@ export type SocioCountOutputTypeCountOfertasArgs<ExtArgs extends runtime.Types.E
 export type SocioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   usuarioId?: boolean
-  nombre?: boolean
-  rut?: boolean
-  email?: boolean
-  telefono?: boolean
-  direccion?: boolean
+  razonSocial?: boolean
+  titular?: boolean
+  giroComercial?: boolean
   tipo?: boolean
+  rut?: boolean
+  numeroBps?: boolean
+  fechaInicioEmpresa?: boolean
+  fechaAfiliacion?: boolean
+  direccion?: boolean
+  ciudad?: boolean
+  celular?: boolean
+  telefono?: boolean
+  email?: boolean
+  observaciones?: boolean
   activo?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   ofertas?: boolean | Prisma.Socio$ofertasArgs<ExtArgs>
@@ -686,12 +934,20 @@ export type SocioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 export type SocioSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   usuarioId?: boolean
-  nombre?: boolean
-  rut?: boolean
-  email?: boolean
-  telefono?: boolean
-  direccion?: boolean
+  razonSocial?: boolean
+  titular?: boolean
+  giroComercial?: boolean
   tipo?: boolean
+  rut?: boolean
+  numeroBps?: boolean
+  fechaInicioEmpresa?: boolean
+  fechaAfiliacion?: boolean
+  direccion?: boolean
+  ciudad?: boolean
+  celular?: boolean
+  telefono?: boolean
+  email?: boolean
+  observaciones?: boolean
   activo?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["socio"]>
@@ -699,12 +955,20 @@ export type SocioSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type SocioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   usuarioId?: boolean
-  nombre?: boolean
-  rut?: boolean
-  email?: boolean
-  telefono?: boolean
-  direccion?: boolean
+  razonSocial?: boolean
+  titular?: boolean
+  giroComercial?: boolean
   tipo?: boolean
+  rut?: boolean
+  numeroBps?: boolean
+  fechaInicioEmpresa?: boolean
+  fechaAfiliacion?: boolean
+  direccion?: boolean
+  ciudad?: boolean
+  celular?: boolean
+  telefono?: boolean
+  email?: boolean
+  observaciones?: boolean
   activo?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["socio"]>
@@ -712,16 +976,24 @@ export type SocioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 export type SocioSelectScalar = {
   id?: boolean
   usuarioId?: boolean
-  nombre?: boolean
-  rut?: boolean
-  email?: boolean
-  telefono?: boolean
-  direccion?: boolean
+  razonSocial?: boolean
+  titular?: boolean
+  giroComercial?: boolean
   tipo?: boolean
+  rut?: boolean
+  numeroBps?: boolean
+  fechaInicioEmpresa?: boolean
+  fechaAfiliacion?: boolean
+  direccion?: boolean
+  ciudad?: boolean
+  celular?: boolean
+  telefono?: boolean
+  email?: boolean
+  observaciones?: boolean
   activo?: boolean
 }
 
-export type SocioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "nombre" | "rut" | "email" | "telefono" | "direccion" | "tipo" | "activo", ExtArgs["result"]["socio"]>
+export type SocioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "razonSocial" | "titular" | "giroComercial" | "tipo" | "rut" | "numeroBps" | "fechaInicioEmpresa" | "fechaAfiliacion" | "direccion" | "ciudad" | "celular" | "telefono" | "email" | "observaciones" | "activo", ExtArgs["result"]["socio"]>
 export type SocioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   ofertas?: boolean | Prisma.Socio$ofertasArgs<ExtArgs>
@@ -743,12 +1015,20 @@ export type $SocioPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     usuarioId: number
-    nombre: string
-    rut: string
-    email: string | null
-    telefono: string | null
-    direccion: string | null
+    razonSocial: string
+    titular: string
+    giroComercial: string
     tipo: $Enums.TipoSocio
+    rut: string
+    numeroBps: string
+    fechaInicioEmpresa: Date
+    fechaAfiliacion: Date
+    direccion: string
+    ciudad: string
+    celular: string
+    telefono: string
+    email: string
+    observaciones: string | null
     activo: boolean
   }, ExtArgs["result"]["socio"]>
   composites: {}
@@ -1177,12 +1457,20 @@ export interface Prisma__SocioClient<T, Null = never, ExtArgs extends runtime.Ty
 export interface SocioFieldRefs {
   readonly id: Prisma.FieldRef<"Socio", 'Int'>
   readonly usuarioId: Prisma.FieldRef<"Socio", 'Int'>
-  readonly nombre: Prisma.FieldRef<"Socio", 'String'>
-  readonly rut: Prisma.FieldRef<"Socio", 'String'>
-  readonly email: Prisma.FieldRef<"Socio", 'String'>
-  readonly telefono: Prisma.FieldRef<"Socio", 'String'>
-  readonly direccion: Prisma.FieldRef<"Socio", 'String'>
+  readonly razonSocial: Prisma.FieldRef<"Socio", 'String'>
+  readonly titular: Prisma.FieldRef<"Socio", 'String'>
+  readonly giroComercial: Prisma.FieldRef<"Socio", 'String'>
   readonly tipo: Prisma.FieldRef<"Socio", 'TipoSocio'>
+  readonly rut: Prisma.FieldRef<"Socio", 'String'>
+  readonly numeroBps: Prisma.FieldRef<"Socio", 'String'>
+  readonly fechaInicioEmpresa: Prisma.FieldRef<"Socio", 'DateTime'>
+  readonly fechaAfiliacion: Prisma.FieldRef<"Socio", 'DateTime'>
+  readonly direccion: Prisma.FieldRef<"Socio", 'String'>
+  readonly ciudad: Prisma.FieldRef<"Socio", 'String'>
+  readonly celular: Prisma.FieldRef<"Socio", 'String'>
+  readonly telefono: Prisma.FieldRef<"Socio", 'String'>
+  readonly email: Prisma.FieldRef<"Socio", 'String'>
+  readonly observaciones: Prisma.FieldRef<"Socio", 'String'>
   readonly activo: Prisma.FieldRef<"Socio", 'Boolean'>
 }
     
