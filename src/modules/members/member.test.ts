@@ -1,12 +1,32 @@
 import request from 'supertest';
+
 import { afterAll, describe, expect, it } from 'vitest';
 
 import app from '@/app';
 import { prisma } from '@/config/prisma';
 
-describe('socios', () => {
-  let createdUserId: number;
+describe('Socios', () => {
   let createdMemberId: number;
+  let createdUserId: number;
+
+  const timestamp = Date.now();
+
+  const testMember = {
+    razonSocial: 'Empresa Test SRL',
+    titular: 'Juan Pérez',
+    giroComercial: 'Ferretería',
+    tipo: 'COMUN',
+    rut: `RUT-${timestamp}`,
+    numeroBps: `BPS-${timestamp}`,
+    fechaInicioEmpresa: '2020-01-15',
+    fechaAfiliacion: '2026-09-01',
+    direccion: '25 de Mayo 123',
+    ciudad: 'San José',
+    celular: '099123456',
+    telefono: '43421234',
+    email: `socio-test-${timestamp}@ccisj.uy`,
+    observaciones: 'Socio creado desde test',
+  };
 
   afterAll(async () => {
     if (createdMemberId) {
@@ -43,139 +63,185 @@ describe('socios', () => {
     const response = await request(app).get(`/socios/${existingMember!.id}`);
 
     expect(response.status).toBe(200);
+
     expect(response.body).toHaveProperty('id', existingMember!.id);
-    expect(response.body).toHaveProperty('nombre');
+
+    expect(response.body).toHaveProperty('razonSocial');
+    expect(response.body).toHaveProperty('titular');
     expect(response.body).toHaveProperty('rut');
+    expect(response.body).toHaveProperty('numeroBps');
+    expect(response.body).toHaveProperty('usuario');
   });
 
   it('GET /socios/:id devuelve 404 si no existe', async () => {
     const response = await request(app).get('/socios/999999');
 
     expect(response.status).toBe(404);
-    expect(response.body).toHaveProperty('message');
+    expect(response.body).toHaveProperty('message', 'Socio no encontrado');
   });
 
-  it('POST /socios crea un socio', async () => {
-    const userResponse = await request(app)
-      .post('/usuarios')
-      .send({
-        email: `member-test-${Date.now()}@ccisj.uy`,
-        password: 'test123',
-        tipo: 'SOCIO',
-      });
-
-    expect(userResponse.status).toBe(201);
-
-    createdUserId = userResponse.body.id;
-
-    const response = await request(app)
-      .post('/socios')
-      .send({
-        usuarioId: createdUserId,
-        nombre: 'Empresa Test',
-        rut: `TEST-${Date.now()}`,
-        email: 'empresa-test@ccisj.uy',
-        telefono: '099999999',
-        direccion: 'San José',
-        tipo: 'COMUN',
-      });
+  it('POST /socios crea un socio y su usuario', async () => {
+    const response = await request(app).post('/socios').send(testMember);
 
     expect(response.status).toBe(201);
 
-    expect(response.body).toHaveProperty('id');
-    expect(response.body.nombre).toBe('Empresa Test');
-    expect(response.body.tipo).toBe('COMUN');
+    expect(response.body).toHaveProperty(
+      'message',
+      'Socio creado correctamente',
+    );
 
-    createdMemberId = response.body.id;
-  });
+    expect(response.body).toHaveProperty('socioId');
+    expect(response.body).toHaveProperty('passwordInicial');
 
-  it('POST /socios falla si el usuario no existe', async () => {
-    const response = await request(app)
-      .post('/socios')
-      .send({
-        usuarioId: 999999,
-        nombre: 'Empresa inválida',
-        rut: `INVALID-${Date.now()}`,
-        tipo: 'COMUN',
-      });
+    expect(typeof response.body.passwordInicial).toBe('string');
+    expect(response.body.passwordInicial.length).toBeGreaterThan(0);
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Usuario no encontrado');
-  });
+    createdMemberId = response.body.socioId;
 
-  it('POST /socios falla si el usuario no es SOCIO', async () => {
-    const userResponse = await request(app)
-      .post('/usuarios')
-      .send({
-        email: `postulante-test-${Date.now()}@ccisj.uy`,
-        password: 'test123',
-        tipo: 'POSTULANTE',
-      });
-
-    expect(userResponse.status).toBe(201);
-
-    const postulanteUserId = userResponse.body.id;
-
-    const response = await request(app)
-      .post('/socios')
-      .send({
-        usuarioId: postulanteUserId,
-        nombre: 'Empresa inválida',
-        rut: `INVALID-TYPE-${Date.now()}`,
-        tipo: 'COMUN',
-      });
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe('El usuario debe ser de tipo SOCIO');
-
-    await prisma.usuario.delete({
-      where: {
-        id: postulanteUserId,
-      },
-    });
-  });
-
-  it('PUT /socios/:id actualiza un socio', async () => {
-    const response = await request(app).put(`/socios/${createdMemberId}`).send({
-      nombre: 'Empresa Test Actualizada',
-      tipo: 'DIRECTIVO',
-      activo: true,
-    });
-
-    expect(response.status).toBe(200);
-    expect(response.body.nombre).toBe('Empresa Test Actualizada');
-    expect(response.body.tipo).toBe('DIRECTIVO');
-  });
-
-  it('PUT /socios/:id devuelve error si no existe', async () => {
-    const response = await request(app).put('/socios/999999').send({
-      nombre: 'No existe',
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message');
-  });
-
-  it('DELETE /socios/:id elimina un socio', async () => {
-    const response = await request(app).delete(`/socios/${createdMemberId}`);
-
-    expect(response.status).toBe(204);
-
-    const deletedMember = await prisma.socio.findUnique({
+    const member = await prisma.socio.findUnique({
       where: {
         id: createdMemberId,
       },
+      include: {
+        usuario: true,
+      },
     });
 
-    expect(deletedMember).toBeNull();
+    expect(member).not.toBeNull();
 
-    createdMemberId = 0;
+    expect(member!.razonSocial).toBe(testMember.razonSocial);
+    expect(member!.titular).toBe(testMember.titular);
+    expect(member!.giroComercial).toBe(testMember.giroComercial);
+    expect(member!.tipo).toBe('COMUN');
+    expect(member!.rut).toBe(testMember.rut);
+    expect(member!.numeroBps).toBe(testMember.numeroBps);
+
+    expect(member!.usuario.email).toBe(testMember.email);
+    expect(member!.usuario.tipo).toBe('SOCIO');
+    expect(member!.usuario.activo).toBe(true);
+
+    createdUserId = member!.usuarioId;
+  });
+
+  it('POST /socios falla si faltan datos obligatorios', async () => {
+    const response = await request(app).post('/socios').send({
+      razonSocial: 'Empresa incompleta',
+    });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toHaveProperty(
+      'message',
+      'Faltan datos obligatorios',
+    );
+  });
+
+  it('POST /socios falla si el RUT ya existe', async () => {
+    const response = await request(app)
+      .post('/socios')
+      .send({
+        ...testMember,
+        email: `otro-email-${timestamp}@ccisj.uy`,
+        numeroBps: `OTRO-BPS-${timestamp}`,
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toHaveProperty(
+      'message',
+      'El RUT ya está registrado',
+    );
+  });
+
+  it('POST /socios falla si el número de BPS ya existe', async () => {
+    const response = await request(app)
+      .post('/socios')
+      .send({
+        ...testMember,
+        rut: `OTRO-RUT-${timestamp}`,
+        email: `otro-bps-${timestamp}@ccisj.uy`,
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toHaveProperty(
+      'message',
+      'El número de BPS ya está registrado',
+    );
+  });
+
+  it('POST /socios falla si el email ya existe', async () => {
+    const response = await request(app)
+      .post('/socios')
+      .send({
+        ...testMember,
+        rut: `EMAIL-RUT-${timestamp}`,
+        numeroBps: `EMAIL-BPS-${timestamp}`,
+      });
+
+    expect(response.status).toBe(400);
+
+    expect(response.body).toHaveProperty(
+      'message',
+      'El email ya está registrado',
+    );
+  });
+
+  it('PATCH /socios/:id actualiza un socio', async () => {
+    const response = await request(app)
+      .patch(`/socios/${createdMemberId}`)
+      .send({
+        razonSocial: 'Empresa Test Actualizada SRL',
+        tipo: 'DIRECTIVO',
+      });
+
+    expect(response.status).toBe(200);
+
+    expect(response.body.razonSocial).toBe('Empresa Test Actualizada SRL');
+
+    expect(response.body.tipo).toBe('DIRECTIVO');
+  });
+
+  it('PATCH /socios/:id devuelve 404 si no existe', async () => {
+    const response = await request(app).patch('/socios/999999').send({
+      razonSocial: 'Empresa inexistente',
+    });
+
+    expect(response.status).toBe(404);
+    expect(response.body).toHaveProperty('message');
+  });
+
+  it('DELETE /socios/:id desactiva el socio', async () => {
+    const response = await request(app).delete(`/socios/${createdMemberId}`);
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toHaveProperty(
+      'message',
+      'Socio desactivado correctamente',
+    );
+
+    const member = await prisma.socio.findUnique({
+      where: {
+        id: createdMemberId,
+      },
+      include: {
+        usuario: true,
+      },
+    });
+
+    // El socio sigue existiendo
+    expect(member).not.toBeNull();
+
+    // La baja es lógica sobre Usuario
+    expect(member!.usuario.activo).toBe(false);
   });
 
   it('DELETE /socios/:id devuelve 404 si no existe', async () => {
     const response = await request(app).delete('/socios/999999');
 
     expect(response.status).toBe(404);
-    expect(response.body).toHaveProperty('message');
+
+    expect(response.body).toHaveProperty('message', 'Socio no encontrado');
   });
 });

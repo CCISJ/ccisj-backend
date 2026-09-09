@@ -105,14 +105,16 @@ describe('Usuarios', () => {
     );
   });
 
-  it('PUT /usuarios/:id actualiza un usuario', async () => {
+  it('PATCH /usuarios/:id actualiza un usuario', async () => {
     const newEmail = `usuario-actualizado-${Date.now()}@ccisj.uy`;
 
-    const response = await request(app).put(`/usuarios/${createdUserId}`).send({
-      email: newEmail,
-      tipo: 'POSTULANTE',
-      activo: false,
-    });
+    const response = await request(app)
+      .patch(`/usuarios/${createdUserId}`)
+      .send({
+        email: newEmail,
+        tipo: 'POSTULANTE',
+        activo: false,
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.email).toBe(newEmail);
@@ -122,9 +124,9 @@ describe('Usuarios', () => {
     expect(response.body).not.toHaveProperty('password');
   });
 
-  it('PUT /usuarios/:id devuelve error si el usuario no existe', async () => {
+  it('PATCH /usuarios/:id devuelve error si el usuario no existe', async () => {
     const response = await request(app)
-      .put('/usuarios/999999')
+      .patch('/usuarios/999999')
       .send({
         email: `no-existe-${Date.now()}@ccisj.uy`,
       });
@@ -133,8 +135,8 @@ describe('Usuarios', () => {
     expect(response.body).toHaveProperty('message');
   });
 
-  it('PUT /usuarios/:id devuelve 400 si el ID es inválido', async () => {
-    const response = await request(app).put('/usuarios/abc').send({
+  it('PATCH /usuarios/:id devuelve 400 si el ID es inválido', async () => {
+    const response = await request(app).patch('/usuarios/abc').send({
       activo: false,
     });
 

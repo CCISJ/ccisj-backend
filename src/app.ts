@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import morgan from 'morgan';
 
 import userRoutes from './modules/users/user.routes';
 import memberRoutes from './modules/members/member.routes';
@@ -15,6 +16,9 @@ const app = express();
 // MIDDLEWARES
 app.use(express.json());
 app.use(cookieParser());
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('dev'));
+}
 
 // CORS configuration
 app.use(

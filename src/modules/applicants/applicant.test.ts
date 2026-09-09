@@ -162,9 +162,9 @@ describe('Applicants', () => {
     );
   });
 
-  it('PUT /postulantes/:id actualiza un postulante', async () => {
+  it('PATCH /postulantes/:id actualiza un postulante', async () => {
     const response = await request(app)
-      .put(`/postulantes/${createdApplicantId}`)
+      .patch(`/postulantes/${createdApplicantId}`)
       .send({
         nombre: 'Test Actualizado',
         apellido: 'Applicant',
@@ -176,8 +176,8 @@ describe('Applicants', () => {
     expect(response.body.telefono).toBe('098999888');
   });
 
-  it('PUT /postulantes/:id devuelve error si no existe', async () => {
-    const response = await request(app).put('/postulantes/999999').send({
+  it('PATCH /postulantes/:id devuelve error si no existe', async () => {
+    const response = await request(app).patch('/postulantes/999999').send({
       nombre: 'No existe',
     });
 
@@ -185,8 +185,8 @@ describe('Applicants', () => {
     expect(response.body).toHaveProperty('message');
   });
 
-  it('PUT /postulantes/:id devuelve 400 si el ID es inválido', async () => {
-    const response = await request(app).put('/postulantes/abc').send({
+  it('PATCH /postulantes/:id devuelve 400 si el ID es inválido', async () => {
+    const response = await request(app).patch('/postulantes/abc').send({
       nombre: 'Inválido',
     });
 

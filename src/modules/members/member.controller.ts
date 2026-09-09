@@ -67,19 +67,21 @@ export async function update(req: Request, res: Response) {
   try {
     const id = Number(req.params.id);
 
-    if (Number.isNaN(id)) {
-      return res.status(400).json({
-        message: 'ID inválido',
+    const member = await memberService.update(id, req.body);
+
+    return res.status(200).json(member);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Error al actualizar socio';
+
+    if (message === 'Socio no encontrado') {
+      return res.status(404).json({
+        message,
       });
     }
 
-    const member = await memberService.update(id, req.body);
-
-    res.json(member);
-  } catch (error) {
-    res.status(400).json({
-      message:
-        error instanceof Error ? error.message : 'Error al actualizar el socio',
+    return res.status(400).json({
+      message,
     });
   }
 }

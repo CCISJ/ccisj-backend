@@ -86,9 +86,9 @@ describe('Categories', () => {
     expect(response.body.message).toBe('La categoría ya existe');
   });
 
-  it('PUT /categorias/:id actualiza una categoría', async () => {
+  it('PATCH /categorias/:id actualiza una categoría', async () => {
     const response = await request(app)
-      .put(`/categorias/${createdCategoryId}`)
+      .patch(`/categorias/${createdCategoryId}`)
       .send({
         nombre: updatedName,
         descripcion: 'Descripción actualizada',
@@ -100,8 +100,8 @@ describe('Categories', () => {
     expect(response.body.activa).toBe(false);
   });
 
-  it('PUT /categorias/:id devuelve error si no existe', async () => {
-    const response = await request(app).put('/categorias/999999').send({
+  it('PATCH /categorias/:id devuelve error si no existe', async () => {
+    const response = await request(app).patch('/categorias/999999').send({
       nombre: 'No existe',
     });
 

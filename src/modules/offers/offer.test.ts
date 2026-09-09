@@ -1,4 +1,5 @@
 import request from 'supertest';
+
 import { afterAll, describe, expect, it } from 'vitest';
 
 import app from '@/app';
@@ -12,6 +13,23 @@ describe('Offers', () => {
   let offerId: number;
 
   const timestamp = Date.now();
+
+  const memberData = {
+    razonSocial: 'Empresa Offers Test',
+    titular: 'Titular Offers Test',
+    giroComercial: 'Tecnología',
+    tipo: 'COMUN',
+    rut: `RUT-OFFER-${timestamp}`,
+    numeroBps: `BPS-OFFER-${timestamp}`,
+    fechaInicioEmpresa: '2020-01-01',
+    fechaAfiliacion: '2026-09-01',
+    direccion: '18 de Julio 123',
+    ciudad: 'San José',
+    celular: '099123456',
+    telefono: '43421234',
+    email: `offer-test-${timestamp}@ccisj.uy`,
+    observaciones: 'Socio usado para tests de ofertas',
+  };
 
   afterAll(async () => {
     if (offerId) {
@@ -45,31 +63,22 @@ describe('Offers', () => {
     await prisma.$disconnect();
   });
 
-  it('prepara usuario, socio y categorías para las pruebas', async () => {
-    const user = await request(app)
-      .post('/usuarios')
-      .send({
-        email: `offer-test-${timestamp}@ccisj.uy`,
-        password: 'test123',
-        tipo: 'SOCIO',
-      });
-
-    expect(user.status).toBe(201);
-
-    userId = user.body.id;
-
-    const member = await request(app)
-      .post('/socios')
-      .send({
-        usuarioId: userId,
-        nombre: 'Empresa Offers Test',
-        rut: `RUT-${timestamp}`,
-        tipo: 'COMUN',
-      });
+  it('prepara socio y categorías para las pruebas', async () => {
+    const member = await request(app).post('/socios').send(memberData);
 
     expect(member.status).toBe(201);
 
-    memberId = member.body.id;
+    memberId = member.body.socioId;
+
+    const createdMember = await prisma.socio.findUnique({
+      where: {
+        id: memberId,
+      },
+    });
+
+    expect(createdMember).not.toBeNull();
+
+    userId = createdMember!.usuarioId;
 
     const category = await request(app)
       .post('/categorias')
@@ -78,6 +87,7 @@ describe('Offers', () => {
       });
 
     expect(category.status).toBe(201);
+
     categoryId = category.body.id;
 
     const secondCategory = await request(app)
@@ -87,6 +97,7 @@ describe('Offers', () => {
       });
 
     expect(secondCategory.status).toBe(201);
+
     secondCategoryId = secondCategory.body.id;
   });
 
@@ -105,6 +116,7 @@ describe('Offers', () => {
       });
 
     expect(response.status).toBe(201);
+
     expect(response.body.titulo).toBe('Oferta Test');
     expect(response.body.cantidadVacantes).toBe(2);
     expect(response.body.categorias).toHaveLength(2);
@@ -123,6 +135,7 @@ describe('Offers', () => {
     const response = await request(app).get(`/ofertas/${offerId}`);
 
     expect(response.status).toBe(200);
+
     expect(response.body.id).toBe(offerId);
     expect(response.body).toHaveProperty('socio');
     expect(response.body).toHaveProperty('creador');
@@ -135,10 +148,14 @@ describe('Offers', () => {
       creadaPor: userId,
       titulo: 'Sin categorías',
       descripcion: 'Oferta inválida',
+      ubicacion: 'San José',
+      modalidad: 'PRESENCIAL',
+      cantidadVacantes: 1,
       categoriaIds: [],
     });
 
     expect(response.status).toBe(400);
+
     expect(response.body.message).toBe(
       'La oferta debe tener al menos una categoría',
     );
@@ -152,10 +169,14 @@ describe('Offers', () => {
         creadaPor: userId,
         titulo: 'Categoría inválida',
         descripcion: 'Oferta inválida',
+        ubicacion: 'San José',
+        modalidad: 'PRESENCIAL',
+        cantidadVacantes: 1,
         categoriaIds: [999999],
       });
 
     expect(response.status).toBe(400);
+
     expect(response.body.message).toBe('Una o más categorías no existen');
   });
 
@@ -167,16 +188,21 @@ describe('Offers', () => {
         creadaPor: userId,
         titulo: 'Vacantes inválidas',
         descripcion: 'Oferta inválida',
+        ubicacion: 'San José',
+        modalidad: 'PRESENCIAL',
         cantidadVacantes: 0,
         categoriaIds: [categoryId],
       });
 
     expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'La cantidad de vacantes debe ser mayor a 0',
+    );
   });
 
-  it('PUT /ofertas/:id actualiza la oferta', async () => {
+  it('PATCH /ofertas/:id actualiza la oferta', async () => {
     const response = await request(app)
-      .put(`/ofertas/${offerId}`)
+      .patch(`/ofertas/${offerId}`)
       .send({
         titulo: 'Oferta Test Actualizada',
         cantidadVacantes: 4,
@@ -185,7 +211,9 @@ describe('Offers', () => {
       });
 
     expect(response.status).toBe(200);
+
     expect(response.body.titulo).toBe('Oferta Test Actualizada');
+
     expect(response.body.cantidadVacantes).toBe(4);
     expect(response.body.estado).toBe('CERRADA');
     expect(response.body.categorias).toHaveLength(1);
