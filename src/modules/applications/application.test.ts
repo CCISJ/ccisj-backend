@@ -19,37 +19,41 @@ describe('Applications', () => {
 
   beforeAll(async () => {
     // =========================
-    // USUARIO SOCIO
-    // =========================
-
-    const memberUser = await request(app)
-      .post('/usuarios')
-      .send({
-        email: `application-member-${timestamp}@ccisj.uy`,
-        password: 'test123',
-        tipo: 'SOCIO',
-      });
-
-    expect(memberUser.status).toBe(201);
-
-    userMemberId = memberUser.body.id;
-
-    // =========================
-    // SOCIO
+    // SOCIO + USUARIO
     // =========================
 
     const member = await request(app)
       .post('/socios')
       .send({
-        usuarioId: userMemberId,
-        nombre: 'Empresa Application Test',
-        rut: `APP-${timestamp}`,
+        razonSocial: 'Empresa Application Test',
+        titular: 'Titular Application Test',
+        giroComercial: 'Tecnología',
         tipo: 'COMUN',
+        rut: `APP-RUT-${timestamp}`,
+        numeroBps: `APP-BPS-${timestamp}`,
+        fechaInicioEmpresa: '2020-01-01',
+        fechaAfiliacion: '2026-09-01',
+        direccion: '18 de Julio 123',
+        ciudad: 'San José',
+        celular: '099123456',
+        telefono: '43421234',
+        email: `application-member-${timestamp}@ccisj.uy`,
+        observaciones: 'Socio para tests de postulaciones',
       });
 
     expect(member.status).toBe(201);
 
-    memberId = member.body.id;
+    memberId = member.body.socioId;
+
+    const createdMember = await prisma.socio.findUnique({
+      where: {
+        id: memberId,
+      },
+    });
+
+    expect(createdMember).not.toBeNull();
+
+    userMemberId = createdMember!.usuarioId;
 
     // =========================
     // USUARIO POSTULANTE
@@ -71,15 +75,11 @@ describe('Applications', () => {
     // POSTULANTE
     // =========================
 
-    const applicantBody = {
+    const applicant = await request(app).post('/postulantes').send({
       usuarioId: userApplicantId,
       nombre: 'Application',
       apellido: 'Tester',
-    };
-
-    const applicant = await request(app)
-      .post('/postulantes')
-      .send(applicantBody);
+    });
 
     expect(applicant.status).toBe(201);
 
@@ -124,6 +124,9 @@ describe('Applications', () => {
         creadaPor: userMemberId,
         titulo: 'Oferta para postulaciones',
         descripcion: 'Oferta de prueba',
+        ubicacion: 'San José',
+        modalidad: 'PRESENCIAL',
+        cantidadVacantes: 1,
         categoriaIds: [categoryId],
       });
 
@@ -194,6 +197,7 @@ describe('Applications', () => {
     });
 
     expect(response.status).toBe(201);
+
     expect(response.body.ofertaId).toBe(offerId);
     expect(response.body.postulanteId).toBe(applicantId);
     expect(response.body.estado).toBe('ENVIADA');
@@ -208,6 +212,7 @@ describe('Applications', () => {
     });
 
     expect(response.status).toBe(400);
+
     expect(response.body.message).toBe(
       'El postulante ya se postuló a esta oferta',
     );
@@ -224,20 +229,22 @@ describe('Applications', () => {
     const response = await request(app).get(`/postulaciones/${applicationId}`);
 
     expect(response.status).toBe(200);
+
     expect(response.body.id).toBe(applicationId);
     expect(response.body).toHaveProperty('oferta');
     expect(response.body).toHaveProperty('postulante');
   });
 
-  it('PUT /postulaciones/:id actualiza el estado', async () => {
+  it('PATCH /postulaciones/:id actualiza el estado', async () => {
     const response = await request(app)
-      .put(`/postulaciones/${applicationId}`)
+      .patch(`/postulaciones/${applicationId}`)
       .send({
         estado: 'EN_REVISION',
         observaciones: 'Revisando candidatura',
       });
 
     expect(response.status).toBe(200);
+
     expect(response.body.estado).toBe('EN_REVISION');
     expect(response.body.observaciones).toBe('Revisando candidatura');
   });
@@ -266,7 +273,9 @@ describe('Applications', () => {
     expect(response.status).toBe(204);
 
     const deletedApplication = await prisma.postulacion.findUnique({
-      where: { id: applicationId },
+      where: {
+        id: applicationId,
+      },
     });
 
     expect(deletedApplication).toBeNull();
