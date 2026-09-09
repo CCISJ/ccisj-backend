@@ -46,9 +46,15 @@ export async function create(req: Request, res: Response) {
         : undefined,
     };
 
-    const member = await memberService.create(data);
+    const { socioId, email, passwordInicial } =
+      await memberService.create(data);
 
-    res.status(201).json(member);
+    res.status(201).json({
+      message: 'Socio creado correctamente',
+      socioId,
+      email,
+      passwordInicial,
+    });
   } catch (error) {
     res.status(400).json({
       message:

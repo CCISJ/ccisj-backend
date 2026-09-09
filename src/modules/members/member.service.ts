@@ -1,6 +1,8 @@
 import { CreateMemberData } from '@/types/member.type';
 import * as memberRepository from './member.repository';
 import * as usuarioRepository from '../users/user.repository';
+import argon2 from 'argon2';
+import crypto from 'node:crypto';
 
 export async function getAll() {
   return memberRepository.findAll();
@@ -47,16 +49,25 @@ export async function create(data: CreateMemberData) {
     throw new Error('El email ya está registrado');
   }
 
-  const passwordInicial = data.email;
+  const existingMemberByBps = await memberRepository.findByNumeroBps(
+    data.numeroBps,
+  );
 
-  const socio = await memberRepository.createWithUser(data, passwordInicial);
+  if (existingMemberByBps) {
+    throw new Error('El número de BPS ya está registrado');
+  }
+
+  const passwordInicial = crypto.randomBytes(6).toString('base64url');
+
+  const passwordHash = await argon2.hash(passwordInicial);
+
+  const socio = await memberRepository.createWithUser(data, passwordHash);
 
   return {
-    socio,
+    socioId: socio.id,
+    email: socio.usuario.email,
     passwordInicial,
   };
-
-  return socio;
 }
 
 export async function update(id: number, data: Partial<CreateMemberData>) {

@@ -18,12 +18,12 @@ export function findAll() {
 export function findById(id: number) {
   return prisma.usuario.findUnique({
     where: { id },
-    select: {
-      id: true,
-      email: true,
-      tipo: true,
-      activo: true,
-      fechaCreacion: true,
+    include: {
+      socio: {
+        select: {
+          tipo: true,
+        },
+      },
     },
   });
 }
