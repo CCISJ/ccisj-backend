@@ -39,15 +39,18 @@ export function findByRut(rut: string) {
   });
 }
 
-export function createWithUser(
-  data: CreateMemberData,
-  passwordInicial: string,
-) {
+export function findByNumeroBps(numeroBps: string) {
+  return prisma.socio.findUnique({
+    where: { numeroBps },
+  });
+}
+
+export function createWithUser(data: CreateMemberData, hashedPassword: string) {
   return prisma.$transaction(async (tx) => {
     const usuario = await tx.usuario.create({
       data: {
         email: data.email,
-        password: passwordInicial,
+        password: hashedPassword,
         tipo: 'SOCIO',
       },
       select: {
