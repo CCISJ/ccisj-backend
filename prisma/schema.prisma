@@ -45,7 +45,6 @@ model Socio {
   email              String
 
   observaciones      String?
-  activo             Boolean    @default(true)
 
   usuario            Usuario    @relation(fields: [usuarioId], references: [id])
   ofertas            Oferta[]

@@ -1,4 +1,4 @@
-import { CreateMemberData, UpdateMemberData } from '@/types/member.type';
+import { CreateMemberData } from '@/types/member.type';
 import * as memberRepository from './member.repository';
 import * as usuarioRepository from '../users/user.repository';
 
@@ -59,7 +59,7 @@ export async function create(data: CreateMemberData) {
   return socio;
 }
 
-export async function update(id: number, data: UpdateMemberData) {
+export async function update(id: number, data: Partial<CreateMemberData>) {
   const member = await memberRepository.findById(id);
 
   if (!member) {
@@ -74,7 +74,15 @@ export async function update(id: number, data: UpdateMemberData) {
     }
   }
 
-  return memberRepository.update(id, data);
+  if (data.email && data.email !== member.email) {
+    const existingUser = await usuarioRepository.findByEmail(data.email);
+
+    if (existingUser) {
+      throw new Error('El email ya está registrado');
+    }
+  }
+
+  return memberRepository.update(id, member.usuarioId, data);
 }
 
 export async function remove(id: number) {
@@ -84,5 +92,5 @@ export async function remove(id: number) {
     throw new Error('Socio no encontrado');
   }
 
-  return memberRepository.remove(id);
+  return memberRepository.remove(id, member.usuarioId);
 }

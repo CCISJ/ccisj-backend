@@ -53,7 +53,6 @@ export type SocioMinAggregateOutputType = {
   telefono: string | null
   email: string | null
   observaciones: string | null
-  activo: boolean | null
 }
 
 export type SocioMaxAggregateOutputType = {
@@ -73,7 +72,6 @@ export type SocioMaxAggregateOutputType = {
   telefono: string | null
   email: string | null
   observaciones: string | null
-  activo: boolean | null
 }
 
 export type SocioCountAggregateOutputType = {
@@ -93,7 +91,6 @@ export type SocioCountAggregateOutputType = {
   telefono: number
   email: number
   observaciones: number
-  activo: number
   _all: number
 }
 
@@ -125,7 +122,6 @@ export type SocioMinAggregateInputType = {
   telefono?: true
   email?: true
   observaciones?: true
-  activo?: true
 }
 
 export type SocioMaxAggregateInputType = {
@@ -145,7 +141,6 @@ export type SocioMaxAggregateInputType = {
   telefono?: true
   email?: true
   observaciones?: true
-  activo?: true
 }
 
 export type SocioCountAggregateInputType = {
@@ -165,7 +160,6 @@ export type SocioCountAggregateInputType = {
   telefono?: true
   email?: true
   observaciones?: true
-  activo?: true
   _all?: true
 }
 
@@ -272,7 +266,6 @@ export type SocioGroupByOutputType = {
   telefono: string
   email: string
   observaciones: string | null
-  activo: boolean
   _count: SocioCountAggregateOutputType | null
   _avg: SocioAvgAggregateOutputType | null
   _sum: SocioSumAggregateOutputType | null
@@ -315,7 +308,6 @@ export type SocioWhereInput = {
   telefono?: Prisma.StringFilter<"Socio"> | string
   email?: Prisma.StringFilter<"Socio"> | string
   observaciones?: Prisma.StringNullableFilter<"Socio"> | string | null
-  activo?: Prisma.BoolFilter<"Socio"> | boolean
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   ofertas?: Prisma.OfertaListRelationFilter
 }
@@ -337,7 +329,6 @@ export type SocioOrderByWithRelationInput = {
   telefono?: Prisma.SortOrder
   email?: Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
-  activo?: Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
   ofertas?: Prisma.OfertaOrderByRelationAggregateInput
 }
@@ -362,7 +353,6 @@ export type SocioWhereUniqueInput = Prisma.AtLeast<{
   telefono?: Prisma.StringFilter<"Socio"> | string
   email?: Prisma.StringFilter<"Socio"> | string
   observaciones?: Prisma.StringNullableFilter<"Socio"> | string | null
-  activo?: Prisma.BoolFilter<"Socio"> | boolean
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   ofertas?: Prisma.OfertaListRelationFilter
 }, "id" | "usuarioId" | "rut" | "numeroBps">
@@ -384,7 +374,6 @@ export type SocioOrderByWithAggregationInput = {
   telefono?: Prisma.SortOrder
   email?: Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
-  activo?: Prisma.SortOrder
   _count?: Prisma.SocioCountOrderByAggregateInput
   _avg?: Prisma.SocioAvgOrderByAggregateInput
   _max?: Prisma.SocioMaxOrderByAggregateInput
@@ -412,7 +401,6 @@ export type SocioScalarWhereWithAggregatesInput = {
   telefono?: Prisma.StringWithAggregatesFilter<"Socio"> | string
   email?: Prisma.StringWithAggregatesFilter<"Socio"> | string
   observaciones?: Prisma.StringNullableWithAggregatesFilter<"Socio"> | string | null
-  activo?: Prisma.BoolWithAggregatesFilter<"Socio"> | boolean
 }
 
 export type SocioCreateInput = {
@@ -430,7 +418,6 @@ export type SocioCreateInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutSocioInput
   ofertas?: Prisma.OfertaCreateNestedManyWithoutSocioInput
 }
@@ -452,7 +439,6 @@ export type SocioUncheckedCreateInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutSocioInput
 }
 
@@ -471,7 +457,6 @@ export type SocioUpdateInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutSocioNestedInput
   ofertas?: Prisma.OfertaUpdateManyWithoutSocioNestedInput
 }
@@ -493,7 +478,6 @@ export type SocioUncheckedUpdateInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutSocioNestedInput
 }
 
@@ -514,7 +498,6 @@ export type SocioCreateManyInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
 }
 
 export type SocioUpdateManyMutationInput = {
@@ -532,7 +515,6 @@ export type SocioUpdateManyMutationInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SocioUncheckedUpdateManyInput = {
@@ -552,7 +534,6 @@ export type SocioUncheckedUpdateManyInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type SocioNullableScalarRelationFilter = {
@@ -577,7 +558,6 @@ export type SocioCountOrderByAggregateInput = {
   telefono?: Prisma.SortOrder
   email?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
-  activo?: Prisma.SortOrder
 }
 
 export type SocioAvgOrderByAggregateInput = {
@@ -602,7 +582,6 @@ export type SocioMaxOrderByAggregateInput = {
   telefono?: Prisma.SortOrder
   email?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
-  activo?: Prisma.SortOrder
 }
 
 export type SocioMinOrderByAggregateInput = {
@@ -622,7 +601,6 @@ export type SocioMinOrderByAggregateInput = {
   telefono?: Prisma.SortOrder
   email?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
-  activo?: Prisma.SortOrder
 }
 
 export type SocioSumOrderByAggregateInput = {
@@ -704,7 +682,6 @@ export type SocioCreateWithoutUsuarioInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
   ofertas?: Prisma.OfertaCreateNestedManyWithoutSocioInput
 }
 
@@ -724,7 +701,6 @@ export type SocioUncheckedCreateWithoutUsuarioInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutSocioInput
 }
 
@@ -759,7 +735,6 @@ export type SocioUpdateWithoutUsuarioInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaUpdateManyWithoutSocioNestedInput
 }
 
@@ -779,7 +754,6 @@ export type SocioUncheckedUpdateWithoutUsuarioInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutSocioNestedInput
 }
 
@@ -798,7 +772,6 @@ export type SocioCreateWithoutOfertasInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutSocioInput
 }
 
@@ -819,7 +792,6 @@ export type SocioUncheckedCreateWithoutOfertasInput = {
   telefono: string
   email: string
   observaciones?: string | null
-  activo?: boolean
 }
 
 export type SocioCreateOrConnectWithoutOfertasInput = {
@@ -853,7 +825,6 @@ export type SocioUpdateWithoutOfertasInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutSocioNestedInput
 }
 
@@ -874,7 +845,6 @@ export type SocioUncheckedUpdateWithoutOfertasInput = {
   telefono?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 
@@ -925,7 +895,6 @@ export type SocioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   telefono?: boolean
   email?: boolean
   observaciones?: boolean
-  activo?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   ofertas?: boolean | Prisma.Socio$ofertasArgs<ExtArgs>
   _count?: boolean | Prisma.SocioCountOutputTypeDefaultArgs<ExtArgs>
@@ -948,7 +917,6 @@ export type SocioSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   telefono?: boolean
   email?: boolean
   observaciones?: boolean
-  activo?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["socio"]>
 
@@ -969,7 +937,6 @@ export type SocioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   telefono?: boolean
   email?: boolean
   observaciones?: boolean
-  activo?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["socio"]>
 
@@ -990,10 +957,9 @@ export type SocioSelectScalar = {
   telefono?: boolean
   email?: boolean
   observaciones?: boolean
-  activo?: boolean
 }
 
-export type SocioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "razonSocial" | "titular" | "giroComercial" | "tipo" | "rut" | "numeroBps" | "fechaInicioEmpresa" | "fechaAfiliacion" | "direccion" | "ciudad" | "celular" | "telefono" | "email" | "observaciones" | "activo", ExtArgs["result"]["socio"]>
+export type SocioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "razonSocial" | "titular" | "giroComercial" | "tipo" | "rut" | "numeroBps" | "fechaInicioEmpresa" | "fechaAfiliacion" | "direccion" | "ciudad" | "celular" | "telefono" | "email" | "observaciones", ExtArgs["result"]["socio"]>
 export type SocioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   ofertas?: boolean | Prisma.Socio$ofertasArgs<ExtArgs>
@@ -1029,7 +995,6 @@ export type $SocioPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     telefono: string
     email: string
     observaciones: string | null
-    activo: boolean
   }, ExtArgs["result"]["socio"]>
   composites: {}
 }
@@ -1471,7 +1436,6 @@ export interface SocioFieldRefs {
   readonly telefono: Prisma.FieldRef<"Socio", 'String'>
   readonly email: Prisma.FieldRef<"Socio", 'String'>
   readonly observaciones: Prisma.FieldRef<"Socio", 'String'>
-  readonly activo: Prisma.FieldRef<"Socio", 'Boolean'>
 }
     
 

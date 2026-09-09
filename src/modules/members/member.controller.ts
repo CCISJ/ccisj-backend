@@ -90,7 +90,9 @@ export async function remove(req: Request, res: Response) {
 
     await memberService.remove(id);
 
-    res.status(204).send();
+    return res.status(200).json({
+      message: 'Socio desactivado correctamente',
+    });
   } catch (error) {
     res.status(404).json({
       message:

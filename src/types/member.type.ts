@@ -21,13 +21,3 @@ export type CreateMemberData = {
 
   observaciones?: string;
 };
-
-export type UpdateMemberData = {
-  nombre?: string;
-  rut?: string;
-  email?: string;
-  telefono?: string;
-  direccion?: string;
-  tipo?: MemberType;
-  activo?: boolean;
-};

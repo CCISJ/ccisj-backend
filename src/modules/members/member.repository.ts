@@ -94,33 +94,42 @@ export function createWithUser(
 
 export function update(
   id: number,
-  data: {
-    nombre?: string;
-    rut?: string;
-    email?: string;
-    telefono?: string;
-    direccion?: string;
-    tipo?: 'COMUN' | 'DIRECTIVO';
-    activo?: boolean;
-  },
+  usuarioId: number,
+  data: Partial<CreateMemberData>,
 ) {
-  return prisma.socio.update({
-    where: { id },
-    data,
-    include: {
-      usuario: {
-        select: {
-          id: true,
-          email: true,
-          activo: true,
+  return prisma.$transaction(async (tx) => {
+    if (data.email) {
+      await tx.usuario.update({
+        where: { id: usuarioId },
+        data: {
+          email: data.email,
+        },
+      });
+    }
+
+    return tx.socio.update({
+      where: { id },
+      data,
+      include: {
+        usuario: {
+          select: {
+            id: true,
+            email: true,
+            activo: true,
+          },
         },
       },
-    },
+    });
   });
 }
 
-export function remove(id: number) {
-  return prisma.socio.delete({
-    where: { id },
+export function remove(id: number, usuarioId: number) {
+  return prisma.$transaction(async (tx) => {
+    await tx.usuario.update({
+      where: { id: usuarioId },
+      data: {
+        activo: false,
+      },
+    });
   });
 }
