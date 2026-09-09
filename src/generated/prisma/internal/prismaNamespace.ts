@@ -1083,8 +1083,7 @@ export const SocioScalarFieldEnum = {
   celular: 'celular',
   telefono: 'telefono',
   email: 'email',
-  observaciones: 'observaciones',
-  activo: 'activo'
+  observaciones: 'observaciones'
 } as const
 
 export type SocioScalarFieldEnum = (typeof SocioScalarFieldEnum)[keyof typeof SocioScalarFieldEnum]
