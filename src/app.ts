@@ -24,6 +24,7 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(
   cors({
     origin: 'http://localhost:5173',
+    credentials: true,
   }),
 );
 

@@ -53,7 +53,7 @@ export async function login(data: LoginData) {
 }
 
 export async function me(userId: number) {
-  const user = await usuarioRepository.findById(userId);
+  const user = await usuarioRepository.findByIdWithProfile(userId);
 
   if (!user) {
     throw new Error('Usuario no encontrado');
@@ -63,10 +63,26 @@ export async function me(userId: number) {
     throw new Error('Usuario inactivo');
   }
 
+  let displayName = 'Usuario';
+
+  if (user.tipo === 'ADMIN') {
+    displayName = 'Administración CCISJ';
+  }
+
+  if (user.tipo === 'SOCIO' && user.socio) {
+    displayName = user.socio.razonSocial;
+  }
+
+  if (user.tipo === 'POSTULANTE' && user.postulante) {
+    displayName =
+      `${user.postulante.nombre} ${user.postulante.apellido}`.trim();
+  }
+
   return {
     id: user.id,
     email: user.email,
     tipo: user.tipo,
+    displayName,
     memberType: user.socio?.tipo ?? null,
   };
 }
