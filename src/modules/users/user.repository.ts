@@ -33,6 +33,32 @@ export function findById(id: number) {
   });
 }
 
+export function findByIdWithProfile(id: number) {
+  return prisma.usuario.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      tipo: true,
+      activo: true,
+
+      socio: {
+        select: {
+          razonSocial: true,
+          tipo: true,
+        },
+      },
+
+      postulante: {
+        select: {
+          nombre: true,
+          apellido: true,
+        },
+      },
+    },
+  });
+}
+
 export function findByEmail(email: string) {
   return prisma.usuario.findUnique({
     where: { email },
