@@ -366,7 +366,7 @@ Iniciar el servidor en modo desarrollo:
 pnpm dev
 ```
 
-Compilar TypeScript:
+Compilar a `dist/`:
 
 ```bash
 pnpm build
@@ -378,6 +378,8 @@ Ejecutar la versión compilada:
 pnpm start
 ```
 
+La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
+
 ---
 
 # Scripts disponibles
@@ -385,10 +387,11 @@ pnpm start
 | Comando        | Descripción                          |
 | -------------- | ------------------------------------ |
 | `pnpm dev`     | Inicia el backend en modo desarrollo |
-| `pnpm build`   | Compila TypeScript                   |
+| `pnpm build`   | Compila a `dist/`                     |
 | `pnpm start`   | Ejecuta la versión compilada         |
-| `pnpm migrate` | Ejecuta migraciones pendientes       |
-| `pnpm seed`    | Inserta datos de prueba              |
+| `pnpm test`    | Vitest — pega contra la base real    |
+| `pnpm migrate` | Aplica migraciones pendientes        |
+| `pnpm seed`    | Inserta datos de prueba (idempotente) |
 
 ---
 
