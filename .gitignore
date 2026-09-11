@@ -1,2 +1,16 @@
+# Dependencias
 node_modules
+
+# Variables de entorno: cada uno tiene el suyo, nunca se suben
 .env
+
+# Salida del build. Se regenera con `pnpm build`, así que no se versiona:
+# tenerla en el repo hacía que cada build ensuciara el diff con decenas de
+# archivos compilados y generara conflictos entre ramas.
+dist
+*.tsbuildinfo
+
+# Logs y basura del sistema
+*.log
+.DS_Store
+Thumbs.db

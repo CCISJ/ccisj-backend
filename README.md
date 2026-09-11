@@ -203,43 +203,88 @@ pnpm-workspace.yaml
 
 ---
 
+# Sincronizar con el equipo
+
+**Antes de empezar a trabajar, siempre:**
+
+```bash
+git pull
+pnpm install
+pnpm exec prisma generate
+pnpm migrate
+```
+
+No alcanza con `git pull`. El esquema de la base cambia seguido, y si no
+regenerás el cliente de Prisma vas a estar programando contra un modelo que ya
+no existe (por ejemplo, buscando `socio.nombre` cuando el campo pasó a llamarse
+`razonSocial`).
+
+Si algo no cierra, este comando dice si tu base está al día:
+
+```bash
+pnpm exec prisma migrate status
+```
+
+---
+
 # Base de datos
 
 La aplicación utiliza PostgreSQL alojado en Supabase.
 
-La conexión se realiza desde Node.js mediante el paquete `pg`.
+El acceso se hace con **Prisma**, usando el adaptador `@prisma/adapter-pg`.
 
-La configuración se encuentra en:
+Archivos relevantes:
 
 ```text
-src/config/database.ts
+prisma/schema.prisma     modelos y enums
+prisma/migrations/       historial de migraciones
+prisma/seed.ts           datos de prueba
+prisma.config.ts         configuración de Prisma (lee DB_URL del .env)
+src/config/prisma.ts     cliente de Prisma que usa la aplicación
+src/generated/prisma/    cliente generado (se versiona, no se edita a mano)
 ```
 
 ---
 
 # Migraciones
 
-Las migraciones SQL se encuentran en:
+Prisma registra las migraciones aplicadas en la tabla `_prisma_migrations`.
 
-```text
-database/migrations/
+> ⚠️ **La base de Supabase es compartida por todo el equipo**, y los tests
+> corren contra ella.
+>
+> Nunca corras `prisma migrate dev` ni `prisma migrate reset` contra ella: ante
+> la menor diferencia de esquema, Prisma ofrece **resetear la base y borrar
+> todos los datos**.
+>
+> Para aplicar migraciones usá siempre `pnpm migrate`
+> (`prisma migrate deploy`), que solo aplica lo pendiente y nunca borra nada.
+
+## Crear una migración nueva
+
+Después de editar `prisma/schema.prisma`:
+
+```bash
+# 1. Genera el archivo SQL sin tocar la base
+pnpm exec prisma migrate dev --name descripcion_del_cambio --create-only
+
+# 2. Revisá el SQL generado en prisma/migrations/
+
+# 3. Recién ahí, aplicalo
+pnpm migrate
+pnpm exec prisma generate
 ```
 
-Ejemplo:
+El paso `--create-only` es el que evita que Prisma toque la base sin que hayas
+visto qué va a hacer.
 
-```text
-database/
-└── migrations/
-    └── 001_initial_schema.sql
-```
+## Si aparece "Drift detected"
 
-Las migraciones permiten mantener versionados los cambios en la estructura de la base de datos.
+Significa que la base no coincide con el historial de migraciones del repo.
+Casi siempre es porque alguien aplicó cambios y tu repo está desactualizado.
 
-El sistema registra automáticamente qué migraciones ya fueron ejecutadas mediante la tabla:
-
-```text
-schema_migrations
-```
+**No aceptes el reset.** Primero probá `git pull` y volvé a revisar: lo más
+probable es que la migración que falta ya esté en el repo remoto.
 
 ## Ejecutar migraciones localmente
 
@@ -255,7 +300,7 @@ Con los contenedores levantados:
 docker compose exec backend pnpm migrate
 ```
 
-Las migraciones ya ejecutadas son ignoradas automáticamente.
+Las migraciones ya aplicadas se ignoran automáticamente.
 
 ---
 
@@ -264,16 +309,17 @@ Las migraciones ya ejecutadas son ignoradas automáticamente.
 Los datos de prueba se encuentran en:
 
 ```text
-database/seeds/
+prisma/seed.ts
 ```
 
-Ejemplo:
+El seed usa `upsert`, así que se puede correr varias veces sin duplicar datos.
 
-```text
-database/
-└── seeds/
-    └── 001_initial_data.sql
-```
+Crea el usuario administrador, dos socios con sus empresas, un postulante con
+CV, las categorías, una oferta y una postulación de ejemplo.
+
+> Si agregás o cambiás campos en `prisma/schema.prisma`, acordate de actualizar
+> también el seed: si queda desactualizado, falla al crear los registros y los
+> tests que dependen de esos datos empiezan a fallar.
 
 ## Ejecutar seeds localmente
 
@@ -291,6 +337,21 @@ Los seeds se utilizan únicamente para generar datos de desarrollo/prueba.
 
 ---
 
+# Autenticación
+
+El login devuelve un JWT que el frontend manda en el header
+`Authorization: Bearer <token>`. El secreto con el que se firma sale de
+`JWT_SECRET` en el `.env`. El servidor arranca igual sin esa variable, pero
+el login y las rutas protegidas fallan en tiempo de request, así que conviene
+completarla desde el principio.
+
+```text
+src/modules/auth/                    login y emisión del token
+src/middlewares/auth.middleware.ts   valida el token en las rutas protegidas
+```
+
+---
+
 # Ejecutar backend sin Docker
 
 Instalar las dependencias:
@@ -305,7 +366,7 @@ Iniciar el servidor en modo desarrollo:
 pnpm dev
 ```
 
-Compilar TypeScript:
+Compilar a `dist/`:
 
 ```bash
 pnpm build
@@ -317,6 +378,8 @@ Ejecutar la versión compilada:
 pnpm start
 ```
 
+La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
+
 ---
 
 # Scripts disponibles
@@ -324,10 +387,11 @@ pnpm start
 | Comando        | Descripción                          |
 | -------------- | ------------------------------------ |
 | `pnpm dev`     | Inicia el backend en modo desarrollo |
-| `pnpm build`   | Compila TypeScript                   |
+| `pnpm build`   | Compila a `dist/`                     |
 | `pnpm start`   | Ejecuta la versión compilada         |
-| `pnpm migrate` | Ejecuta migraciones pendientes       |
-| `pnpm seed`    | Inserta datos de prueba              |
+| `pnpm test`    | Vitest — pega contra la base real    |
+| `pnpm migrate` | Aplica migraciones pendientes        |
+| `pnpm seed`    | Inserta datos de prueba (idempotente) |
 
 ---
 
