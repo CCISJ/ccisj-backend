@@ -10,7 +10,7 @@ export function findAll() {
           activo: true,
         },
       },
-      cv: true,
+      cvs: true,
     },
     orderBy: {
       id: 'asc',
@@ -29,7 +29,7 @@ export function findById(id: number) {
           activo: true,
         },
       },
-      cv: true,
+      cvs: true,
     },
   });
 }
@@ -81,7 +81,7 @@ export function update(
           activo: true,
         },
       },
-      cv: true,
+      cvs: true,
     },
   });
 }

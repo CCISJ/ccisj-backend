@@ -17,7 +17,7 @@ const applicationInclude = {
           activo: true,
         },
       },
-      cv: true,
+      cvs: true,
     },
   },
 } as const;

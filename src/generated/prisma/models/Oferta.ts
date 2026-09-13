@@ -613,10 +613,6 @@ export type OfertaUncheckedUpdateManyWithoutSocioNestedInput = {
   deleteMany?: Prisma.OfertaScalarWhereInput | Prisma.OfertaScalarWhereInput[]
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type EnumEstadoOfertaFieldUpdateOperationsInput = {
   set?: $Enums.EstadoOferta
 }

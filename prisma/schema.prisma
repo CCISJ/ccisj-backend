@@ -7,6 +7,46 @@ datasource db {
   provider = "postgresql"
 }
 
+enum EstadoOferta {
+  ACTIVA
+  CERRADA
+
+  @@map("estado_oferta")
+}
+
+enum EstadoPostulacion {
+  ENVIADA
+  EN_REVISION
+  SELECCIONADO
+  NO_SELECCIONADO
+  FINALIZADA
+
+  @@map("estado_postulacion")
+}
+
+enum TipoSocio {
+  COMUN
+  DIRECTIVO
+
+  @@map("tipo_socio")
+}
+
+enum TipoUsuario {
+  ADMIN
+  POSTULANTE
+  SOCIO
+
+  @@map("tipo_usuario")
+}
+
+
+enum TipoNotificacion {
+  NORMAL
+  EMERGENTE
+
+  @@map("tipo_notificacion")
+}
+
 model Usuario {
   id            Int         @id @default(autoincrement())
   email         String      @unique @db.VarChar(255)
@@ -19,8 +59,45 @@ model Usuario {
   postulante Postulante?
   socio      Socio?
 
+  notificacionesCreadas   Notificacion[]        @relation("NotificacionCreadaPor")
+  notificacionesRecibidas NotificacionUsuario[]
+
+
   @@map("usuario")
 }
+
+model Notificacion {
+  id            Int              @id @default(autoincrement())
+  titulo        String           @db.VarChar(150)
+  mensaje       String
+  tipo          TipoNotificacion @default(NORMAL)
+  fechaCreacion DateTime         @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+  activa       Boolean          @default(true)
+
+  creadoPorId Int     @map("creado_por_id")
+  creadoPor   Usuario @relation("NotificacionCreadaPor",fields: [creadoPorId],references: [id],onDelete: NoAction,onUpdate: NoAction)
+
+  destinatarios NotificacionUsuario[]
+
+  @@map("notificacion")
+}
+
+model NotificacionUsuario {
+  id                  Int       @id @default(autoincrement())
+  notificacionId      Int       @map("notificacion_id")
+  usuarioId           Int       @map("usuario_id")
+  leida               Boolean   @default(false)
+  fechaLectura        DateTime? @map("fecha_lectura") @db.Timestamp(6)
+  emergenteVista      Boolean   @default(false) @map("emergente_vista")
+  fechaEmergenteVista DateTime? @map("fecha_emergente_vista") @db.Timestamp(6)
+
+  notificacion Notificacion @relation(fields: [notificacionId], references: [id],onDelete: Cascade,onUpdate: NoAction)
+  usuario Usuario @relation(fields: [usuarioId],references: [id],onDelete: Cascade,onUpdate: NoAction)
+
+  @@unique([notificacionId, usuarioId])
+  @@map("notificacion_usuario")
+}
+
 
 model Socio {
   id                 Int        @id @default(autoincrement())
@@ -58,7 +135,7 @@ model Postulante {
   telefono  String? @db.VarChar(50)
 
   usuario       Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
-  cv            Cv?
+  cvs Cv[]
   postulaciones Postulacion[]
 
   @@map("postulante")
@@ -66,7 +143,7 @@ model Postulante {
 
 model Cv {
   id                 Int      @id @default(autoincrement())
-  postulanteId       Int      @unique @map("postulante_id")
+  postulanteId       Int      @map("postulante_id")
   archivoUrl         String?  @map("archivo_url") @db.VarChar(500)
   descripcion        String?
   fechaActualizacion DateTime @default(now()) @map("fecha_actualizacion") @db.Timestamp(6)
@@ -134,34 +211,3 @@ model Postulacion {
   @@map("postulacion")
 }
 
-enum EstadoOferta {
-  ACTIVA
-  CERRADA
-
-  @@map("estado_oferta")
-}
-
-enum EstadoPostulacion {
-  ENVIADA
-  EN_REVISION
-  SELECCIONADO
-  NO_SELECCIONADO
-  FINALIZADA
-
-  @@map("estado_postulacion")
-}
-
-enum TipoSocio {
-  COMUN
-  DIRECTIVO
-
-  @@map("tipo_socio")
-}
-
-enum TipoUsuario {
-  ADMIN
-  POSTULANTE
-  SOCIO
-
-  @@map("tipo_usuario")
-}

@@ -1,6 +1,9 @@
 import * as applicationRepository from './application.repository';
+
 import * as offerRepository from '@/modules/offers/offer.repository';
+
 import * as applicantRepository from '@/modules/applicants/applicant.repository';
+
 import {
   CreateApplicationData,
   ApplicationStatus,
@@ -42,7 +45,7 @@ export async function create(data: CreateApplicationData) {
     throw new Error('Postulante no encontrado');
   }
 
-  if (!applicant.cv) {
+  if (applicant.cvs.length === 0) {
     throw new Error('El postulante debe tener un CV cargado');
   }
 

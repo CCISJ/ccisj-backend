@@ -234,15 +234,15 @@ export type CvOrderByWithRelationInput = {
 
 export type CvWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  postulanteId?: number
   AND?: Prisma.CvWhereInput | Prisma.CvWhereInput[]
   OR?: Prisma.CvWhereInput[]
   NOT?: Prisma.CvWhereInput | Prisma.CvWhereInput[]
+  postulanteId?: Prisma.IntFilter<"Cv"> | number
   archivoUrl?: Prisma.StringNullableFilter<"Cv"> | string | null
   descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
-}, "id" | "postulanteId">
+}, "id">
 
 export type CvOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -272,7 +272,7 @@ export type CvCreateInput = {
   archivoUrl?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
-  postulante: Prisma.PostulanteCreateNestedOneWithoutCvInput
+  postulante: Prisma.PostulanteCreateNestedOneWithoutCvsInput
 }
 
 export type CvUncheckedCreateInput = {
@@ -287,7 +287,7 @@ export type CvUpdateInput = {
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  postulante?: Prisma.PostulanteUpdateOneRequiredWithoutCvNestedInput
+  postulante?: Prisma.PostulanteUpdateOneRequiredWithoutCvsNestedInput
 }
 
 export type CvUncheckedUpdateInput = {
@@ -320,9 +320,14 @@ export type CvUncheckedUpdateManyInput = {
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type CvNullableScalarRelationFilter = {
-  is?: Prisma.CvWhereInput | null
-  isNot?: Prisma.CvWhereInput | null
+export type CvListRelationFilter = {
+  every?: Prisma.CvWhereInput
+  some?: Prisma.CvWhereInput
+  none?: Prisma.CvWhereInput
+}
+
+export type CvOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type CvCountOrderByAggregateInput = {
@@ -359,36 +364,46 @@ export type CvSumOrderByAggregateInput = {
   postulanteId?: Prisma.SortOrder
 }
 
-export type CvCreateNestedOneWithoutPostulanteInput = {
-  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
-  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput
-  connect?: Prisma.CvWhereUniqueInput
+export type CvCreateNestedManyWithoutPostulanteInput = {
+  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput> | Prisma.CvCreateWithoutPostulanteInput[] | Prisma.CvUncheckedCreateWithoutPostulanteInput[]
+  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput | Prisma.CvCreateOrConnectWithoutPostulanteInput[]
+  createMany?: Prisma.CvCreateManyPostulanteInputEnvelope
+  connect?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
 }
 
-export type CvUncheckedCreateNestedOneWithoutPostulanteInput = {
-  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
-  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput
-  connect?: Prisma.CvWhereUniqueInput
+export type CvUncheckedCreateNestedManyWithoutPostulanteInput = {
+  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput> | Prisma.CvCreateWithoutPostulanteInput[] | Prisma.CvUncheckedCreateWithoutPostulanteInput[]
+  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput | Prisma.CvCreateOrConnectWithoutPostulanteInput[]
+  createMany?: Prisma.CvCreateManyPostulanteInputEnvelope
+  connect?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
 }
 
-export type CvUpdateOneWithoutPostulanteNestedInput = {
-  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
-  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput
-  upsert?: Prisma.CvUpsertWithoutPostulanteInput
-  disconnect?: Prisma.CvWhereInput | boolean
-  delete?: Prisma.CvWhereInput | boolean
-  connect?: Prisma.CvWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.CvUpdateToOneWithWhereWithoutPostulanteInput, Prisma.CvUpdateWithoutPostulanteInput>, Prisma.CvUncheckedUpdateWithoutPostulanteInput>
+export type CvUpdateManyWithoutPostulanteNestedInput = {
+  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput> | Prisma.CvCreateWithoutPostulanteInput[] | Prisma.CvUncheckedCreateWithoutPostulanteInput[]
+  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput | Prisma.CvCreateOrConnectWithoutPostulanteInput[]
+  upsert?: Prisma.CvUpsertWithWhereUniqueWithoutPostulanteInput | Prisma.CvUpsertWithWhereUniqueWithoutPostulanteInput[]
+  createMany?: Prisma.CvCreateManyPostulanteInputEnvelope
+  set?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  disconnect?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  delete?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  connect?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  update?: Prisma.CvUpdateWithWhereUniqueWithoutPostulanteInput | Prisma.CvUpdateWithWhereUniqueWithoutPostulanteInput[]
+  updateMany?: Prisma.CvUpdateManyWithWhereWithoutPostulanteInput | Prisma.CvUpdateManyWithWhereWithoutPostulanteInput[]
+  deleteMany?: Prisma.CvScalarWhereInput | Prisma.CvScalarWhereInput[]
 }
 
-export type CvUncheckedUpdateOneWithoutPostulanteNestedInput = {
-  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
-  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput
-  upsert?: Prisma.CvUpsertWithoutPostulanteInput
-  disconnect?: Prisma.CvWhereInput | boolean
-  delete?: Prisma.CvWhereInput | boolean
-  connect?: Prisma.CvWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.CvUpdateToOneWithWhereWithoutPostulanteInput, Prisma.CvUpdateWithoutPostulanteInput>, Prisma.CvUncheckedUpdateWithoutPostulanteInput>
+export type CvUncheckedUpdateManyWithoutPostulanteNestedInput = {
+  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput> | Prisma.CvCreateWithoutPostulanteInput[] | Prisma.CvUncheckedCreateWithoutPostulanteInput[]
+  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput | Prisma.CvCreateOrConnectWithoutPostulanteInput[]
+  upsert?: Prisma.CvUpsertWithWhereUniqueWithoutPostulanteInput | Prisma.CvUpsertWithWhereUniqueWithoutPostulanteInput[]
+  createMany?: Prisma.CvCreateManyPostulanteInputEnvelope
+  set?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  disconnect?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  delete?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  connect?: Prisma.CvWhereUniqueInput | Prisma.CvWhereUniqueInput[]
+  update?: Prisma.CvUpdateWithWhereUniqueWithoutPostulanteInput | Prisma.CvUpdateWithWhereUniqueWithoutPostulanteInput[]
+  updateMany?: Prisma.CvUpdateManyWithWhereWithoutPostulanteInput | Prisma.CvUpdateManyWithWhereWithoutPostulanteInput[]
+  deleteMany?: Prisma.CvScalarWhereInput | Prisma.CvScalarWhereInput[]
 }
 
 export type CvCreateWithoutPostulanteInput = {
@@ -409,15 +424,43 @@ export type CvCreateOrConnectWithoutPostulanteInput = {
   create: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
 }
 
-export type CvUpsertWithoutPostulanteInput = {
-  update: Prisma.XOR<Prisma.CvUpdateWithoutPostulanteInput, Prisma.CvUncheckedUpdateWithoutPostulanteInput>
-  create: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
-  where?: Prisma.CvWhereInput
+export type CvCreateManyPostulanteInputEnvelope = {
+  data: Prisma.CvCreateManyPostulanteInput | Prisma.CvCreateManyPostulanteInput[]
+  skipDuplicates?: boolean
 }
 
-export type CvUpdateToOneWithWhereWithoutPostulanteInput = {
-  where?: Prisma.CvWhereInput
+export type CvUpsertWithWhereUniqueWithoutPostulanteInput = {
+  where: Prisma.CvWhereUniqueInput
+  update: Prisma.XOR<Prisma.CvUpdateWithoutPostulanteInput, Prisma.CvUncheckedUpdateWithoutPostulanteInput>
+  create: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput>
+}
+
+export type CvUpdateWithWhereUniqueWithoutPostulanteInput = {
+  where: Prisma.CvWhereUniqueInput
   data: Prisma.XOR<Prisma.CvUpdateWithoutPostulanteInput, Prisma.CvUncheckedUpdateWithoutPostulanteInput>
+}
+
+export type CvUpdateManyWithWhereWithoutPostulanteInput = {
+  where: Prisma.CvScalarWhereInput
+  data: Prisma.XOR<Prisma.CvUpdateManyMutationInput, Prisma.CvUncheckedUpdateManyWithoutPostulanteInput>
+}
+
+export type CvScalarWhereInput = {
+  AND?: Prisma.CvScalarWhereInput | Prisma.CvScalarWhereInput[]
+  OR?: Prisma.CvScalarWhereInput[]
+  NOT?: Prisma.CvScalarWhereInput | Prisma.CvScalarWhereInput[]
+  id?: Prisma.IntFilter<"Cv"> | number
+  postulanteId?: Prisma.IntFilter<"Cv"> | number
+  archivoUrl?: Prisma.StringNullableFilter<"Cv"> | string | null
+  descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
+  fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
+}
+
+export type CvCreateManyPostulanteInput = {
+  id?: number
+  archivoUrl?: string | null
+  descripcion?: string | null
+  fechaActualizacion?: Date | string
 }
 
 export type CvUpdateWithoutPostulanteInput = {
@@ -427,6 +470,13 @@ export type CvUpdateWithoutPostulanteInput = {
 }
 
 export type CvUncheckedUpdateWithoutPostulanteInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type CvUncheckedUpdateManyWithoutPostulanteInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null

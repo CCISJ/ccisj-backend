@@ -52,6 +52,8 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Usuario: 'Usuario',
+  Notificacion: 'Notificacion',
+  NotificacionUsuario: 'NotificacionUsuario',
   Socio: 'Socio',
   Postulante: 'Postulante',
   Cv: 'Cv',
@@ -87,6 +89,32 @@ export const UsuarioScalarFieldEnum = {
 } as const
 
 export type UsuarioScalarFieldEnum = (typeof UsuarioScalarFieldEnum)[keyof typeof UsuarioScalarFieldEnum]
+
+
+export const NotificacionScalarFieldEnum = {
+  id: 'id',
+  titulo: 'titulo',
+  mensaje: 'mensaje',
+  tipo: 'tipo',
+  fechaCreacion: 'fechaCreacion',
+  activa: 'activa',
+  creadoPorId: 'creadoPorId'
+} as const
+
+export type NotificacionScalarFieldEnum = (typeof NotificacionScalarFieldEnum)[keyof typeof NotificacionScalarFieldEnum]
+
+
+export const NotificacionUsuarioScalarFieldEnum = {
+  id: 'id',
+  notificacionId: 'notificacionId',
+  usuarioId: 'usuarioId',
+  leida: 'leida',
+  fechaLectura: 'fechaLectura',
+  emergenteVista: 'emergenteVista',
+  fechaEmergenteVista: 'fechaEmergenteVista'
+} as const
+
+export type NotificacionUsuarioScalarFieldEnum = (typeof NotificacionUsuarioScalarFieldEnum)[keyof typeof NotificacionUsuarioScalarFieldEnum]
 
 
 export const SocioScalarFieldEnum = {
