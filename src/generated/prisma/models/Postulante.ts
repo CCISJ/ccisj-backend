@@ -221,7 +221,7 @@ export type PostulanteWhereInput = {
   apellido?: Prisma.StringFilter<"Postulante"> | string
   telefono?: Prisma.StringNullableFilter<"Postulante"> | string | null
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
-  cv?: Prisma.XOR<Prisma.CvNullableScalarRelationFilter, Prisma.CvWhereInput> | null
+  cvs?: Prisma.CvListRelationFilter
   postulaciones?: Prisma.PostulacionListRelationFilter
 }
 
@@ -232,7 +232,7 @@ export type PostulanteOrderByWithRelationInput = {
   apellido?: Prisma.SortOrder
   telefono?: Prisma.SortOrderInput | Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
-  cv?: Prisma.CvOrderByWithRelationInput
+  cvs?: Prisma.CvOrderByRelationAggregateInput
   postulaciones?: Prisma.PostulacionOrderByRelationAggregateInput
 }
 
@@ -246,7 +246,7 @@ export type PostulanteWhereUniqueInput = Prisma.AtLeast<{
   apellido?: Prisma.StringFilter<"Postulante"> | string
   telefono?: Prisma.StringNullableFilter<"Postulante"> | string | null
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
-  cv?: Prisma.XOR<Prisma.CvNullableScalarRelationFilter, Prisma.CvWhereInput> | null
+  cvs?: Prisma.CvListRelationFilter
   postulaciones?: Prisma.PostulacionListRelationFilter
 }, "id" | "usuarioId">
 
@@ -279,7 +279,7 @@ export type PostulanteCreateInput = {
   apellido: string
   telefono?: string | null
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
-  cv?: Prisma.CvCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
 }
 
@@ -289,7 +289,7 @@ export type PostulanteUncheckedCreateInput = {
   nombre: string
   apellido: string
   telefono?: string | null
-  cv?: Prisma.CvUncheckedCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
@@ -298,7 +298,7 @@ export type PostulanteUpdateInput = {
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
-  cv?: Prisma.CvUpdateOneWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -308,7 +308,7 @@ export type PostulanteUncheckedUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cv?: Prisma.CvUncheckedUpdateOneWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -410,18 +410,18 @@ export type PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutUsuarioInput, Prisma.PostulanteUpdateWithoutUsuarioInput>, Prisma.PostulanteUncheckedUpdateWithoutUsuarioInput>
 }
 
-export type PostulanteCreateNestedOneWithoutCvInput = {
-  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCvInput, Prisma.PostulanteUncheckedCreateWithoutCvInput>
-  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCvInput
+export type PostulanteCreateNestedOneWithoutCvsInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCvsInput, Prisma.PostulanteUncheckedCreateWithoutCvsInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCvsInput
   connect?: Prisma.PostulanteWhereUniqueInput
 }
 
-export type PostulanteUpdateOneRequiredWithoutCvNestedInput = {
-  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCvInput, Prisma.PostulanteUncheckedCreateWithoutCvInput>
-  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCvInput
-  upsert?: Prisma.PostulanteUpsertWithoutCvInput
+export type PostulanteUpdateOneRequiredWithoutCvsNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCvsInput, Prisma.PostulanteUncheckedCreateWithoutCvsInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCvsInput
+  upsert?: Prisma.PostulanteUpsertWithoutCvsInput
   connect?: Prisma.PostulanteWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutCvInput, Prisma.PostulanteUpdateWithoutCvInput>, Prisma.PostulanteUncheckedUpdateWithoutCvInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutCvsInput, Prisma.PostulanteUpdateWithoutCvsInput>, Prisma.PostulanteUncheckedUpdateWithoutCvsInput>
 }
 
 export type PostulanteCreateNestedOneWithoutPostulacionesInput = {
@@ -442,7 +442,7 @@ export type PostulanteCreateWithoutUsuarioInput = {
   nombre: string
   apellido: string
   telefono?: string | null
-  cv?: Prisma.CvCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
 }
 
@@ -451,7 +451,7 @@ export type PostulanteUncheckedCreateWithoutUsuarioInput = {
   nombre: string
   apellido: string
   telefono?: string | null
-  cv?: Prisma.CvUncheckedCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
@@ -475,7 +475,7 @@ export type PostulanteUpdateWithoutUsuarioInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cv?: Prisma.CvUpdateOneWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -484,11 +484,11 @@ export type PostulanteUncheckedUpdateWithoutUsuarioInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cv?: Prisma.CvUncheckedUpdateOneWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
-export type PostulanteCreateWithoutCvInput = {
+export type PostulanteCreateWithoutCvsInput = {
   nombre: string
   apellido: string
   telefono?: string | null
@@ -496,7 +496,7 @@ export type PostulanteCreateWithoutCvInput = {
   postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
 }
 
-export type PostulanteUncheckedCreateWithoutCvInput = {
+export type PostulanteUncheckedCreateWithoutCvsInput = {
   id?: number
   usuarioId: number
   nombre: string
@@ -505,23 +505,23 @@ export type PostulanteUncheckedCreateWithoutCvInput = {
   postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
-export type PostulanteCreateOrConnectWithoutCvInput = {
+export type PostulanteCreateOrConnectWithoutCvsInput = {
   where: Prisma.PostulanteWhereUniqueInput
-  create: Prisma.XOR<Prisma.PostulanteCreateWithoutCvInput, Prisma.PostulanteUncheckedCreateWithoutCvInput>
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutCvsInput, Prisma.PostulanteUncheckedCreateWithoutCvsInput>
 }
 
-export type PostulanteUpsertWithoutCvInput = {
-  update: Prisma.XOR<Prisma.PostulanteUpdateWithoutCvInput, Prisma.PostulanteUncheckedUpdateWithoutCvInput>
-  create: Prisma.XOR<Prisma.PostulanteCreateWithoutCvInput, Prisma.PostulanteUncheckedCreateWithoutCvInput>
+export type PostulanteUpsertWithoutCvsInput = {
+  update: Prisma.XOR<Prisma.PostulanteUpdateWithoutCvsInput, Prisma.PostulanteUncheckedUpdateWithoutCvsInput>
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutCvsInput, Prisma.PostulanteUncheckedCreateWithoutCvsInput>
   where?: Prisma.PostulanteWhereInput
 }
 
-export type PostulanteUpdateToOneWithWhereWithoutCvInput = {
+export type PostulanteUpdateToOneWithWhereWithoutCvsInput = {
   where?: Prisma.PostulanteWhereInput
-  data: Prisma.XOR<Prisma.PostulanteUpdateWithoutCvInput, Prisma.PostulanteUncheckedUpdateWithoutCvInput>
+  data: Prisma.XOR<Prisma.PostulanteUpdateWithoutCvsInput, Prisma.PostulanteUncheckedUpdateWithoutCvsInput>
 }
 
-export type PostulanteUpdateWithoutCvInput = {
+export type PostulanteUpdateWithoutCvsInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -529,7 +529,7 @@ export type PostulanteUpdateWithoutCvInput = {
   postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
 }
 
-export type PostulanteUncheckedUpdateWithoutCvInput = {
+export type PostulanteUncheckedUpdateWithoutCvsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
@@ -543,7 +543,7 @@ export type PostulanteCreateWithoutPostulacionesInput = {
   apellido: string
   telefono?: string | null
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
-  cv?: Prisma.CvCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
 }
 
 export type PostulanteUncheckedCreateWithoutPostulacionesInput = {
@@ -552,7 +552,7 @@ export type PostulanteUncheckedCreateWithoutPostulacionesInput = {
   nombre: string
   apellido: string
   telefono?: string | null
-  cv?: Prisma.CvUncheckedCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
 export type PostulanteCreateOrConnectWithoutPostulacionesInput = {
@@ -576,7 +576,7 @@ export type PostulanteUpdateWithoutPostulacionesInput = {
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
-  cv?: Prisma.CvUpdateOneWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
 }
 
 export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
@@ -585,7 +585,7 @@ export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  cv?: Prisma.CvUncheckedUpdateOneWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
 
@@ -594,10 +594,12 @@ export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
  */
 
 export type PostulanteCountOutputType = {
+  cvs: number
   postulaciones: number
 }
 
 export type PostulanteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  cvs?: boolean | PostulanteCountOutputTypeCountCvsArgs
   postulaciones?: boolean | PostulanteCountOutputTypeCountPostulacionesArgs
 }
 
@@ -609,6 +611,13 @@ export type PostulanteCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
    * Select specific fields to fetch from the PostulanteCountOutputType
    */
   select?: Prisma.PostulanteCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * PostulanteCountOutputType without action
+ */
+export type PostulanteCountOutputTypeCountCvsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.CvWhereInput
 }
 
 /**
@@ -626,7 +635,7 @@ export type PostulanteSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   apellido?: boolean
   telefono?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
-  cv?: boolean | Prisma.Postulante$cvArgs<ExtArgs>
+  cvs?: boolean | Prisma.Postulante$cvsArgs<ExtArgs>
   postulaciones?: boolean | Prisma.Postulante$postulacionesArgs<ExtArgs>
   _count?: boolean | Prisma.PostulanteCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulante"]>
@@ -660,7 +669,7 @@ export type PostulanteSelectScalar = {
 export type PostulanteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "nombre" | "apellido" | "telefono", ExtArgs["result"]["postulante"]>
 export type PostulanteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
-  cv?: boolean | Prisma.Postulante$cvArgs<ExtArgs>
+  cvs?: boolean | Prisma.Postulante$cvsArgs<ExtArgs>
   postulaciones?: boolean | Prisma.Postulante$postulacionesArgs<ExtArgs>
   _count?: boolean | Prisma.PostulanteCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -675,7 +684,7 @@ export type $PostulantePayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "Postulante"
   objects: {
     usuario: Prisma.$UsuarioPayload<ExtArgs>
-    cv: Prisma.$CvPayload<ExtArgs> | null
+    cvs: Prisma.$CvPayload<ExtArgs>[]
     postulaciones: Prisma.$PostulacionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1079,7 +1088,7 @@ readonly fields: PostulanteFieldRefs;
 export interface Prisma__PostulanteClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   usuario<T extends Prisma.UsuarioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UsuarioDefaultArgs<ExtArgs>>): Prisma.Prisma__UsuarioClient<runtime.Types.Result.GetResult<Prisma.$UsuarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  cv<T extends Prisma.Postulante$cvArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$cvArgs<ExtArgs>>): Prisma.Prisma__CvClient<runtime.Types.Result.GetResult<Prisma.$CvPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  cvs<T extends Prisma.Postulante$cvsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$cvsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CvPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   postulaciones<T extends Prisma.Postulante$postulacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$postulacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostulacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1516,9 +1525,9 @@ export type PostulanteDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
 }
 
 /**
- * Postulante.cv
+ * Postulante.cvs
  */
-export type Postulante$cvArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Postulante$cvsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the Cv
    */
@@ -1532,6 +1541,11 @@ export type Postulante$cvArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.CvInclude<ExtArgs> | null
   where?: Prisma.CvWhereInput
+  orderBy?: Prisma.CvOrderByWithRelationInput | Prisma.CvOrderByWithRelationInput[]
+  cursor?: Prisma.CvWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.CvScalarFieldEnum | Prisma.CvScalarFieldEnum[]
 }
 
 /**

@@ -43,3 +43,11 @@ export const TipoUsuario = {
 } as const
 
 export type TipoUsuario = (typeof TipoUsuario)[keyof typeof TipoUsuario]
+
+
+export const TipoNotificacion = {
+  NORMAL: 'NORMAL',
+  EMERGENTE: 'EMERGENTE'
+} as const
+
+export type TipoNotificacion = (typeof TipoNotificacion)[keyof typeof TipoNotificacion]

@@ -1,4 +1,5 @@
 import { prisma } from '@/config/prisma';
+import { TipoUsuario } from '@/types/user.type';
 
 export function findAll() {
   return prisma.usuario.findMany({
@@ -79,6 +80,43 @@ export function findByIdWithApplicant(id: number) {
     where: { id },
     include: {
       postulante: true,
+    },
+  });
+}
+
+export async function findActiveUsers() {
+  return prisma.usuario.findMany({
+    where: {
+      activo: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
+export async function findActiveUsersByType(tipo: TipoUsuario) {
+  return prisma.usuario.findMany({
+    where: {
+      activo: true,
+      tipo,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
+export async function findUsersByIds(usuarioIds: number[]) {
+  return prisma.usuario.findMany({
+    where: {
+      id: {
+        in: usuarioIds,
+      },
+      activo: true,
+    },
+    select: {
+      id: true,
     },
   });
 }

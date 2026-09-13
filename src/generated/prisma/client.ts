@@ -45,6 +45,16 @@ export { Prisma }
  */
 export type Usuario = Prisma.UsuarioModel
 /**
+ * Model Notificacion
+ * 
+ */
+export type Notificacion = Prisma.NotificacionModel
+/**
+ * Model NotificacionUsuario
+ * 
+ */
+export type NotificacionUsuario = Prisma.NotificacionUsuarioModel
+/**
  * Model Socio
  * 
  */

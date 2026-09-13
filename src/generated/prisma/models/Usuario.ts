@@ -227,6 +227,8 @@ export type UsuarioWhereInput = {
   ofertas?: Prisma.OfertaListRelationFilter
   postulante?: Prisma.XOR<Prisma.PostulanteNullableScalarRelationFilter, Prisma.PostulanteWhereInput> | null
   socio?: Prisma.XOR<Prisma.SocioNullableScalarRelationFilter, Prisma.SocioWhereInput> | null
+  notificacionesCreadas?: Prisma.NotificacionListRelationFilter
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioListRelationFilter
 }
 
 export type UsuarioOrderByWithRelationInput = {
@@ -239,6 +241,8 @@ export type UsuarioOrderByWithRelationInput = {
   ofertas?: Prisma.OfertaOrderByRelationAggregateInput
   postulante?: Prisma.PostulanteOrderByWithRelationInput
   socio?: Prisma.SocioOrderByWithRelationInput
+  notificacionesCreadas?: Prisma.NotificacionOrderByRelationAggregateInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioOrderByRelationAggregateInput
 }
 
 export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
@@ -254,6 +258,8 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   ofertas?: Prisma.OfertaListRelationFilter
   postulante?: Prisma.XOR<Prisma.PostulanteNullableScalarRelationFilter, Prisma.PostulanteWhereInput> | null
   socio?: Prisma.XOR<Prisma.SocioNullableScalarRelationFilter, Prisma.SocioWhereInput> | null
+  notificacionesCreadas?: Prisma.NotificacionListRelationFilter
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioListRelationFilter
 }, "id" | "email">
 
 export type UsuarioOrderByWithAggregationInput = {
@@ -291,6 +297,8 @@ export type UsuarioCreateInput = {
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateInput = {
@@ -303,6 +311,8 @@ export type UsuarioUncheckedCreateInput = {
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUpdateInput = {
@@ -314,6 +324,8 @@ export type UsuarioUpdateInput = {
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateInput = {
@@ -326,6 +338,8 @@ export type UsuarioUncheckedUpdateInput = {
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateManyInput = {
@@ -418,6 +432,34 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type UsuarioCreateNestedOneWithoutNotificacionesCreadasInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesCreadasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesCreadasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutNotificacionesCreadasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutNotificacionesCreadasNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesCreadasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesCreadasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutNotificacionesCreadasInput
+  upsert?: Prisma.UsuarioUpsertWithoutNotificacionesCreadasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutNotificacionesCreadasInput, Prisma.UsuarioUpdateWithoutNotificacionesCreadasInput>, Prisma.UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput>
+}
+
+export type UsuarioCreateNestedOneWithoutNotificacionesRecibidasInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesRecibidasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutNotificacionesRecibidasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutNotificacionesRecibidasNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesRecibidasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutNotificacionesRecibidasInput
+  upsert?: Prisma.UsuarioUpsertWithoutNotificacionesRecibidasInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutNotificacionesRecibidasInput, Prisma.UsuarioUpdateWithoutNotificacionesRecibidasInput>, Prisma.UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput>
+}
+
 export type UsuarioCreateNestedOneWithoutSocioInput = {
   create?: Prisma.XOR<Prisma.UsuarioCreateWithoutSocioInput, Prisma.UsuarioUncheckedCreateWithoutSocioInput>
   connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutSocioInput
@@ -460,6 +502,138 @@ export type UsuarioUpdateOneRequiredWithoutOfertasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutOfertasInput, Prisma.UsuarioUpdateWithoutOfertasInput>, Prisma.UsuarioUncheckedUpdateWithoutOfertasInput>
 }
 
+export type UsuarioCreateWithoutNotificacionesCreadasInput = {
+  email: string
+  password: string
+  tipo: $Enums.TipoUsuario
+  activo?: boolean
+  fechaCreacion?: Date | string
+  ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
+  postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
+  socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioUncheckedCreateWithoutNotificacionesCreadasInput = {
+  id?: number
+  email: string
+  password: string
+  tipo: $Enums.TipoUsuario
+  activo?: boolean
+  fechaCreacion?: Date | string
+  ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
+  postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
+  socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
+}
+
+export type UsuarioCreateOrConnectWithoutNotificacionesCreadasInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesCreadasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesCreadasInput>
+}
+
+export type UsuarioUpsertWithoutNotificacionesCreadasInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutNotificacionesCreadasInput, Prisma.UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesCreadasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesCreadasInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutNotificacionesCreadasInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutNotificacionesCreadasInput, Prisma.UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput>
+}
+
+export type UsuarioUpdateWithoutNotificacionesCreadasInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
+  postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
+  socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
+  postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
+  socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
+}
+
+export type UsuarioCreateWithoutNotificacionesRecibidasInput = {
+  email: string
+  password: string
+  tipo: $Enums.TipoUsuario
+  activo?: boolean
+  fechaCreacion?: Date | string
+  ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
+  postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
+  socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
+}
+
+export type UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput = {
+  id?: number
+  email: string
+  password: string
+  tipo: $Enums.TipoUsuario
+  activo?: boolean
+  fechaCreacion?: Date | string
+  ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
+  postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
+  socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
+}
+
+export type UsuarioCreateOrConnectWithoutNotificacionesRecibidasInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesRecibidasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput>
+}
+
+export type UsuarioUpsertWithoutNotificacionesRecibidasInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutNotificacionesRecibidasInput, Prisma.UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutNotificacionesRecibidasInput, Prisma.UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutNotificacionesRecibidasInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutNotificacionesRecibidasInput, Prisma.UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput>
+}
+
+export type UsuarioUpdateWithoutNotificacionesRecibidasInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
+  postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
+  socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
+  postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
+  socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
+}
+
 export type UsuarioCreateWithoutSocioInput = {
   email: string
   password: string
@@ -468,6 +642,8 @@ export type UsuarioCreateWithoutSocioInput = {
   fechaCreacion?: Date | string
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutSocioInput = {
@@ -479,6 +655,8 @@ export type UsuarioUncheckedCreateWithoutSocioInput = {
   fechaCreacion?: Date | string
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutSocioInput = {
@@ -505,6 +683,8 @@ export type UsuarioUpdateWithoutSocioInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutSocioInput = {
@@ -516,6 +696,8 @@ export type UsuarioUncheckedUpdateWithoutSocioInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutPostulanteInput = {
@@ -526,6 +708,8 @@ export type UsuarioCreateWithoutPostulanteInput = {
   fechaCreacion?: Date | string
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutPostulanteInput = {
@@ -537,6 +721,8 @@ export type UsuarioUncheckedCreateWithoutPostulanteInput = {
   fechaCreacion?: Date | string
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutPostulanteInput = {
@@ -563,6 +749,8 @@ export type UsuarioUpdateWithoutPostulanteInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPostulanteInput = {
@@ -574,6 +762,8 @@ export type UsuarioUncheckedUpdateWithoutPostulanteInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioCreateWithoutOfertasInput = {
@@ -584,6 +774,8 @@ export type UsuarioCreateWithoutOfertasInput = {
   fechaCreacion?: Date | string
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioUncheckedCreateWithoutOfertasInput = {
@@ -595,6 +787,8 @@ export type UsuarioUncheckedCreateWithoutOfertasInput = {
   fechaCreacion?: Date | string
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
 }
 
 export type UsuarioCreateOrConnectWithoutOfertasInput = {
@@ -621,6 +815,8 @@ export type UsuarioUpdateWithoutOfertasInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutOfertasInput = {
@@ -632,6 +828,8 @@ export type UsuarioUncheckedUpdateWithoutOfertasInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
 }
 
 
@@ -641,10 +839,14 @@ export type UsuarioUncheckedUpdateWithoutOfertasInput = {
 
 export type UsuarioCountOutputType = {
   ofertas: number
+  notificacionesCreadas: number
+  notificacionesRecibidas: number
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ofertas?: boolean | UsuarioCountOutputTypeCountOfertasArgs
+  notificacionesCreadas?: boolean | UsuarioCountOutputTypeCountNotificacionesCreadasArgs
+  notificacionesRecibidas?: boolean | UsuarioCountOutputTypeCountNotificacionesRecibidasArgs
 }
 
 /**
@@ -664,6 +866,20 @@ export type UsuarioCountOutputTypeCountOfertasArgs<ExtArgs extends runtime.Types
   where?: Prisma.OfertaWhereInput
 }
 
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountNotificacionesCreadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificacionWhereInput
+}
+
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountNotificacionesRecibidasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificacionUsuarioWhereInput
+}
+
 
 export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -675,6 +891,8 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   ofertas?: boolean | Prisma.Usuario$ofertasArgs<ExtArgs>
   postulante?: boolean | Prisma.Usuario$postulanteArgs<ExtArgs>
   socio?: boolean | Prisma.Usuario$socioArgs<ExtArgs>
+  notificacionesCreadas?: boolean | Prisma.Usuario$notificacionesCreadasArgs<ExtArgs>
+  notificacionesRecibidas?: boolean | Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usuario"]>
 
@@ -710,6 +928,8 @@ export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   ofertas?: boolean | Prisma.Usuario$ofertasArgs<ExtArgs>
   postulante?: boolean | Prisma.Usuario$postulanteArgs<ExtArgs>
   socio?: boolean | Prisma.Usuario$socioArgs<ExtArgs>
+  notificacionesCreadas?: boolean | Prisma.Usuario$notificacionesCreadasArgs<ExtArgs>
+  notificacionesRecibidas?: boolean | Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsuarioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -721,6 +941,8 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     ofertas: Prisma.$OfertaPayload<ExtArgs>[]
     postulante: Prisma.$PostulantePayload<ExtArgs> | null
     socio: Prisma.$SocioPayload<ExtArgs> | null
+    notificacionesCreadas: Prisma.$NotificacionPayload<ExtArgs>[]
+    notificacionesRecibidas: Prisma.$NotificacionUsuarioPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1126,6 +1348,8 @@ export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.
   ofertas<T extends Prisma.Usuario$ofertasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$ofertasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfertaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   postulante<T extends Prisma.Usuario$postulanteArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$postulanteArgs<ExtArgs>>): Prisma.Prisma__PostulanteClient<runtime.Types.Result.GetResult<Prisma.$PostulantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   socio<T extends Prisma.Usuario$socioArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$socioArgs<ExtArgs>>): Prisma.Prisma__SocioClient<runtime.Types.Result.GetResult<Prisma.$SocioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  notificacionesCreadas<T extends Prisma.Usuario$notificacionesCreadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$notificacionesCreadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  notificacionesRecibidas<T extends Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificacionUsuarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1613,6 +1837,54 @@ export type Usuario$socioArgs<ExtArgs extends runtime.Types.Extensions.InternalA
    */
   include?: Prisma.SocioInclude<ExtArgs> | null
   where?: Prisma.SocioWhereInput
+}
+
+/**
+ * Usuario.notificacionesCreadas
+ */
+export type Usuario$notificacionesCreadasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Notificacion
+   */
+  select?: Prisma.NotificacionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Notificacion
+   */
+  omit?: Prisma.NotificacionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificacionInclude<ExtArgs> | null
+  where?: Prisma.NotificacionWhereInput
+  orderBy?: Prisma.NotificacionOrderByWithRelationInput | Prisma.NotificacionOrderByWithRelationInput[]
+  cursor?: Prisma.NotificacionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificacionScalarFieldEnum | Prisma.NotificacionScalarFieldEnum[]
+}
+
+/**
+ * Usuario.notificacionesRecibidas
+ */
+export type Usuario$notificacionesRecibidasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the NotificacionUsuario
+   */
+  select?: Prisma.NotificacionUsuarioSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the NotificacionUsuario
+   */
+  omit?: Prisma.NotificacionUsuarioOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.NotificacionUsuarioInclude<ExtArgs> | null
+  where?: Prisma.NotificacionUsuarioWhereInput
+  orderBy?: Prisma.NotificacionUsuarioOrderByWithRelationInput | Prisma.NotificacionUsuarioOrderByWithRelationInput[]
+  cursor?: Prisma.NotificacionUsuarioWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificacionUsuarioScalarFieldEnum | Prisma.NotificacionUsuarioScalarFieldEnum[]
 }
 
 /**

@@ -10,6 +10,7 @@ import categoryRoutes from './modules/categories/category.routes';
 import offerRoutes from './modules/offers/offer.routes';
 import applicationRoutes from './modules/applications/application.routes';
 import authRoutes from './modules/auth/auth.routes';
+import notificationRoutes from './modules/notifications/notification.routes';
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/postulantes', applicantRoutes);
 app.use('/categorias', categoryRoutes);
 app.use('/ofertas', offerRoutes);
 app.use('/postulaciones', applicationRoutes);
+app.use('/notificaciones', notificationRoutes);
 app.use('/auth', authRoutes);
 
 app.get('/', (_req, res) => {
