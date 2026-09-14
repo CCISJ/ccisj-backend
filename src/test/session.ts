@@ -79,7 +79,7 @@ export async function createMember(tipo: MemberType = 'COMUN') {
       giroComercial: 'Comercio',
       tipo,
       rut: `TEST-RUT-${suffix}`,
-      numeroBps: `TEST-BPS-${suffix}`,
+      numeroBps: uniqueBps(),
       fechaInicioEmpresa: new Date('2020-01-01'),
       fechaAfiliacion: new Date('2026-09-01'),
       direccion: '25 de Mayo 123',

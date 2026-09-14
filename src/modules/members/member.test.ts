@@ -30,7 +30,7 @@ describe('Socios', () => {
     giroComercial: 'Ferretería',
     tipo: 'COMUN',
     rut: `RUT-${timestamp}`,
-    numeroBps: `BPS-${timestamp}`,
+    numeroBps: uniqueBps(),
     fechaInicioEmpresa: '2020-01-15',
     fechaAfiliacion: '2026-09-01',
     direccion: '25 de Mayo 123',
@@ -170,7 +170,7 @@ describe('Socios', () => {
       .send({
         ...testMember,
         email: `otro-email-${timestamp}@ccisj.uy`,
-        numeroBps: `OTRO-BPS-${timestamp}`,
+        numeroBps: uniqueBps(),
       });
 
     expect(response.status).toBe(400);
@@ -199,6 +199,44 @@ describe('Socios', () => {
     );
   });
 
+  it('POST /socios falla si el número de BPS no tiene entre 7 y 12 dígitos', async () => {
+    for (const numeroBps of [
+      '123456',
+      '1234567890123',
+      '12345ab',
+      'BPS-1234567',
+    ]) {
+      const response = await request(app)
+        .post('/socios')
+        .set('Cookie', admin.cookie)
+        .send({
+          ...testMember,
+          rut: `BPS-RUT-${Date.now()}`,
+          email: `bps-invalido-${Date.now()}@ccisj.uy`,
+          numeroBps,
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty(
+        'message',
+        'El número de BPS debe tener entre 7 y 12 números',
+      );
+    }
+  });
+
+  it('PATCH /socios/:id valida el formato del número de BPS', async () => {
+    const response = await request(app)
+      .patch('/socios/999999')
+      .set('Cookie', admin.cookie)
+      .send({ numeroBps: '12-345' });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toHaveProperty(
+      'message',
+      'El número de BPS debe tener entre 7 y 12 números',
+    );
+  });
+
   it('POST /socios falla si el email ya existe', async () => {
     const response = await request(app)
       .post('/socios')
@@ -206,7 +244,7 @@ describe('Socios', () => {
       .send({
         ...testMember,
         rut: `EMAIL-RUT-${timestamp}`,
-        numeroBps: `EMAIL-BPS-${timestamp}`,
+        numeroBps: uniqueBps(),
       });
 
     expect(response.status).toBe(400);
@@ -605,8 +643,6 @@ describe('Socios', () => {
     });
 
     it('PATCH /socios/me no acepta el número de BPS de otra empresa', async () => {
-      // Los socios de prueba tienen un BPS con letras; acá hace falta uno
-      // válido para que el rechazo sea por duplicado y no por formato.
       const takenBps = uniqueBps();
 
       await prisma.socio.update({
