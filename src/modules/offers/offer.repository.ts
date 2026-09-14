@@ -23,13 +23,22 @@ type UpdateOfferData = {
   categoriaIds?: number[];
 };
 
+// Las ofertas las ven todos los usuarios, postulantes incluidos: de la empresa
+// va solo lo público. Antes viajaba el socio entero (RUT, BPS, observaciones)
+// y el email de la cuenta que la creó.
 const offerInclude = {
-  socio: true,
+  socio: {
+    select: {
+      id: true,
+      razonSocial: true,
+      giroComercial: true,
+      ciudad: true,
+    },
+  },
 
   creador: {
     select: {
       id: true,
-      email: true,
       tipo: true,
     },
   },

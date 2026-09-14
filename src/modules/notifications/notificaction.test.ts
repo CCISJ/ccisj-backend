@@ -51,14 +51,21 @@ describe('Notificaciones', () => {
     postulanteId = postulante.id;
   });
 
-  beforeEach(async () => {
-    await prisma.notificacionUsuario.deleteMany();
-    await prisma.notificacion.deleteMany();
-  });
+  // La base es compartida: solo se borran las notificaciones que creó el
+  // admin de este test (sus destinatarios se van en cascada). Borrar sin
+  // filtro eliminaba las notificaciones de todo el equipo.
+  async function deleteTestNotifications() {
+    await prisma.notificacion.deleteMany({
+      where: {
+        creadoPorId: adminId,
+      },
+    });
+  }
+
+  beforeEach(deleteTestNotifications);
 
   afterAll(async () => {
-    await prisma.notificacionUsuario.deleteMany();
-    await prisma.notificacion.deleteMany();
+    await deleteTestNotifications();
 
     await prisma.usuario.deleteMany({
       where: {
@@ -300,5 +307,56 @@ describe('Notificaciones', () => {
     const response = await request(app).get('/notificaciones/recibidas');
 
     expect(response.status).toBe(401);
+  });
+
+  it('solo el administrador puede crear notificaciones', async () => {
+    const payload = {
+      titulo: 'Intento no autorizado',
+      mensaje: 'No debería enviarse',
+      tipo: 'EMERGENTE',
+      destinatarioTipo: 'TODOS',
+    };
+
+    const socio = await login(socioEmail);
+    const postulante = await login(postulanteEmail);
+
+    const asSocio = await socio.post('/notificaciones').send(payload);
+    const asPostulante = await postulante.post('/notificaciones').send(payload);
+
+    expect(asSocio.status).toBe(403);
+    expect(asPostulante.status).toBe(403);
+
+    const created = await prisma.notificacion.count({
+      where: {
+        titulo: 'Intento no autorizado',
+        creadoPorId: {
+          in: [socioId, postulanteId],
+        },
+      },
+    });
+
+    expect(created).toBe(0);
+  });
+
+  it('solo el administrador ve todas las notificaciones enviadas', async () => {
+    const socio = await login(socioEmail);
+
+    const response = await socio.get('/notificaciones');
+
+    expect(response.status).toBe(403);
+  });
+
+  it('debería rechazar una notificación con título que no es texto', async () => {
+    const admin = await login(adminEmail);
+
+    const response = await admin.post('/notificaciones').send({
+      titulo: 123,
+      mensaje: 'Mensaje',
+      tipo: 'NORMAL',
+      destinatarioTipo: 'USUARIOS',
+      usuarioIds: [postulanteId],
+    });
+
+    expect(response.status).toBe(400);
   });
 });

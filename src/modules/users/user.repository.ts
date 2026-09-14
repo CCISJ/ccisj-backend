@@ -60,6 +60,30 @@ export function findByIdWithProfile(id: number) {
   });
 }
 
+// Lo que el middleware de sesión necesita saber del usuario en cada request:
+// si sigue activo, su rol actual y a qué perfil pertenece.
+export function findSessionUser(id: number) {
+  return prisma.usuario.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      tipo: true,
+      activo: true,
+      socio: {
+        select: {
+          id: true,
+          tipo: true,
+        },
+      },
+      postulante: {
+        select: {
+          id: true,
+        },
+      },
+    },
+  });
+}
+
 export function findByEmail(email: string) {
   return prisma.usuario.findUnique({
     where: { email },

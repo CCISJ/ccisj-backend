@@ -1,9 +1,14 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
+import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { parseId } from '@/utils/params';
 import * as memberService from './member.service';
 
-export async function getAll(_req: Request, res: Response) {
+export async function getAll(req: AuthRequest, res: Response) {
   try {
-    const members = await memberService.getAll();
+    const members =
+      req.user?.tipo === 'ADMIN'
+        ? await memberService.getAll()
+        : await memberService.getDirectory();
 
     res.json(members);
   } catch (error) {
@@ -13,17 +18,20 @@ export async function getAll(_req: Request, res: Response) {
   }
 }
 
-export async function getById(req: Request, res: Response) {
+export async function getById(req: AuthRequest, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         message: 'ID inválido',
       });
     }
 
-    const member = await memberService.getById(id);
+    const member =
+      req.user?.tipo === 'ADMIN'
+        ? await memberService.getById(id)
+        : await memberService.getDirectoryEntry(id);
 
     res.json(member);
   } catch (error) {
@@ -34,20 +42,11 @@ export async function getById(req: Request, res: Response) {
   }
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthRequest, res: Response) {
   try {
-    const data = {
-      ...req.body,
-      fechaInicioEmpresa: req.body.fechaInicioEmpresa
-        ? new Date(req.body.fechaInicioEmpresa)
-        : undefined,
-      fechaAfiliacion: req.body.fechaAfiliacion
-        ? new Date(req.body.fechaAfiliacion)
-        : undefined,
-    };
-
-    const { socioId, email, passwordInicial } =
-      await memberService.create(data);
+    const { socioId, email, passwordInicial } = await memberService.create(
+      req.body,
+    );
 
     res.status(201).json({
       message: 'Socio creado correctamente',
@@ -63,9 +62,15 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthRequest, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        message: 'ID inválido',
+      });
+    }
 
     const member = await memberService.update(id, req.body);
 
@@ -86,11 +91,11 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthRequest, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         message: 'ID inválido',
       });

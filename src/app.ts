@@ -1,6 +1,11 @@
-import express from 'express';
+import express, {
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 import morgan from 'morgan';
 
 import userRoutes from './modules/users/user.routes';
@@ -15,6 +20,8 @@ import notificationRoutes from './modules/notifications/notification.routes';
 const app = express();
 
 // MIDDLEWARES
+// Cabeceras de seguridad estándar; también saca `X-Powered-By`.
+app.use(helmet());
 app.use(express.json());
 app.use(cookieParser());
 if (process.env.NODE_ENV !== 'test') {
@@ -22,9 +29,16 @@ if (process.env.NODE_ENV !== 'test') {
 }
 
 // CORS configuration
+// Orígenes separados por coma. Por defecto (sin definir o vacío, como queda al
+// copiar el .env.example), el frontend en desarrollo.
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 app.use(
   cors({
-    origin: 'http://localhost:5173',
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
@@ -41,6 +55,37 @@ app.use('/auth', authRoutes);
 
 app.get('/', (_req, res) => {
   res.send('API de CCISJ');
+});
+
+app.use((_req, res) => {
+  res.status(404).json({
+    message: 'Ruta no encontrada',
+  });
+});
+
+// Último recurso: sin esto Express responde con HTML y, fuera de producción,
+// con el stack trace. Un JSON mal formado en el body cae acá como 400.
+app.use((error: unknown, _req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  const status =
+    typeof error === 'object' && error !== null && 'status' in error
+      ? Number(error.status)
+      : 500;
+
+  if (status >= 400 && status < 500) {
+    return res.status(status).json({
+      message: 'Solicitud inválida',
+    });
+  }
+
+  console.error(error);
+
+  return res.status(500).json({
+    message: 'Error interno del servidor',
+  });
 });
 
 export default app;
