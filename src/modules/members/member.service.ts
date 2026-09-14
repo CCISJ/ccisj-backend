@@ -13,6 +13,11 @@ import crypto from 'node:crypto';
 const PHONE_PATTERN = /^\+?[\d\s()-]{6,20}$/;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// El número de empresa del BPS tiene entre 7 y 12 dígitos. Vale igual para el
+// alta que hace la administración y para lo que edita el propio socio.
+const BPS_PATTERN = /^\d{7,12}$/;
+const BPS_INVALID = 'El número de BPS debe tener entre 7 y 12 números';
+
 const TEXT_FIELDS = [
   'razonSocial',
   'titular',
@@ -53,6 +58,10 @@ function parseMemberData(body: unknown): Partial<CreateMemberData> {
     }
 
     data[field] = value.trim();
+  }
+
+  if (data.numeroBps !== undefined && !BPS_PATTERN.test(data.numeroBps)) {
+    throw new Error(BPS_INVALID);
   }
 
   for (const field of DATE_FIELDS) {
@@ -168,13 +177,12 @@ const OWN_FIELD_RULES: Record<OwnEditableField, FieldRule> = {
     required: 'La ciudad es obligatoria',
     tooLong: 'La ciudad no puede superar los 80 caracteres',
   },
-  // El número de empresa del BPS tiene entre 7 y 12 dígitos.
   numeroBps: {
     maxLength: 12,
-    pattern: /^\d{7,12}$/,
+    pattern: BPS_PATTERN,
     required: 'El número de BPS es obligatorio',
-    tooLong: 'El número de BPS debe tener entre 7 y 12 números',
-    invalid: 'El número de BPS debe tener entre 7 y 12 números',
+    tooLong: BPS_INVALID,
+    invalid: BPS_INVALID,
   },
 };
 
