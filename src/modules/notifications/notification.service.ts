@@ -13,13 +13,19 @@ type CreateNotificationInput = {
   usuarioIds?: number[];
 };
 
+const NOTIFICATION_TYPES: TipoNotificacion[] = ['NORMAL', 'EMERGENTE'];
+
 export async function create(data: CreateNotificationInput) {
-  if (!data.titulo.trim()) {
+  if (typeof data.titulo !== 'string' || !data.titulo.trim()) {
     throw new Error('El título es obligatorio');
   }
 
-  if (!data.mensaje.trim()) {
+  if (typeof data.mensaje !== 'string' || !data.mensaje.trim()) {
     throw new Error('El mensaje es obligatorio');
+  }
+
+  if (data.tipo !== undefined && !NOTIFICATION_TYPES.includes(data.tipo)) {
+    throw new Error('El tipo de notificación no es válido');
   }
 
   let usuarios: { id: number }[] = [];
@@ -38,8 +44,12 @@ export async function create(data: CreateNotificationInput) {
       break;
 
     case 'USUARIOS':
-      if (!data.usuarioIds || data.usuarioIds.length === 0) {
+      if (!Array.isArray(data.usuarioIds) || data.usuarioIds.length === 0) {
         throw new Error('Debe seleccionar al menos un usuario');
+      }
+
+      if (!data.usuarioIds.every((id) => Number.isInteger(id) && id > 0)) {
+        throw new Error('Los usuarios seleccionados no son válidos');
       }
 
       usuarios = await userRepository.findUsersByIds(data.usuarioIds);

@@ -4,29 +4,87 @@ import * as offerRepository from '@/modules/offers/offer.repository';
 
 import * as applicantRepository from '@/modules/applicants/applicant.repository';
 
+import type { SessionUser } from '@/middlewares/auth.middleware';
+import { HttpError } from '@/utils/http-error';
+
 import {
   CreateApplicationData,
   ApplicationStatus,
   UpdateApplicationData,
 } from '@/types/application.type';
 
-export async function getAll() {
-  return applicationRepository.findAll();
+const APPLICATION_STATES: ApplicationStatus[] = [
+  'ENVIADA',
+  'EN_REVISION',
+  'SELECCIONADO',
+  'NO_SELECCIONADO',
+  'FINALIZADA',
+];
+
+type Application = NonNullable<
+  Awaited<ReturnType<typeof applicationRepository.findById>>
+>;
+
+function canView(application: Application, actor: SessionUser) {
+  switch (actor.tipo) {
+    case 'ADMIN':
+      return true;
+
+    case 'SOCIO':
+      return application.oferta.socioId === actor.socioId;
+
+    case 'POSTULANTE':
+      return application.postulanteId === actor.postulanteId;
+
+    default:
+      return false;
+  }
 }
 
-export async function getById(id: number) {
+/**
+ * La postulación, si el usuario tiene acceso. Si no lo tiene se responde como
+ * si no existiera, para no revelar qué IDs hay.
+ */
+async function findAccessible(id: number, actor: SessionUser) {
   const application = await applicationRepository.findById(id);
 
-  if (!application) {
-    throw new Error('Postulación no encontrada');
+  if (!application || !canView(application, actor)) {
+    throw new HttpError(404, 'Postulación no encontrada');
   }
 
   return application;
 }
 
-export async function create(data: CreateApplicationData) {
-  if (!data.ofertaId || !data.postulanteId) {
+export async function getAll() {
+  return applicationRepository.findAll();
+}
+
+export async function getById(id: number, actor: SessionUser) {
+  return findAccessible(id, actor);
+}
+
+export async function create(data: CreateApplicationData, actor: SessionUser) {
+  // El postulante es siempre el de la sesión: si viniera del body, cualquiera
+  // podría postular a otra persona.
+  const postulanteId = actor.postulanteId;
+
+  if (!postulanteId) {
+    throw new Error('El usuario no tiene un perfil de postulante');
+  }
+
+  if (!data.ofertaId) {
     throw new Error('Faltan datos obligatorios');
+  }
+
+  if (!Number.isInteger(data.ofertaId)) {
+    throw new Error('La oferta no es válida');
+  }
+
+  if (
+    data.observaciones !== undefined &&
+    typeof data.observaciones !== 'string'
+  ) {
+    throw new Error('El campo observaciones no es válido');
   }
 
   const offer = await offerRepository.findById(data.ofertaId);
@@ -39,7 +97,7 @@ export async function create(data: CreateApplicationData) {
     throw new Error('La oferta no está activa');
   }
 
-  const applicant = await applicantRepository.findById(data.postulanteId);
+  const applicant = await applicantRepository.findById(postulanteId);
 
   if (!applicant) {
     throw new Error('Postulante no encontrado');
@@ -52,32 +110,46 @@ export async function create(data: CreateApplicationData) {
   const existingApplication =
     await applicationRepository.findByOfferAndApplicant(
       data.ofertaId,
-      data.postulanteId,
+      postulanteId,
     );
 
   if (existingApplication) {
     throw new Error('El postulante ya se postuló a esta oferta');
   }
 
-  return applicationRepository.create(data);
+  return applicationRepository.create({
+    ofertaId: data.ofertaId,
+    postulanteId,
+    observaciones: data.observaciones?.trim(),
+  });
 }
 
-export async function update(id: number, data: UpdateApplicationData) {
-  const application = await applicationRepository.findById(id);
+export async function update(
+  id: number,
+  data: UpdateApplicationData,
+  actor: SessionUser,
+) {
+  await findAccessible(id, actor);
 
-  if (!application) {
-    throw new Error('Postulación no encontrada');
+  if (data.estado !== undefined && !APPLICATION_STATES.includes(data.estado)) {
+    throw new Error('El estado de la postulación no es válido');
   }
 
-  return applicationRepository.update(id, data);
+  if (
+    data.observaciones !== undefined &&
+    typeof data.observaciones !== 'string'
+  ) {
+    throw new Error('El campo observaciones no es válido');
+  }
+
+  return applicationRepository.update(id, {
+    estado: data.estado,
+    observaciones: data.observaciones,
+  });
 }
 
-export async function remove(id: number) {
-  const application = await applicationRepository.findById(id);
-
-  if (!application) {
-    throw new Error('Postulación no encontrada');
-  }
+export async function remove(id: number, actor: SessionUser) {
+  await findAccessible(id, actor);
 
   return applicationRepository.remove(id);
 }

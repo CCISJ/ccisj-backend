@@ -4,6 +4,7 @@ const applicationInclude = {
   oferta: {
     select: {
       id: true,
+      socioId: true,
       titulo: true,
       estado: true,
     },

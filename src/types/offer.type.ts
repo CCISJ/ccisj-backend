@@ -1,6 +1,6 @@
 export type CreateOfferData = {
-  socioId: number;
-  creadaPor: number;
+  // Solo lo usa el administrador; para un socio sale de la sesión.
+  socioId?: number;
   titulo: string;
   descripcion: string;
   ubicacion?: string;

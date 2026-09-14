@@ -1,4 +1,6 @@
 import type { Request, Response } from 'express';
+import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { statusFor } from '@/utils/http-error';
 import * as offerService from './offer.service';
 
 export async function getAll(_req: Request, res: Response) {
@@ -34,20 +36,20 @@ export async function getById(req: Request, res: Response) {
   }
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthRequest, res: Response) {
   try {
-    const offer = await offerService.create(req.body);
+    const offer = await offerService.create(req.body ?? {}, req.user!);
 
     res.status(201).json(offer);
   } catch (error) {
-    res.status(400).json({
+    res.status(statusFor(error, 400)).json({
       message:
         error instanceof Error ? error.message : 'Error al crear la oferta',
     });
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 
@@ -57,11 +59,11 @@ export async function update(req: Request, res: Response) {
       });
     }
 
-    const offer = await offerService.update(id, req.body);
+    const offer = await offerService.update(id, req.body ?? {}, req.user!);
 
     res.json(offer);
   } catch (error) {
-    res.status(400).json({
+    res.status(statusFor(error, 400)).json({
       message:
         error instanceof Error
           ? error.message
@@ -70,7 +72,7 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 
@@ -80,11 +82,11 @@ export async function remove(req: Request, res: Response) {
       });
     }
 
-    await offerService.remove(id);
+    await offerService.remove(id, req.user!);
 
     res.status(204).send();
   } catch (error) {
-    res.status(404).json({
+    res.status(statusFor(error, 404)).json({
       message:
         error instanceof Error ? error.message : 'Error al eliminar la oferta',
     });

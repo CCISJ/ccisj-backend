@@ -33,6 +33,48 @@ export function findById(id: number) {
   });
 }
 
+// Lo que un socio directivo puede ver de los demás socios. Sin RUT, BPS,
+// observaciones internas ni datos de la cuenta, y solo socios activos.
+const directorySelect = {
+  id: true,
+  razonSocial: true,
+  titular: true,
+  giroComercial: true,
+  tipo: true,
+  telefono: true,
+  celular: true,
+  email: true,
+  direccion: true,
+  ciudad: true,
+  fechaAfiliacion: true,
+} as const;
+
+export function findDirectory() {
+  return prisma.socio.findMany({
+    where: {
+      usuario: {
+        activo: true,
+      },
+    },
+    select: directorySelect,
+    orderBy: {
+      razonSocial: 'asc',
+    },
+  });
+}
+
+export function findDirectoryEntry(id: number) {
+  return prisma.socio.findFirst({
+    where: {
+      id,
+      usuario: {
+        activo: true,
+      },
+    },
+    select: directorySelect,
+  });
+}
+
 export function findByRut(rut: string) {
   return prisma.socio.findUnique({
     where: { rut },

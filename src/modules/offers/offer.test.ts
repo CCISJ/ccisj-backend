@@ -1,119 +1,71 @@
 import request from 'supertest';
 
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import app from '@/app';
 import { prisma } from '@/config/prisma';
+import {
+  createAdmin,
+  createApplicant,
+  createCategory,
+  createMember,
+  deleteUsers,
+} from '@/test/session';
 
 describe('Offers', () => {
-  let userId: number;
-  let memberId: number;
+  let admin: Awaited<ReturnType<typeof createAdmin>>;
+  let socio: Awaited<ReturnType<typeof createMember>>;
+  let otherSocio: Awaited<ReturnType<typeof createMember>>;
+  let postulante: Awaited<ReturnType<typeof createApplicant>>;
+
   let categoryId: number;
   let secondCategoryId: number;
   let offerId: number;
 
-  const timestamp = Date.now();
-
-  const memberData = {
-    razonSocial: 'Empresa Offers Test',
-    titular: 'Titular Offers Test',
-    giroComercial: 'Tecnología',
-    tipo: 'COMUN',
-    rut: `RUT-OFFER-${timestamp}`,
-    numeroBps: `BPS-OFFER-${timestamp}`,
-    fechaInicioEmpresa: '2020-01-01',
-    fechaAfiliacion: '2026-09-01',
-    direccion: '18 de Julio 123',
-    ciudad: 'San José',
-    celular: '099123456',
-    telefono: '43421234',
-    email: `offer-test-${timestamp}@ccisj.uy`,
-    observaciones: 'Socio usado para tests de ofertas',
-  };
-
-  afterAll(async () => {
-    if (offerId) {
-      await prisma.oferta.deleteMany({
-        where: { id: offerId },
-      });
-    }
-
-    if (categoryId || secondCategoryId) {
-      await prisma.categoria.deleteMany({
-        where: {
-          id: {
-            in: [categoryId, secondCategoryId].filter(Boolean),
-          },
-        },
-      });
-    }
-
-    if (memberId) {
-      await prisma.socio.deleteMany({
-        where: { id: memberId },
-      });
-    }
-
-    if (userId) {
-      await prisma.usuario.deleteMany({
-        where: { id: userId },
-      });
-    }
-
-    await prisma.$disconnect();
+  const baseOffer = () => ({
+    titulo: 'Oferta Test',
+    descripcion: 'Oferta creada mediante tests',
+    ubicacion: 'San José',
+    modalidad: 'PRESENCIAL',
+    cantidadVacantes: 2,
+    categoriaIds: [categoryId, secondCategoryId],
   });
 
-  it('prepara socio y categorías para las pruebas', async () => {
-    const member = await request(app).post('/socios').send(memberData);
+  beforeAll(async () => {
+    admin = await createAdmin();
+    socio = await createMember();
+    otherSocio = await createMember();
+    postulante = await createApplicant();
 
-    expect(member.status).toBe(201);
+    categoryId = (await createCategory()).id;
+    secondCategoryId = (await createCategory()).id;
+  });
 
-    memberId = member.body.socioId;
+  afterAll(async () => {
+    // deleteUsers borra también las ofertas de los socios de prueba.
+    await deleteUsers([
+      admin.userId,
+      socio.userId,
+      otherSocio.userId,
+      postulante.userId,
+    ]);
 
-    const createdMember = await prisma.socio.findUnique({
+    await prisma.categoria.deleteMany({
       where: {
-        id: memberId,
+        id: {
+          in: [categoryId, secondCategoryId].filter(Boolean),
+        },
       },
     });
 
-    expect(createdMember).not.toBeNull();
-
-    userId = createdMember!.usuarioId;
-
-    const category = await request(app)
-      .post('/categorias')
-      .send({
-        nombre: `Tecnología ${timestamp}`,
-      });
-
-    expect(category.status).toBe(201);
-
-    categoryId = category.body.id;
-
-    const secondCategory = await request(app)
-      .post('/categorias')
-      .send({
-        nombre: `Administración ${timestamp}`,
-      });
-
-    expect(secondCategory.status).toBe(201);
-
-    secondCategoryId = secondCategory.body.id;
+    await prisma.$disconnect();
   });
 
   it('POST /ofertas crea una oferta con varias categorías', async () => {
     const response = await request(app)
       .post('/ofertas')
-      .send({
-        socioId: memberId,
-        creadaPor: userId,
-        titulo: 'Oferta Test',
-        descripcion: 'Oferta creada mediante tests',
-        ubicacion: 'San José',
-        modalidad: 'PRESENCIAL',
-        cantidadVacantes: 2,
-        categoriaIds: [categoryId, secondCategoryId],
-      });
+      .set('Cookie', socio.cookie)
+      .send(baseOffer());
 
     expect(response.status).toBe(201);
 
@@ -125,14 +77,18 @@ describe('Offers', () => {
   });
 
   it('GET /ofertas devuelve las ofertas', async () => {
-    const response = await request(app).get('/ofertas');
+    const response = await request(app)
+      .get('/ofertas')
+      .set('Cookie', postulante.cookie);
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
   });
 
   it('GET /ofertas/:id devuelve una oferta', async () => {
-    const response = await request(app).get(`/ofertas/${offerId}`);
+    const response = await request(app)
+      .get(`/ofertas/${offerId}`)
+      .set('Cookie', postulante.cookie);
 
     expect(response.status).toBe(200);
 
@@ -142,17 +98,25 @@ describe('Offers', () => {
     expect(response.body).toHaveProperty('categorias');
   });
 
+  it('GET /ofertas/:id no expone datos internos de la empresa', async () => {
+    const response = await request(app)
+      .get(`/ofertas/${offerId}`)
+      .set('Cookie', postulante.cookie);
+
+    expect(response.body.socio).toHaveProperty('razonSocial');
+
+    for (const hidden of ['rut', 'numeroBps', 'observaciones', 'usuarioId']) {
+      expect(response.body.socio).not.toHaveProperty(hidden);
+    }
+
+    expect(response.body.creador).not.toHaveProperty('email');
+  });
+
   it('POST /ofertas falla sin categorías', async () => {
-    const response = await request(app).post('/ofertas').send({
-      socioId: memberId,
-      creadaPor: userId,
-      titulo: 'Sin categorías',
-      descripcion: 'Oferta inválida',
-      ubicacion: 'San José',
-      modalidad: 'PRESENCIAL',
-      cantidadVacantes: 1,
-      categoriaIds: [],
-    });
+    const response = await request(app)
+      .post('/ofertas')
+      .set('Cookie', socio.cookie)
+      .send({ ...baseOffer(), categoriaIds: [] });
 
     expect(response.status).toBe(400);
 
@@ -164,16 +128,8 @@ describe('Offers', () => {
   it('POST /ofertas falla con una categoría inexistente', async () => {
     const response = await request(app)
       .post('/ofertas')
-      .send({
-        socioId: memberId,
-        creadaPor: userId,
-        titulo: 'Categoría inválida',
-        descripcion: 'Oferta inválida',
-        ubicacion: 'San José',
-        modalidad: 'PRESENCIAL',
-        cantidadVacantes: 1,
-        categoriaIds: [999999],
-      });
+      .set('Cookie', socio.cookie)
+      .send({ ...baseOffer(), categoriaIds: [999999] });
 
     expect(response.status).toBe(400);
 
@@ -183,16 +139,8 @@ describe('Offers', () => {
   it('POST /ofertas falla con cantidad de vacantes inválida', async () => {
     const response = await request(app)
       .post('/ofertas')
-      .send({
-        socioId: memberId,
-        creadaPor: userId,
-        titulo: 'Vacantes inválidas',
-        descripcion: 'Oferta inválida',
-        ubicacion: 'San José',
-        modalidad: 'PRESENCIAL',
-        cantidadVacantes: 0,
-        categoriaIds: [categoryId],
-      });
+      .set('Cookie', socio.cookie)
+      .send({ ...baseOffer(), cantidadVacantes: 0 });
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
@@ -203,6 +151,7 @@ describe('Offers', () => {
   it('PATCH /ofertas/:id actualiza la oferta', async () => {
     const response = await request(app)
       .patch(`/ofertas/${offerId}`)
+      .set('Cookie', socio.cookie)
       .send({
         titulo: 'Oferta Test Actualizada',
         cantidadVacantes: 4,
@@ -219,14 +168,27 @@ describe('Offers', () => {
     expect(response.body.categorias).toHaveLength(1);
   });
 
+  it('PATCH /ofertas/:id rechaza un estado inexistente', async () => {
+    const response = await request(app)
+      .patch(`/ofertas/${offerId}`)
+      .set('Cookie', socio.cookie)
+      .send({ estado: 'BORRADA' });
+
+    expect(response.status).toBe(400);
+  });
+
   it('GET /ofertas/:id devuelve 404 si no existe', async () => {
-    const response = await request(app).get('/ofertas/999999');
+    const response = await request(app)
+      .get('/ofertas/999999')
+      .set('Cookie', socio.cookie);
 
     expect(response.status).toBe(404);
   });
 
   it('DELETE /ofertas/:id elimina la oferta', async () => {
-    const response = await request(app).delete(`/ofertas/${offerId}`);
+    const response = await request(app)
+      .delete(`/ofertas/${offerId}`)
+      .set('Cookie', socio.cookie);
 
     expect(response.status).toBe(204);
 
@@ -242,8 +204,94 @@ describe('Offers', () => {
   });
 
   it('DELETE /ofertas/:id devuelve 404 si no existe', async () => {
-    const response = await request(app).delete('/ofertas/999999');
+    const response = await request(app)
+      .delete('/ofertas/999999')
+      .set('Cookie', socio.cookie);
 
     expect(response.status).toBe(404);
+  });
+
+  describe('permisos', () => {
+    it('GET /ofertas devuelve 401 sin sesión', async () => {
+      const response = await request(app).get('/ofertas');
+
+      expect(response.status).toBe(401);
+    });
+
+    it('un postulante no puede publicar ofertas', async () => {
+      const response = await request(app)
+        .post('/ofertas')
+        .set('Cookie', postulante.cookie)
+        .send(baseOffer());
+
+      expect(response.status).toBe(403);
+    });
+
+    it('la oferta del socio queda a nombre de su empresa aunque el body diga otra', async () => {
+      const response = await request(app)
+        .post('/ofertas')
+        .set('Cookie', socio.cookie)
+        .send({
+          ...baseOffer(),
+          socioId: otherSocio.socioId,
+          creadaPor: otherSocio.userId,
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.socioId).toBe(socio.socioId);
+      expect(response.body.creadaPor).toBe(socio.userId);
+    });
+
+    it('un socio no edita ni borra ofertas de otra empresa', async () => {
+      const foreign = await request(app)
+        .post('/ofertas')
+        .set('Cookie', otherSocio.cookie)
+        .send(baseOffer());
+
+      expect(foreign.status).toBe(201);
+
+      const update = await request(app)
+        .patch(`/ofertas/${foreign.body.id}`)
+        .set('Cookie', socio.cookie)
+        .send({ titulo: 'Oferta ajena modificada' });
+
+      const remove = await request(app)
+        .delete(`/ofertas/${foreign.body.id}`)
+        .set('Cookie', socio.cookie);
+
+      expect(update.status).toBe(404);
+      expect(remove.status).toBe(404);
+
+      const stored = await prisma.oferta.findUnique({
+        where: { id: foreign.body.id },
+      });
+
+      expect(stored!.titulo).toBe('Oferta Test');
+    });
+
+    it('el administrador publica para cualquier socio indicando socioId', async () => {
+      const response = await request(app)
+        .post('/ofertas')
+        .set('Cookie', admin.cookie)
+        .send({ ...baseOffer(), socioId: otherSocio.socioId });
+
+      expect(response.status).toBe(201);
+      expect(response.body.socioId).toBe(otherSocio.socioId);
+      expect(response.body.creadaPor).toBe(admin.userId);
+    });
+
+    it('el administrador edita ofertas de cualquier socio', async () => {
+      const offer = await prisma.oferta.findFirst({
+        where: { socioId: otherSocio.socioId },
+      });
+
+      const response = await request(app)
+        .patch(`/ofertas/${offer!.id}`)
+        .set('Cookie', admin.cookie)
+        .send({ cantidadVacantes: 3 });
+
+      expect(response.status).toBe(200);
+      expect(response.body.cantidadVacantes).toBe(3);
+    });
   });
 });

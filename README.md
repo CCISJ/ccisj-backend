@@ -121,6 +121,9 @@ Ejemplo:
 ```env
 PORT=3000
 DB_URL=postgresql://...
+JWT_SECRET=una-cadena-larga-y-aleatoria
+# Opcional; por defecto http://localhost:5173
+CORS_ORIGIN=http://localhost:5173
 ```
 
 `DB_URL` debe contener la cadena de conexión de PostgreSQL proporcionada por Supabase.
@@ -337,18 +340,68 @@ Los seeds se utilizan únicamente para generar datos de desarrollo/prueba.
 
 ---
 
-# Autenticación
+# Autenticación y permisos
 
-El login devuelve un JWT que el frontend manda en el header
-`Authorization: Bearer <token>`. El secreto con el que se firma sale de
-`JWT_SECRET` en el `.env`. El servidor arranca igual sin esa variable, pero
-el login y las rutas protegidas fallan en tiempo de request, así que conviene
-completarla desde el principio.
+El login (`POST /auth/login`) deja la sesión en una cookie `token` httpOnly
+que dura 8 horas; el frontend no la lee, solo la manda con
+`credentials: 'include'`. El JWT se firma con `JWT_SECRET`: sin esa variable el
+servidor arranca, pero el login y todas las rutas protegidas fallan.
+
+En cada request, `requireAuth` valida el token y **vuelve a leer el usuario de
+la base**: el rol, si sigue activo y a qué socio o postulante corresponde. Por
+eso desactivar a alguien o cambiarle el rol tiene efecto inmediato, sin esperar
+a que venza el token. El usuario queda en `req.user` con `id`, `tipo`,
+`socioId`, `memberType` y `postulanteId`.
 
 ```text
-src/modules/auth/                    login y emisión del token
-src/middlewares/auth.middleware.ts   valida el token en las rutas protegidas
+src/modules/auth/                    login, logout y cookie de sesión
+src/middlewares/auth.middleware.ts   requireAuth, requireRole, requireAdminOrDirectivo
 ```
+
+El login admite 10 intentos fallidos cada 15 minutos por IP.
+
+## Quién puede hacer qué
+
+Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.
+
+| Recurso           | Consultar                                                            | Crear          | Editar / borrar                                                         |
+| ----------------- | -------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| `/usuarios`       | Admin                                                                | Admin          | Admin                                                                   |
+| `/socios`         | Admin (ficha completa) y socios directivos (directorio, sin RUT/BPS) | Admin          | Admin                                                                   |
+| `/postulantes`    | Admin; cada postulante su propio perfil                              | Admin          | Admin; el postulante edita su perfil                                    |
+| `/categorias`     | Cualquier usuario                                                    | Admin          | Admin                                                                   |
+| `/ofertas`        | Cualquier usuario                                                    | Admin y socios | Admin; cada socio solo las de su empresa                                |
+| `/postulaciones`  | Admin todas; el socio las de sus ofertas; el postulante las suyas    | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
+| `/notificaciones` | Admin todas; cada usuario las que recibió                            | Admin          | Cada usuario marca las suyas como leídas                                |
+
+Reglas que conviene no romper al agregar endpoints:
+
+- **Quién hace la acción sale de `req.user`, nunca del body.** El socio de una
+  oferta nueva y el postulante de una postulación se toman de la sesión.
+- **Al acceder a un recurso ajeno se responde 404, no 403**, para que no se
+  pueda averiguar qué IDs existen.
+- **No pasar `req.body` directo a Prisma.** Armar el objeto solo con los campos
+  permitidos; si no, se pueden pisar `usuarioId`, `tipo` o crear relaciones.
+
+Para proteger una ruta nueva:
+
+```ts
+router.use(requireAuth);
+router.post('/', requireRole('ADMIN', 'SOCIO'), create);
+```
+
+## Tests con sesión
+
+`src/test/session.ts` crea usuarios de cada rol directamente en la base y les
+arma la cookie (`createAdmin`, `createMember`, `createApplicant`). Todo lo
+que crean lleva un sufijo único y se borra con `deleteUsers` al terminar.
+
+```ts
+const socio = await createMember();
+await request(app).get('/ofertas').set('Cookie', socio.cookie);
+```
+
+> La base es compartida: en los tests nunca usar `deleteMany()` sin filtro.
 
 ---
 
@@ -384,13 +437,13 @@ La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
 
 # Scripts disponibles
 
-| Comando        | Descripción                          |
-| -------------- | ------------------------------------ |
-| `pnpm dev`     | Inicia el backend en modo desarrollo |
+| Comando        | Descripción                           |
+| -------------- | ------------------------------------- |
+| `pnpm dev`     | Inicia el backend en modo desarrollo  |
 | `pnpm build`   | Compila a `dist/`                     |
-| `pnpm start`   | Ejecuta la versión compilada         |
-| `pnpm test`    | Vitest — pega contra la base real    |
-| `pnpm migrate` | Aplica migraciones pendientes        |
+| `pnpm start`   | Ejecuta la versión compilada          |
+| `pnpm test`    | Vitest — pega contra la base real     |
+| `pnpm migrate` | Aplica migraciones pendientes         |
 | `pnpm seed`    | Inserta datos de prueba (idempotente) |
 
 ---

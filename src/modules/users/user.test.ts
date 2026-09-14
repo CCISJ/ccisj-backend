@@ -1,10 +1,22 @@
 import request from 'supertest';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import app from '@/app';
 import { prisma } from '@/config/prisma';
+import {
+  createAdmin,
+  createApplicant,
+  createMember,
+  deleteUsers,
+} from '@/test/session';
 
 describe('Usuarios', () => {
+  let admin: Awaited<ReturnType<typeof createAdmin>>;
+
+  beforeAll(async () => {
+    admin = await createAdmin();
+  });
+
   let createdUserId: number;
   const testEmail = `usuario-test-${Date.now()}@ccisj.uy`;
 
@@ -17,11 +29,15 @@ describe('Usuarios', () => {
       });
     }
 
+    await deleteUsers([admin.userId]);
+
     await prisma.$disconnect();
   });
 
   it('GET /usuarios devuelve una lista de usuarios', async () => {
-    const response = await request(app).get('/usuarios');
+    const response = await request(app)
+      .get('/usuarios')
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
@@ -32,7 +48,9 @@ describe('Usuarios', () => {
 
     expect(existingUser).not.toBeNull();
 
-    const response = await request(app).get(`/usuarios/${existingUser!.id}`);
+    const response = await request(app)
+      .get(`/usuarios/${existingUser!.id}`)
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('id', existingUser!.id);
@@ -44,25 +62,32 @@ describe('Usuarios', () => {
   });
 
   it('GET /usuarios/:id devuelve 404 si no existe', async () => {
-    const response = await request(app).get('/usuarios/999999');
+    const response = await request(app)
+      .get('/usuarios/999999')
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
   });
 
   it('GET /usuarios/:id devuelve 400 si el ID es inválido', async () => {
-    const response = await request(app).get('/usuarios/abc');
+    const response = await request(app)
+      .get('/usuarios/abc')
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message', 'ID inválido');
   });
 
   it('POST /usuarios crea un usuario', async () => {
-    const response = await request(app).post('/usuarios').send({
-      email: testEmail,
-      password: 'test123',
-      tipo: 'POSTULANTE',
-    });
+    const response = await request(app)
+      .post('/usuarios')
+      .set('Cookie', admin.cookie)
+      .send({
+        email: testEmail,
+        password: 'test123',
+        tipo: 'POSTULANTE',
+      });
 
     expect(response.status).toBe(201);
 
@@ -80,6 +105,7 @@ describe('Usuarios', () => {
   it('POST /usuarios falla si faltan datos obligatorios', async () => {
     const response = await request(app)
       .post('/usuarios')
+      .set('Cookie', admin.cookie)
       .send({
         email: `incompleto-${Date.now()}@ccisj.uy`,
       });
@@ -92,11 +118,14 @@ describe('Usuarios', () => {
   });
 
   it('POST /usuarios falla si el email ya existe', async () => {
-    const response = await request(app).post('/usuarios').send({
-      email: testEmail,
-      password: 'otra-password',
-      tipo: 'POSTULANTE',
-    });
+    const response = await request(app)
+      .post('/usuarios')
+      .set('Cookie', admin.cookie)
+      .send({
+        email: testEmail,
+        password: 'otra-password',
+        tipo: 'POSTULANTE',
+      });
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty(
@@ -110,6 +139,7 @@ describe('Usuarios', () => {
 
     const response = await request(app)
       .patch(`/usuarios/${createdUserId}`)
+      .set('Cookie', admin.cookie)
       .send({
         email: newEmail,
         tipo: 'POSTULANTE',
@@ -127,6 +157,7 @@ describe('Usuarios', () => {
   it('PATCH /usuarios/:id devuelve error si el usuario no existe', async () => {
     const response = await request(app)
       .patch('/usuarios/999999')
+      .set('Cookie', admin.cookie)
       .send({
         email: `no-existe-${Date.now()}@ccisj.uy`,
       });
@@ -136,16 +167,21 @@ describe('Usuarios', () => {
   });
 
   it('PATCH /usuarios/:id devuelve 400 si el ID es inválido', async () => {
-    const response = await request(app).patch('/usuarios/abc').send({
-      activo: false,
-    });
+    const response = await request(app)
+      .patch('/usuarios/abc')
+      .set('Cookie', admin.cookie)
+      .send({
+        activo: false,
+      });
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message', 'ID inválido');
   });
 
   it('DELETE /usuarios/:id elimina un usuario', async () => {
-    const response = await request(app).delete(`/usuarios/${createdUserId}`);
+    const response = await request(app)
+      .delete(`/usuarios/${createdUserId}`)
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(204);
 
@@ -161,16 +197,111 @@ describe('Usuarios', () => {
   });
 
   it('DELETE /usuarios/:id devuelve 404 si no existe', async () => {
-    const response = await request(app).delete('/usuarios/999999');
+    const response = await request(app)
+      .delete('/usuarios/999999')
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
   });
 
   it('DELETE /usuarios/:id devuelve 400 si el ID es inválido', async () => {
-    const response = await request(app).delete('/usuarios/abc');
+    const response = await request(app)
+      .delete('/usuarios/abc')
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty('message', 'ID inválido');
+  });
+
+  it('POST /usuarios guarda la contraseña hasheada, nunca en texto plano', async () => {
+    const response = await request(app)
+      .post('/usuarios')
+      .set('Cookie', admin.cookie)
+      .send({
+        email: `usuario-hash-${Date.now()}@ccisj.uy`,
+        password: 'clave-en-claro',
+        tipo: 'POSTULANTE',
+      });
+
+    expect(response.status).toBe(201);
+
+    const stored = await prisma.usuario.findUnique({
+      where: { id: response.body.id },
+    });
+
+    try {
+      expect(stored!.password).not.toBe('clave-en-claro');
+      expect(stored!.password.startsWith('$argon2')).toBe(true);
+    } finally {
+      await prisma.usuario.delete({ where: { id: response.body.id } });
+    }
+  });
+
+  it('POST /usuarios rechaza un tipo de usuario inexistente', async () => {
+    const response = await request(app)
+      .post('/usuarios')
+      .set('Cookie', admin.cookie)
+      .send({
+        email: `usuario-tipo-${Date.now()}@ccisj.uy`,
+        password: 'test123',
+        tipo: 'SUPERADMIN',
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  describe('permisos', () => {
+    let socio: Awaited<ReturnType<typeof createMember>>;
+    let postulante: Awaited<ReturnType<typeof createApplicant>>;
+
+    beforeAll(async () => {
+      socio = await createMember('DIRECTIVO');
+      postulante = await createApplicant();
+    });
+
+    afterAll(async () => {
+      await deleteUsers([socio.userId, postulante.userId]);
+    });
+
+    it('GET /usuarios devuelve 401 sin sesión', async () => {
+      const response = await request(app).get('/usuarios');
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('message', 'No autenticado');
+    });
+
+    it('un socio, aunque sea directivo, no accede a /usuarios', async () => {
+      const list = await request(app)
+        .get('/usuarios')
+        .set('Cookie', socio.cookie);
+
+      const create = await request(app)
+        .post('/usuarios')
+        .set('Cookie', socio.cookie)
+        .send({
+          email: `escalada-${Date.now()}@ccisj.uy`,
+          password: 'test123',
+          tipo: 'ADMIN',
+        });
+
+      expect(list.status).toBe(403);
+      expect(create.status).toBe(403);
+    });
+
+    it('un postulante no puede cambiarse el rol a sí mismo', async () => {
+      const response = await request(app)
+        .patch(`/usuarios/${postulante.userId}`)
+        .set('Cookie', postulante.cookie)
+        .send({ tipo: 'ADMIN' });
+
+      expect(response.status).toBe(403);
+
+      const user = await prisma.usuario.findUnique({
+        where: { id: postulante.userId },
+      });
+
+      expect(user!.tipo).toBe('POSTULANTE');
+    });
   });
 });

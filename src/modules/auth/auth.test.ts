@@ -1,5 +1,6 @@
 import request from 'supertest';
 import argon2 from 'argon2';
+import jwt from 'jsonwebtoken';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -199,5 +200,103 @@ describe('Auth', () => {
     expect(meResponse.status).toBe(401);
 
     expect(meResponse.body).toHaveProperty('message', 'No autenticado');
+  });
+
+  it('POST /auth/login no revela que la cuenta está inactiva sin la contraseña correcta', async () => {
+    const response = await request(app)
+      .post('/auth/login')
+      .send({
+        email: `auth-inactivo-sin-pass-${Date.now()}@ccisj.uy`,
+        password: 'cualquiera',
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('message', 'Credenciales inválidas');
+
+    const inactive = await prisma.usuario.create({
+      data: {
+        email: `auth-inactivo-2-${Date.now()}@ccisj.uy`,
+        password: await argon2.hash(password),
+        tipo: 'POSTULANTE',
+        activo: false,
+      },
+    });
+
+    try {
+      const wrongPassword = await request(app).post('/auth/login').send({
+        email: inactive.email,
+        password: 'incorrecta',
+      });
+
+      expect(wrongPassword.status).toBe(401);
+      expect(wrongPassword.body).toHaveProperty(
+        'message',
+        'Credenciales inválidas',
+      );
+    } finally {
+      await prisma.usuario.delete({ where: { id: inactive.id } });
+    }
+  });
+
+  it('POST /auth/login rechaza credenciales que no son texto', async () => {
+    const response = await request(app)
+      .post('/auth/login')
+      .send({
+        email: { contains: '@' },
+        password,
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  it('GET /auth/me deja de aceptar la sesión en cuanto se desactiva el usuario', async () => {
+    const agent = request.agent(app);
+
+    await agent.post('/auth/login').send({ email, password }).expect(200);
+
+    await prisma.usuario.update({
+      where: { id: userId },
+      data: { activo: false },
+    });
+
+    try {
+      const response = await agent.get('/auth/me');
+
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty(
+        'message',
+        'Sesión inválida o expirada',
+      );
+    } finally {
+      await prisma.usuario.update({
+        where: { id: userId },
+        data: { activo: true },
+      });
+    }
+  });
+
+  it('GET /auth/me rechaza un token firmado con otro secreto', async () => {
+    const forged = jwt.sign({ id: userId }, 'otro-secreto', {
+      algorithm: 'HS256',
+    });
+
+    const response = await request(app)
+      .get('/auth/me')
+      .set('Cookie', [`token=${forged}`]);
+
+    expect(response.status).toBe(401);
+  });
+
+  it('GET /auth/me rechaza un token sin firma (alg none)', async () => {
+    const encode = (value: object) =>
+      Buffer.from(JSON.stringify(value)).toString('base64url');
+
+    const unsigned = `${encode({ alg: 'none', typ: 'JWT' })}.${encode({ id: userId })}.`;
+
+    const response = await request(app)
+      .get('/auth/me')
+      .set('Cookie', [`token=${unsigned}`]);
+
+    expect(response.status).toBe(401);
   });
 });

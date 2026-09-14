@@ -19,5 +19,5 @@ export type CreateMemberData = {
   telefono: string;
   email: string;
 
-  observaciones?: string;
+  observaciones?: string | null;
 };

@@ -1,4 +1,6 @@
 import type { Request, Response } from 'express';
+import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { statusFor } from '@/utils/http-error';
 import * as applicationService from './application.service';
 
 export async function getAll(_req: Request, res: Response) {
@@ -12,7 +14,7 @@ export async function getAll(_req: Request, res: Response) {
   }
 }
 
-export async function getById(req: Request, res: Response) {
+export async function getById(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 
@@ -22,7 +24,7 @@ export async function getById(req: Request, res: Response) {
       });
     }
 
-    const application = await applicationService.getById(id);
+    const application = await applicationService.getById(id, req.user!);
     res.json(application);
   } catch (error) {
     res.status(404).json({
@@ -34,9 +36,12 @@ export async function getById(req: Request, res: Response) {
   }
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthRequest, res: Response) {
   try {
-    const application = await applicationService.create(req.body);
+    const application = await applicationService.create(
+      req.body ?? {},
+      req.user!,
+    );
     res.status(201).json(application);
   } catch (error) {
     res.status(400).json({
@@ -48,7 +53,7 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 
@@ -58,11 +63,15 @@ export async function update(req: Request, res: Response) {
       });
     }
 
-    const application = await applicationService.update(id, req.body);
+    const application = await applicationService.update(
+      id,
+      req.body ?? {},
+      req.user!,
+    );
 
     res.json(application);
   } catch (error) {
-    res.status(400).json({
+    res.status(statusFor(error, 400)).json({
       message:
         error instanceof Error
           ? error.message
@@ -71,7 +80,7 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthRequest, res: Response) {
   try {
     const id = Number(req.params.id);
 
@@ -81,7 +90,7 @@ export async function remove(req: Request, res: Response) {
       });
     }
 
-    await applicationService.remove(id);
+    await applicationService.remove(id, req.user!);
     res.status(204).send();
   } catch (error) {
     res.status(404).json({
