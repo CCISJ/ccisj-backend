@@ -1,8 +1,17 @@
-import { CreateMemberData, MemberType } from '@/types/member.type';
+import {
+  CreateMemberData,
+  MemberType,
+  OwnEditableField,
+} from '@/types/member.type';
+import { Prisma } from '@/generated/prisma/client';
+import { HttpError } from '@/utils/http-error';
 import * as memberRepository from './member.repository';
 import * as usuarioRepository from '../users/user.repository';
 import argon2 from 'argon2';
 import crypto from 'node:crypto';
+
+const PHONE_PATTERN = /^\+?[\d\s()-]{6,20}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const TEXT_FIELDS = [
   'razonSocial',
@@ -111,6 +120,152 @@ export async function getDirectoryEntry(id: number) {
   }
 
   return member;
+}
+
+/**
+ * Reglas de cada dato que el socio edita de su empresa. Los largos máximos
+ * evitan que se guarde cualquier cosa en campos que la base no limita.
+ */
+type FieldRule = {
+  maxLength: number;
+  pattern?: RegExp;
+  required: string;
+  tooLong: string;
+  invalid?: string;
+};
+
+const PHONE_INVALID = 'solo puede tener números, espacios, +, - y paréntesis';
+
+const OWN_FIELD_RULES: Record<OwnEditableField, FieldRule> = {
+  telefono: {
+    maxLength: 20,
+    pattern: PHONE_PATTERN,
+    required: 'El teléfono es obligatorio',
+    tooLong: 'El teléfono no puede superar los 20 caracteres',
+    invalid: `El teléfono ${PHONE_INVALID}`,
+  },
+  celular: {
+    maxLength: 20,
+    pattern: PHONE_PATTERN,
+    required: 'El celular es obligatorio',
+    tooLong: 'El celular no puede superar los 20 caracteres',
+    invalid: `El celular ${PHONE_INVALID}`,
+  },
+  email: {
+    maxLength: 255,
+    pattern: EMAIL_PATTERN,
+    required: 'El email de contacto es obligatorio',
+    tooLong: 'El email de contacto no puede superar los 255 caracteres',
+    invalid: 'El email de contacto no es válido',
+  },
+  direccion: {
+    maxLength: 150,
+    required: 'La dirección es obligatoria',
+    tooLong: 'La dirección no puede superar los 150 caracteres',
+  },
+  ciudad: {
+    maxLength: 80,
+    required: 'La ciudad es obligatoria',
+    tooLong: 'La ciudad no puede superar los 80 caracteres',
+  },
+  // El número de empresa del BPS tiene entre 7 y 12 dígitos.
+  numeroBps: {
+    maxLength: 12,
+    pattern: /^\d{7,12}$/,
+    required: 'El número de BPS es obligatorio',
+    tooLong: 'El número de BPS debe tener entre 7 y 12 números',
+    invalid: 'El número de BPS debe tener entre 7 y 12 números',
+  },
+};
+
+export async function getOwnProfile(socioId: number | null) {
+  const member = socioId
+    ? await memberRepository.findOwnProfile(socioId)
+    : null;
+
+  if (!member) {
+    throw new HttpError(404, 'Socio no encontrado');
+  }
+
+  return member;
+}
+
+/**
+ * El socio actualiza sus datos de contacto y su número de BPS. Un campo
+ * fuera de esa lista se rechaza en vez de ignorarse: si la pantalla intenta
+ * mandar algo más, es un error que conviene ver.
+ */
+export async function updateOwnProfile(socioId: number | null, body: unknown) {
+  const member = socioId
+    ? await memberRepository.findOwnProfile(socioId)
+    : null;
+
+  if (!member) {
+    throw new HttpError(404, 'Socio no encontrado');
+  }
+
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    throw new HttpError(400, 'Datos inválidos');
+  }
+
+  const input = body as Record<string, unknown>;
+  const changes: Partial<Record<OwnEditableField, string>> = {};
+
+  for (const key of Object.keys(input)) {
+    // `in` también acepta `toString` o `constructor`, heredados del prototipo.
+    if (!Object.hasOwn(OWN_FIELD_RULES, key)) {
+      throw new HttpError(400, `No se puede modificar el campo ${key}`);
+    }
+
+    const field = key as OwnEditableField;
+    const rule = OWN_FIELD_RULES[field];
+    const value = input[field];
+
+    if (typeof value !== 'string' || !value.trim()) {
+      throw new HttpError(400, rule.required);
+    }
+
+    const trimmed = value.trim();
+
+    if (trimmed.length > rule.maxLength) {
+      throw new HttpError(400, rule.tooLong);
+    }
+
+    if (rule.pattern && !rule.pattern.test(trimmed)) {
+      throw new HttpError(400, rule.invalid ?? 'Datos inválidos');
+    }
+
+    if (trimmed !== member[field]) {
+      changes[field] = trimmed;
+    }
+  }
+
+  if (Object.keys(changes).length === 0) {
+    return member;
+  }
+
+  if (changes.numeroBps) {
+    const existing = await memberRepository.findByNumeroBps(changes.numeroBps);
+
+    if (existing && existing.id !== member.id) {
+      throw new HttpError(400, 'El número de BPS ya está registrado');
+    }
+  }
+
+  try {
+    return await memberRepository.updateOwnProfile(member.id, changes);
+  } catch (error) {
+    // Dos socios guardando el mismo BPS a la vez: la verificación de arriba
+    // no alcanza y lo frena la restricción única de la base.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new HttpError(400, 'El número de BPS ya está registrado');
+    }
+
+    throw error;
+  }
 }
 
 export async function create(body: unknown) {

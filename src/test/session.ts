@@ -15,6 +15,16 @@ export function uniqueSuffix() {
   return `${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
 }
 
+/**
+ * Número de BPS válido (12 dígitos) y prácticamente único, para no chocar
+ * con los socios reales de la base compartida.
+ */
+export function uniqueBps() {
+  const random = crypto.randomInt(0, 1000).toString().padStart(3, '0');
+
+  return `${Date.now()}`.slice(-9) + random;
+}
+
 /** Cookie de sesión válida para el usuario, como la que deja el login. */
 export function sessionCookie(userId: number) {
   const secret = process.env.JWT_SECRET;

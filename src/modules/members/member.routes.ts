@@ -1,6 +1,14 @@
 import { Router } from 'express';
 
-import { getAll, getById, create, update, remove } from './member.controller';
+import {
+  getAll,
+  getById,
+  getMe,
+  updateMe,
+  create,
+  update,
+  remove,
+} from './member.controller';
 import {
   requireAdminOrDirectivo,
   requireAuth,
@@ -10,6 +18,11 @@ import {
 const router = Router();
 
 router.use(requireAuth);
+
+// La empresa del socio de la sesión. Tiene que ir antes de `/:id`, que si no
+// interpreta "me" como un ID.
+router.get('/me', requireRole('SOCIO'), getMe);
+router.patch('/me', requireRole('SOCIO'), updateMe);
 
 // Los directivos consultan un directorio reducido; el controller decide qué
 // versión devolver según el rol.

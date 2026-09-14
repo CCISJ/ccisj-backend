@@ -364,15 +364,15 @@ El login admite 10 intentos fallidos cada 15 minutos por IP.
 
 Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.
 
-| Recurso           | Consultar                                                            | Crear          | Editar / borrar                                                         |
-| ----------------- | -------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
-| `/usuarios`       | Admin                                                                | Admin          | Admin                                                                   |
-| `/socios`         | Admin (ficha completa) y socios directivos (directorio, sin RUT/BPS) | Admin          | Admin                                                                   |
-| `/postulantes`    | Admin; cada postulante su propio perfil                              | Admin          | Admin; el postulante edita su perfil                                    |
-| `/categorias`     | Cualquier usuario                                                    | Admin          | Admin                                                                   |
-| `/ofertas`        | Cualquier usuario                                                    | Admin y socios | Admin; cada socio solo las de su empresa                                |
-| `/postulaciones`  | Admin todas; el socio las de sus ofertas; el postulante las suyas    | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
-| `/notificaciones` | Admin todas; cada usuario las que recibió                            | Admin          | Cada usuario marca las suyas como leídas                                |
+| Recurso           | Consultar                                                                                           | Crear          | Editar / borrar                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------- |
+| `/usuarios`       | Admin                                                                                               | Admin          | Admin                                                                   |
+| `/socios`         | Admin (ficha completa); directivos (directorio, sin RUT/BPS); cada socio su empresa en `/socios/me` | Admin          | Admin; el socio edita contacto y BPS de su empresa (`PATCH /socios/me`) |
+| `/postulantes`    | Admin; cada postulante su propio perfil                                                             | Admin          | Admin; el postulante edita su perfil                                    |
+| `/categorias`     | Cualquier usuario                                                                                   | Admin          | Admin                                                                   |
+| `/ofertas`        | Cualquier usuario                                                                                   | Admin y socios | Admin; cada socio solo las de su empresa                                |
+| `/postulaciones`  | Admin todas; el socio las de sus ofertas; el postulante las suyas                                   | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
+| `/notificaciones` | Admin todas; cada usuario las que recibió                                                           | Admin          | Cada usuario marca las suyas como leídas                                |
 
 Reglas que conviene no romper al agregar endpoints:
 

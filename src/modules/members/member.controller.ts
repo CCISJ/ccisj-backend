@@ -1,5 +1,6 @@
 import type { Response } from 'express';
 import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { HttpError, statusFor } from '@/utils/http-error';
 import { parseId } from '@/utils/params';
 import * as memberService from './member.service';
 
@@ -38,6 +39,39 @@ export async function getById(req: AuthRequest, res: Response) {
     res.status(404).json({
       message:
         error instanceof Error ? error.message : 'Error al obtener el socio',
+    });
+  }
+}
+
+export async function getMe(req: AuthRequest, res: Response) {
+  try {
+    const member = await memberService.getOwnProfile(req.user!.socioId);
+
+    res.json(member);
+  } catch (error) {
+    res.status(statusFor(error, 500)).json({
+      message:
+        error instanceof HttpError
+          ? error.message
+          : 'Error al obtener los datos de la empresa',
+    });
+  }
+}
+
+export async function updateMe(req: AuthRequest, res: Response) {
+  try {
+    const member = await memberService.updateOwnProfile(
+      req.user!.socioId,
+      req.body,
+    );
+
+    res.json(member);
+  } catch (error) {
+    res.status(statusFor(error, 500)).json({
+      message:
+        error instanceof HttpError
+          ? error.message
+          : 'Error al actualizar los datos de la empresa',
     });
   }
 }

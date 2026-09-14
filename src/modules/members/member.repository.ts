@@ -1,5 +1,5 @@
 import { prisma } from '@/config/prisma';
-import { CreateMemberData } from '@/types/member.type';
+import { CreateMemberData, OwnEditableField } from '@/types/member.type';
 
 export function findAll() {
   return prisma.socio.findMany({
@@ -72,6 +72,49 @@ export function findDirectoryEntry(id: number) {
       },
     },
     select: directorySelect,
+  });
+}
+
+// La ficha que ve el propio socio. Todo lo de su empresa menos las
+// observaciones, que son notas internas de la administración.
+const ownProfileSelect = {
+  id: true,
+  razonSocial: true,
+  titular: true,
+  giroComercial: true,
+  tipo: true,
+  rut: true,
+  numeroBps: true,
+  fechaInicioEmpresa: true,
+  fechaAfiliacion: true,
+  direccion: true,
+  ciudad: true,
+  celular: true,
+  telefono: true,
+  email: true,
+  usuario: {
+    select: {
+      email: true,
+    },
+  },
+} as const;
+
+export function findOwnProfile(id: number) {
+  return prisma.socio.findUnique({
+    where: { id },
+    select: ownProfileSelect,
+  });
+}
+
+export function updateOwnProfile(
+  id: number,
+  data: Partial<Pick<CreateMemberData, OwnEditableField>>,
+) {
+  // Solo la ficha del socio: el email de acceso (`usuario.email`) no cambia.
+  return prisma.socio.update({
+    where: { id },
+    data,
+    select: ownProfileSelect,
   });
 }
 

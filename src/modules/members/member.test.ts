@@ -9,6 +9,7 @@ import {
   createApplicant,
   createMember,
   deleteUsers,
+  uniqueBps,
 } from '@/test/session';
 
 describe('Socios', () => {
@@ -453,6 +454,208 @@ describe('Socios', () => {
       });
 
       expect(member!.tipo).toBe('COMUN');
+    });
+  });
+
+  describe('mi empresa (/socios/me)', () => {
+    let socio: Awaited<ReturnType<typeof createMember>>;
+    let other: Awaited<ReturnType<typeof createMember>>;
+    let postulante: Awaited<ReturnType<typeof createApplicant>>;
+
+    beforeAll(async () => {
+      socio = await createMember();
+      other = await createMember();
+      postulante = await createApplicant();
+    });
+
+    afterAll(async () => {
+      await deleteUsers([socio.userId, other.userId, postulante.userId]);
+    });
+
+    it('GET /socios/me devuelve la empresa del socio sin observaciones internas', async () => {
+      const response = await request(app)
+        .get('/socios/me')
+        .set('Cookie', socio.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(socio.socioId);
+      expect(response.body).toHaveProperty('rut');
+      expect(response.body).toHaveProperty('numeroBps');
+      expect(response.body.usuario).toEqual({ email: socio.email });
+
+      expect(response.body).not.toHaveProperty('observaciones');
+      expect(response.body).not.toHaveProperty('usuarioId');
+    });
+
+    it('/socios/me es solo para socios', async () => {
+      const asAdmin = await request(app)
+        .get('/socios/me')
+        .set('Cookie', admin.cookie);
+
+      const asPostulante = await request(app)
+        .patch('/socios/me')
+        .set('Cookie', postulante.cookie)
+        .send({ telefono: '43420000' });
+
+      const anonymous = await request(app).get('/socios/me');
+
+      expect(asAdmin.status).toBe(403);
+      expect(asPostulante.status).toBe(403);
+      expect(anonymous.status).toBe(401);
+    });
+
+    it('PATCH /socios/me actualiza los datos permitidos', async () => {
+      const bps = uniqueBps();
+
+      const response = await request(app)
+        .patch('/socios/me')
+        .set('Cookie', socio.cookie)
+        .send({
+          telefono: ' 4342 5555 ',
+          celular: '+598 99 123 456',
+          email: 'contacto@empresa.uy',
+          direccion: 'Artigas 800',
+          ciudad: 'Libertad',
+          numeroBps: bps,
+        });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toMatchObject({
+        telefono: '4342 5555',
+        celular: '+598 99 123 456',
+        email: 'contacto@empresa.uy',
+        direccion: 'Artigas 800',
+        ciudad: 'Libertad',
+        numeroBps: bps,
+      });
+    });
+
+    it('cambiar el email de contacto no cambia el email de acceso', async () => {
+      const user = await prisma.usuario.findUnique({
+        where: { id: socio.userId },
+      });
+
+      expect(user!.email).toBe(socio.email);
+    });
+
+    it('PATCH /socios/me rechaza campos que el socio no puede tocar', async () => {
+      for (const body of [
+        { razonSocial: 'Otra razón social' },
+        { rut: '111111111111' },
+        { tipo: 'DIRECTIVO' },
+        { observaciones: 'Sin deudas' },
+        { usuarioId: other.userId },
+        { telefono: '43420000', fechaAfiliacion: '2000-01-01' },
+        { toString: 'x' },
+      ]) {
+        const response = await request(app)
+          .patch('/socios/me')
+          .set('Cookie', socio.cookie)
+          .send(body);
+
+        expect(response.status).toBe(400);
+      }
+
+      const member = await prisma.socio.findUnique({
+        where: { id: socio.socioId },
+      });
+
+      expect(member!.tipo).toBe('COMUN');
+      expect(member!.usuarioId).toBe(socio.userId);
+      expect(member!.telefono).toBe('4342 5555');
+    });
+
+    it('PATCH /socios/me valida el formato de cada dato', async () => {
+      const cases: [Record<string, unknown>, string][] = [
+        [{ telefono: '' }, 'El teléfono es obligatorio'],
+        [{ ciudad: '   ' }, 'La ciudad es obligatoria'],
+        [
+          { celular: 'llamar de tarde' },
+          'El celular solo puede tener números, espacios, +, - y paréntesis',
+        ],
+        [{ email: 'sin-arroba' }, 'El email de contacto no es válido'],
+        [
+          { numeroBps: '1234-567' },
+          'El número de BPS debe tener entre 7 y 12 números',
+        ],
+        [
+          { numeroBps: '123456' },
+          'El número de BPS debe tener entre 7 y 12 números',
+        ],
+        [
+          { numeroBps: '1234567890123' },
+          'El número de BPS debe tener entre 7 y 12 números',
+        ],
+        [
+          { direccion: 'x'.repeat(151) },
+          'La dirección no puede superar los 150 caracteres',
+        ],
+        [{ telefono: 43420000 }, 'El teléfono es obligatorio'],
+      ];
+
+      for (const [body, message] of cases) {
+        const response = await request(app)
+          .patch('/socios/me')
+          .set('Cookie', socio.cookie)
+          .send(body);
+
+        expect(response.status).toBe(400);
+        expect(response.body).toHaveProperty('message', message);
+      }
+    });
+
+    it('PATCH /socios/me no acepta el número de BPS de otra empresa', async () => {
+      // Los socios de prueba tienen un BPS con letras; acá hace falta uno
+      // válido para que el rechazo sea por duplicado y no por formato.
+      const takenBps = uniqueBps();
+
+      await prisma.socio.update({
+        where: { id: other.socioId },
+        data: { numeroBps: takenBps },
+      });
+
+      const response = await request(app)
+        .patch('/socios/me')
+        .set('Cookie', socio.cookie)
+        .send({ numeroBps: takenBps });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty(
+        'message',
+        'El número de BPS ya está registrado',
+      );
+    });
+
+    it('PATCH /socios/me solo modifica la empresa del socio de la sesión', async () => {
+      const before = await prisma.socio.findUnique({
+        where: { id: other.socioId },
+      });
+
+      await request(app)
+        .patch('/socios/me')
+        .set('Cookie', socio.cookie)
+        .send({ telefono: '43429999' })
+        .expect(200);
+
+      const after = await prisma.socio.findUnique({
+        where: { id: other.socioId },
+      });
+
+      expect(after!.telefono).toBe(before!.telefono);
+    });
+
+    it('un socio desactivado ya no puede editar su empresa', async () => {
+      await prisma.usuario.update({
+        where: { id: other.userId },
+        data: { activo: false },
+      });
+
+      const response = await request(app)
+        .patch('/socios/me')
+        .set('Cookie', other.cookie)
+        .send({ telefono: '43421111' });
+
+      expect(response.status).toBe(401);
     });
   });
 });
