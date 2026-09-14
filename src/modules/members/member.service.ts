@@ -168,12 +168,13 @@ const OWN_FIELD_RULES: Record<OwnEditableField, FieldRule> = {
     required: 'La ciudad es obligatoria',
     tooLong: 'La ciudad no puede superar los 80 caracteres',
   },
+  // El número de empresa del BPS tiene entre 7 y 12 dígitos.
   numeroBps: {
-    maxLength: 20,
-    pattern: /^\d+$/,
+    maxLength: 12,
+    pattern: /^\d{7,12}$/,
     required: 'El número de BPS es obligatorio',
-    tooLong: 'El número de BPS no puede superar los 20 dígitos',
-    invalid: 'El número de BPS solo puede tener números',
+    tooLong: 'El número de BPS debe tener entre 7 y 12 números',
+    invalid: 'El número de BPS debe tener entre 7 y 12 números',
   },
 };
 

@@ -9,6 +9,7 @@ import {
   createApplicant,
   createMember,
   deleteUsers,
+  uniqueBps,
 } from '@/test/session';
 
 describe('Socios', () => {
@@ -504,6 +505,8 @@ describe('Socios', () => {
     });
 
     it('PATCH /socios/me actualiza los datos permitidos', async () => {
+      const bps = uniqueBps();
+
       const response = await request(app)
         .patch('/socios/me')
         .set('Cookie', socio.cookie)
@@ -513,7 +516,7 @@ describe('Socios', () => {
           email: 'contacto@empresa.uy',
           direccion: 'Artigas 800',
           ciudad: 'Libertad',
-          numeroBps: '98765432',
+          numeroBps: bps,
         });
 
       expect(response.status).toBe(200);
@@ -523,7 +526,7 @@ describe('Socios', () => {
         email: 'contacto@empresa.uy',
         direccion: 'Artigas 800',
         ciudad: 'Libertad',
-        numeroBps: '98765432',
+        numeroBps: bps,
       });
     });
 
@@ -571,7 +574,18 @@ describe('Socios', () => {
           'El celular solo puede tener números, espacios, +, - y paréntesis',
         ],
         [{ email: 'sin-arroba' }, 'El email de contacto no es válido'],
-        [{ numeroBps: '12-34' }, 'El número de BPS solo puede tener números'],
+        [
+          { numeroBps: '1234-567' },
+          'El número de BPS debe tener entre 7 y 12 números',
+        ],
+        [
+          { numeroBps: '123456' },
+          'El número de BPS debe tener entre 7 y 12 números',
+        ],
+        [
+          { numeroBps: '1234567890123' },
+          'El número de BPS debe tener entre 7 y 12 números',
+        ],
         [
           { direccion: 'x'.repeat(151) },
           'La dirección no puede superar los 150 caracteres',
@@ -592,8 +606,8 @@ describe('Socios', () => {
 
     it('PATCH /socios/me no acepta el número de BPS de otra empresa', async () => {
       // Los socios de prueba tienen un BPS con letras; acá hace falta uno
-      // numérico para que el rechazo sea por duplicado y no por formato.
-      const takenBps = `9${Date.now()}`.slice(0, 15);
+      // válido para que el rechazo sea por duplicado y no por formato.
+      const takenBps = uniqueBps();
 
       await prisma.socio.update({
         where: { id: other.socioId },
