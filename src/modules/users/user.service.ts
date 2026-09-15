@@ -1,7 +1,7 @@
 import argon2 from 'argon2';
 
 import { TipoUsuario } from '@/types/user.type';
-import * as usuarioRepository from './user.repository';
+import * as userRepository from './user.repository';
 
 const USER_TYPES: TipoUsuario[] = ['ADMIN', 'POSTULANTE', 'SOCIO'];
 
@@ -10,17 +10,21 @@ function isUserType(value: unknown): value is TipoUsuario {
 }
 
 export async function getAll() {
-  return usuarioRepository.findAll();
+  return userRepository.findAll();
 }
 
 export async function getById(id: number) {
-  const usuario = await usuarioRepository.findById(id);
+  const usuario = await userRepository.findById(id);
 
   if (!usuario) {
     throw new Error('Usuario no encontrado');
   }
 
   return usuario;
+}
+
+export async function findNotificationRecipients() {
+  return userRepository.findNotificationRecipients();
 }
 
 export async function create(data: {
@@ -42,17 +46,15 @@ export async function create(data: {
 
   const email = data.email.trim();
 
-  const existingUser = await usuarioRepository.findByEmail(email);
+  const existingUser = await userRepository.findByEmail(email);
 
   if (existingUser) {
     throw new Error('El email ya está registrado');
   }
 
-  // La contraseña se guardaba tal cual llegaba: además de exponerla, esa
-  // cuenta nunca podía iniciar sesión porque el login espera un hash argon2.
   const password = await argon2.hash(data.password);
 
-  return usuarioRepository.create({
+  return userRepository.create({
     email,
     password,
     tipo: data.tipo,
@@ -67,7 +69,7 @@ export async function update(
     activo?: unknown;
   },
 ) {
-  const usuario = await usuarioRepository.findById(id);
+  const usuario = await userRepository.findById(id);
 
   if (!usuario) {
     throw new Error('Usuario no encontrado');
@@ -86,7 +88,7 @@ export async function update(
 
     changes.email = data.email.trim();
 
-    const existingUser = await usuarioRepository.findByEmail(changes.email);
+    const existingUser = await userRepository.findByEmail(changes.email);
 
     if (existingUser && existingUser.id !== id) {
       throw new Error('El email ya está registrado');
@@ -109,15 +111,15 @@ export async function update(
     changes.activo = data.activo;
   }
 
-  return usuarioRepository.update(id, changes);
+  return userRepository.update(id, changes);
 }
 
 export async function remove(id: number) {
-  const usuario = await usuarioRepository.findById(id);
+  const usuario = await userRepository.findById(id);
 
   if (!usuario) {
     throw new Error('Usuario no encontrado');
   }
 
-  return usuarioRepository.remove(id);
+  return userRepository.remove(id);
 }

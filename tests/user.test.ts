@@ -1,14 +1,14 @@
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import app from '@/app';
-import { prisma } from '@/config/prisma';
+import app from '../src/app';
+import { prisma } from '../src/config/prisma';
 import {
   createAdmin,
   createApplicant,
   createMember,
   deleteUsers,
-} from '@/test/session';
+} from './session';
 
 describe('Usuarios', () => {
   let admin: Awaited<ReturnType<typeof createAdmin>>;
@@ -302,6 +302,90 @@ describe('Usuarios', () => {
       });
 
       expect(user!.tipo).toBe('POSTULANTE');
+    });
+
+
+    it('GET /usuarios/destinatarios-notificaciones es solo para ADMIN', async () => {
+      const asSocio = await request(app)
+        .get('/usuarios/destinatarios-notificaciones')
+        .set('Cookie', socio.cookie);
+
+      const asPostulante = await request(app)
+        .get('/usuarios/destinatarios-notificaciones')
+        .set('Cookie', postulante.cookie);
+
+      const withoutSession = await request(app).get(
+        '/usuarios/destinatarios-notificaciones',
+      );
+
+      expect(asSocio.status).toBe(403);
+      expect(asPostulante.status).toBe(403);
+      expect(withoutSession.status).toBe(401);
+    });
+
+    it('GET /usuarios/destinatarios-notificaciones devuelve socios y postulantes activos, nunca ADMIN', async () => {
+      const response = await request(app)
+        .get('/usuarios/destinatarios-notificaciones')
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+
+      const socioResult = response.body.find(
+        (user: { id: number }) => user.id === socio.userId,
+      );
+      const postulanteResult = response.body.find(
+        (user: { id: number }) => user.id === postulante.userId,
+      );
+      const adminResult = response.body.find(
+        (user: { id: number }) => user.id === admin.userId,
+      );
+
+      expect(socioResult).toMatchObject({
+        id: socio.userId,
+        email: socio.email,
+        tipo: 'SOCIO',
+      });
+      expect(socioResult.socio).toHaveProperty('razonSocial');
+
+      expect(postulanteResult).toMatchObject({
+        id: postulante.userId,
+        email: postulante.email,
+        tipo: 'POSTULANTE',
+      });
+      expect(postulanteResult.postulante).toMatchObject({
+        nombre: expect.any(String),
+        apellido: expect.any(String),
+      });
+
+      expect(adminResult).toBeUndefined();
+      expect(response.body.every((user: { activo?: boolean }) => !('activo' in user))).toBe(true);
+      expect(response.body.every((user: { password?: string }) => !('password' in user))).toBe(true);
+    });
+
+    it('GET /usuarios/destinatarios-notificaciones excluye usuarios inactivos', async () => {
+      await prisma.usuario.update({
+        where: { id: postulante.userId },
+        data: { activo: false },
+      });
+
+      try {
+        const response = await request(app)
+          .get('/usuarios/destinatarios-notificaciones')
+          .set('Cookie', admin.cookie);
+
+        expect(response.status).toBe(200);
+        expect(
+          response.body.some(
+            (user: { id: number }) => user.id === postulante.userId,
+          ),
+        ).toBe(false);
+      } finally {
+        await prisma.usuario.update({
+          where: { id: postulante.userId },
+          data: { activo: true },
+        });
+      }
     });
   });
 });

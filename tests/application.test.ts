@@ -2,15 +2,15 @@ import request from 'supertest';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import app from '@/app';
-import { prisma } from '@/config/prisma';
+import app from '../src/app';
+import { prisma } from '../src/config/prisma';
 import {
   createAdmin,
   createApplicant,
   createCategory,
   createMember,
   deleteUsers,
-} from '@/test/session';
+} from './session';
 
 describe('Applications', () => {
   let admin: Awaited<ReturnType<typeof createAdmin>>;
