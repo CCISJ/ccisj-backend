@@ -4,37 +4,32 @@ import jwt from 'jsonwebtoken';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import app from '@/app';
-import { prisma } from '@/config/prisma';
+import app from '../src/app';
+import { prisma } from '../src/config/prisma';
+import { createUser, deleteUsers, TEST_PASSWORD, uniqueEmail } from './session';
 
 describe('Auth', () => {
   let userId: number;
   let inactiveUserId: number;
 
-  const email = `auth-test-${Date.now()}@ccisj.uy`;
-  const password = 'Test123456';
+  let email: string;
+  const password = TEST_PASSWORD;
 
   beforeAll(async () => {
-    const passwordHash = await argon2.hash(password);
-
-    const user = await prisma.usuario.create({
-      data: {
-        email,
-        password: passwordHash,
-        tipo: 'POSTULANTE',
-      },
+    const user = await createUser({
+      tipo: 'POSTULANTE',
+      loginEnabled: true,
+      password,
+      email: uniqueEmail('auth-test'),
     });
 
-    userId = user.id;
+    userId = user.userId;
+    email = user.email;
   });
 
   afterAll(async () => {
     if (userId) {
-      await prisma.usuario.deleteMany({
-        where: {
-          id: userId,
-        },
-      });
+      await deleteUsers([userId]);
     }
 
     if (inactiveUserId) {

@@ -145,6 +145,36 @@ export async function findUsersByIds(usuarioIds: number[]) {
   });
 }
 
+export async function findNotificationRecipients() {
+  return prisma.usuario.findMany({
+    where: {
+      activo: true,
+      tipo: {
+        in: ['SOCIO', 'POSTULANTE'],
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      tipo: true,
+      socio: {
+        select: {
+          razonSocial: true,
+        },
+      },
+      postulante: {
+        select: {
+          nombre: true,
+          apellido: true,
+        },
+      },
+    },
+    orderBy: {
+      email: 'asc',
+    },
+  });
+}
+
 export function create(data: {
   email: string;
   password: string;

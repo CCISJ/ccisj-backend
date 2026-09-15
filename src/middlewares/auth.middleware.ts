@@ -146,3 +146,19 @@ export function requireAdminOrDirectivo(
 
   next();
 }
+
+export function requireAdmin(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  if (!req.user) {
+    return res.status(401).json({ message: 'No autenticado' });
+  }
+
+  if (req.user.tipo !== 'ADMIN') {
+    return res.status(403).json({ message: 'Acceso no autorizado' });
+  }
+
+  next();
+}

@@ -1,9 +1,9 @@
 import type { Request, Response } from 'express';
-import * as usuarioService from './user.service';
+import * as userService from './user.service';
 
 export async function getAll(_req: Request, res: Response) {
   try {
-    const usuarios = await usuarioService.getAll();
+    const usuarios = await userService.getAll();
 
     res.json(usuarios);
   } catch {
@@ -23,7 +23,7 @@ export async function getById(req: Request, res: Response) {
       });
     }
 
-    const usuario = await usuarioService.getById(id);
+    const usuario = await userService.getById(id);
 
     res.json(usuario);
   } catch (error) {
@@ -34,9 +34,21 @@ export async function getById(req: Request, res: Response) {
   }
 }
 
+export async function getNotificationRecipients(_req: Request, res: Response) {
+  try {
+    const users = await userService.findNotificationRecipients();
+
+    return res.json(users);
+  } catch (error) {
+    return res.status(500).json({
+      message: 'Error al obtener los destinatarios',
+    });
+  }
+}
+
 export async function create(req: Request, res: Response) {
   try {
-    const usuario = await usuarioService.create(req.body);
+    const usuario = await userService.create(req.body);
 
     res.status(201).json(usuario);
   } catch (error) {
@@ -57,7 +69,7 @@ export async function update(req: Request, res: Response) {
       });
     }
 
-    const usuario = await usuarioService.update(id, req.body);
+    const usuario = await userService.update(id, req.body);
 
     res.json(usuario);
   } catch (error) {
@@ -78,7 +90,7 @@ export async function remove(req: Request, res: Response) {
       });
     }
 
-    await usuarioService.remove(id);
+    await userService.remove(id);
 
     res.status(204).send();
   } catch (error) {
