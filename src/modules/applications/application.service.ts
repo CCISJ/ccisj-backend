@@ -93,7 +93,12 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     throw new Error('Oferta no encontrada');
   }
 
-  if (offer.estado !== 'ACTIVA') {
+  // Una oferta con la fecha de cierre vencida está cerrada aunque todavía
+  // figure como activa en la base (se cierra sola en la próxima lectura).
+  if (
+    offer.estado !== 'ACTIVA' ||
+    (offer.fechaCierre && offer.fechaCierre < new Date())
+  ) {
     throw new Error('La oferta no está activa');
   }
 

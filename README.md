@@ -370,9 +370,20 @@ Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.
 | `/socios`         | Admin (ficha completa); directivos (directorio, sin RUT/BPS); cada socio su empresa en `/socios/me` | Admin          | Admin; el socio edita contacto y BPS de su empresa (`PATCH /socios/me`) |
 | `/postulantes`    | Admin; cada postulante su propio perfil                                                             | Admin          | Admin; el postulante edita su perfil                                    |
 | `/categorias`     | Cualquier usuario                                                                                   | Admin          | Admin                                                                   |
-| `/ofertas`        | Cualquier usuario                                                                                   | Admin y socios | Admin; cada socio solo las de su empresa                                |
+| `/ofertas`        | Cualquier usuario; cada socio las suyas con conteo de postulaciones en `/ofertas/mias`              | Admin y socios | Admin; cada socio solo las de su empresa                                |
 | `/postulaciones`  | Admin todas; el socio las de sus ofertas; el postulante las suyas                                   | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
 | `/notificaciones` | Admin todas; cada usuario las que recibió                                                           | Admin          | Cada usuario marca las suyas como leídas                                |
+
+Ofertas:
+
+- **Se cierran solas** cuando pasa la fecha de cierre (`fechaCierre`, un día
+  `AAAA-MM-DD` que vale hasta las 23:59 de Uruguay). No hay un proceso
+  programado: el service cierra las vencidas antes de cada lectura o edición, y
+  al postularse se controla la fecha. Reabrir una oferta vencida exige una
+  fecha nueva o quitarla.
+- **Solo se borran sin postulaciones** (409 si tiene): en la base las
+  postulaciones se borran en cascada con la oferta. Con postulaciones, se cierra.
+- Modalidad: `PRESENCIAL`, `REMOTO` o `HIBRIDO`.
 
 Reglas que conviene no romper al agregar endpoints:
 
