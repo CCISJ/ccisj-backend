@@ -69,6 +69,29 @@ export async function me(req: AuthRequest, res: Response) {
   }
 }
 
+export async function changePassword(req: AuthRequest, res: Response) {
+  try {
+    const { token } = await authService.changePassword(req.user!.id, req.body);
+
+    // La sesión actual sigue: recibe un token emitido con el cambio.
+    setSessionCookie(res, token);
+
+    return res.status(200).json({
+      message: 'Contraseña actualizada',
+    });
+  } catch (error) {
+    if (error instanceof HttpError) {
+      return res.status(error.status).json({
+        message: error.message,
+      });
+    }
+
+    return res.status(500).json({
+      message: 'Error al cambiar la contraseña',
+    });
+  }
+}
+
 export async function logout(_req: Request, res: Response) {
   clearSessionCookie(res);
 

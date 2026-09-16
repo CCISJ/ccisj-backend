@@ -41,6 +41,7 @@ export type UsuarioMinAggregateOutputType = {
   tipo: $Enums.TipoUsuario | null
   activo: boolean | null
   fechaCreacion: Date | null
+  passwordActualizada: Date | null
 }
 
 export type UsuarioMaxAggregateOutputType = {
@@ -50,6 +51,7 @@ export type UsuarioMaxAggregateOutputType = {
   tipo: $Enums.TipoUsuario | null
   activo: boolean | null
   fechaCreacion: Date | null
+  passwordActualizada: Date | null
 }
 
 export type UsuarioCountAggregateOutputType = {
@@ -59,6 +61,7 @@ export type UsuarioCountAggregateOutputType = {
   tipo: number
   activo: number
   fechaCreacion: number
+  passwordActualizada: number
   _all: number
 }
 
@@ -78,6 +81,7 @@ export type UsuarioMinAggregateInputType = {
   tipo?: true
   activo?: true
   fechaCreacion?: true
+  passwordActualizada?: true
 }
 
 export type UsuarioMaxAggregateInputType = {
@@ -87,6 +91,7 @@ export type UsuarioMaxAggregateInputType = {
   tipo?: true
   activo?: true
   fechaCreacion?: true
+  passwordActualizada?: true
 }
 
 export type UsuarioCountAggregateInputType = {
@@ -96,6 +101,7 @@ export type UsuarioCountAggregateInputType = {
   tipo?: true
   activo?: true
   fechaCreacion?: true
+  passwordActualizada?: true
   _all?: true
 }
 
@@ -192,6 +198,7 @@ export type UsuarioGroupByOutputType = {
   tipo: $Enums.TipoUsuario
   activo: boolean
   fechaCreacion: Date
+  passwordActualizada: Date | null
   _count: UsuarioCountAggregateOutputType | null
   _avg: UsuarioAvgAggregateOutputType | null
   _sum: UsuarioSumAggregateOutputType | null
@@ -224,6 +231,7 @@ export type UsuarioWhereInput = {
   tipo?: Prisma.EnumTipoUsuarioFilter<"Usuario"> | $Enums.TipoUsuario
   activo?: Prisma.BoolFilter<"Usuario"> | boolean
   fechaCreacion?: Prisma.DateTimeFilter<"Usuario"> | Date | string
+  passwordActualizada?: Prisma.DateTimeNullableFilter<"Usuario"> | Date | string | null
   ofertas?: Prisma.OfertaListRelationFilter
   postulante?: Prisma.XOR<Prisma.PostulanteNullableScalarRelationFilter, Prisma.PostulanteWhereInput> | null
   socio?: Prisma.XOR<Prisma.SocioNullableScalarRelationFilter, Prisma.SocioWhereInput> | null
@@ -238,6 +246,7 @@ export type UsuarioOrderByWithRelationInput = {
   tipo?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  passwordActualizada?: Prisma.SortOrderInput | Prisma.SortOrder
   ofertas?: Prisma.OfertaOrderByRelationAggregateInput
   postulante?: Prisma.PostulanteOrderByWithRelationInput
   socio?: Prisma.SocioOrderByWithRelationInput
@@ -255,6 +264,7 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   tipo?: Prisma.EnumTipoUsuarioFilter<"Usuario"> | $Enums.TipoUsuario
   activo?: Prisma.BoolFilter<"Usuario"> | boolean
   fechaCreacion?: Prisma.DateTimeFilter<"Usuario"> | Date | string
+  passwordActualizada?: Prisma.DateTimeNullableFilter<"Usuario"> | Date | string | null
   ofertas?: Prisma.OfertaListRelationFilter
   postulante?: Prisma.XOR<Prisma.PostulanteNullableScalarRelationFilter, Prisma.PostulanteWhereInput> | null
   socio?: Prisma.XOR<Prisma.SocioNullableScalarRelationFilter, Prisma.SocioWhereInput> | null
@@ -269,6 +279,7 @@ export type UsuarioOrderByWithAggregationInput = {
   tipo?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  passwordActualizada?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UsuarioCountOrderByAggregateInput
   _avg?: Prisma.UsuarioAvgOrderByAggregateInput
   _max?: Prisma.UsuarioMaxOrderByAggregateInput
@@ -286,6 +297,7 @@ export type UsuarioScalarWhereWithAggregatesInput = {
   tipo?: Prisma.EnumTipoUsuarioWithAggregatesFilter<"Usuario"> | $Enums.TipoUsuario
   activo?: Prisma.BoolWithAggregatesFilter<"Usuario"> | boolean
   fechaCreacion?: Prisma.DateTimeWithAggregatesFilter<"Usuario"> | Date | string
+  passwordActualizada?: Prisma.DateTimeNullableWithAggregatesFilter<"Usuario"> | Date | string | null
 }
 
 export type UsuarioCreateInput = {
@@ -294,6 +306,7 @@ export type UsuarioCreateInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
@@ -308,6 +321,7 @@ export type UsuarioUncheckedCreateInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
@@ -321,6 +335,7 @@ export type UsuarioUpdateInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
@@ -335,6 +350,7 @@ export type UsuarioUncheckedUpdateInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
@@ -349,6 +365,7 @@ export type UsuarioCreateManyInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
 }
 
 export type UsuarioUpdateManyMutationInput = {
@@ -357,6 +374,7 @@ export type UsuarioUpdateManyMutationInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsuarioUncheckedUpdateManyInput = {
@@ -366,6 +384,7 @@ export type UsuarioUncheckedUpdateManyInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
 export type UsuarioCountOrderByAggregateInput = {
@@ -375,6 +394,7 @@ export type UsuarioCountOrderByAggregateInput = {
   tipo?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  passwordActualizada?: Prisma.SortOrder
 }
 
 export type UsuarioAvgOrderByAggregateInput = {
@@ -388,6 +408,7 @@ export type UsuarioMaxOrderByAggregateInput = {
   tipo?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  passwordActualizada?: Prisma.SortOrder
 }
 
 export type UsuarioMinOrderByAggregateInput = {
@@ -397,6 +418,7 @@ export type UsuarioMinOrderByAggregateInput = {
   tipo?: Prisma.SortOrder
   activo?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  passwordActualizada?: Prisma.SortOrder
 }
 
 export type UsuarioSumOrderByAggregateInput = {
@@ -422,6 +444,10 @@ export type BoolFieldUpdateOperationsInput = {
 
 export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type IntFieldUpdateOperationsInput = {
@@ -508,6 +534,7 @@ export type UsuarioCreateWithoutNotificacionesCreadasInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
@@ -521,6 +548,7 @@ export type UsuarioUncheckedCreateWithoutNotificacionesCreadasInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
@@ -549,6 +577,7 @@ export type UsuarioUpdateWithoutNotificacionesCreadasInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
@@ -562,6 +591,7 @@ export type UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
@@ -574,6 +604,7 @@ export type UsuarioCreateWithoutNotificacionesRecibidasInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
@@ -587,6 +618,7 @@ export type UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
@@ -615,6 +647,7 @@ export type UsuarioUpdateWithoutNotificacionesRecibidasInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
@@ -628,6 +661,7 @@ export type UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
@@ -640,6 +674,7 @@ export type UsuarioCreateWithoutSocioInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
@@ -653,6 +688,7 @@ export type UsuarioUncheckedCreateWithoutSocioInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
@@ -681,6 +717,7 @@ export type UsuarioUpdateWithoutSocioInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
@@ -694,6 +731,7 @@ export type UsuarioUncheckedUpdateWithoutSocioInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
@@ -706,6 +744,7 @@ export type UsuarioCreateWithoutPostulanteInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
@@ -719,6 +758,7 @@ export type UsuarioUncheckedCreateWithoutPostulanteInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
@@ -747,6 +787,7 @@ export type UsuarioUpdateWithoutPostulanteInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
@@ -760,6 +801,7 @@ export type UsuarioUncheckedUpdateWithoutPostulanteInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
@@ -772,6 +814,7 @@ export type UsuarioCreateWithoutOfertasInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
@@ -785,6 +828,7 @@ export type UsuarioUncheckedCreateWithoutOfertasInput = {
   tipo: $Enums.TipoUsuario
   activo?: boolean
   fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
   postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
@@ -813,6 +857,7 @@ export type UsuarioUpdateWithoutOfertasInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
@@ -826,6 +871,7 @@ export type UsuarioUncheckedUpdateWithoutOfertasInput = {
   tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
   activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
@@ -888,6 +934,7 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   tipo?: boolean
   activo?: boolean
   fechaCreacion?: boolean
+  passwordActualizada?: boolean
   ofertas?: boolean | Prisma.Usuario$ofertasArgs<ExtArgs>
   postulante?: boolean | Prisma.Usuario$postulanteArgs<ExtArgs>
   socio?: boolean | Prisma.Usuario$socioArgs<ExtArgs>
@@ -903,6 +950,7 @@ export type UsuarioSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   tipo?: boolean
   activo?: boolean
   fechaCreacion?: boolean
+  passwordActualizada?: boolean
 }, ExtArgs["result"]["usuario"]>
 
 export type UsuarioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -912,6 +960,7 @@ export type UsuarioSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   tipo?: boolean
   activo?: boolean
   fechaCreacion?: boolean
+  passwordActualizada?: boolean
 }, ExtArgs["result"]["usuario"]>
 
 export type UsuarioSelectScalar = {
@@ -921,9 +970,10 @@ export type UsuarioSelectScalar = {
   tipo?: boolean
   activo?: boolean
   fechaCreacion?: boolean
+  passwordActualizada?: boolean
 }
 
-export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "tipo" | "activo" | "fechaCreacion", ExtArgs["result"]["usuario"]>
+export type UsuarioOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "password" | "tipo" | "activo" | "fechaCreacion" | "passwordActualizada", ExtArgs["result"]["usuario"]>
 export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ofertas?: boolean | Prisma.Usuario$ofertasArgs<ExtArgs>
   postulante?: boolean | Prisma.Usuario$postulanteArgs<ExtArgs>
@@ -951,6 +1001,7 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     tipo: $Enums.TipoUsuario
     activo: boolean
     fechaCreacion: Date
+    passwordActualizada: Date | null
   }, ExtArgs["result"]["usuario"]>
   composites: {}
 }
@@ -1385,6 +1436,7 @@ export interface UsuarioFieldRefs {
   readonly tipo: Prisma.FieldRef<"Usuario", 'TipoUsuario'>
   readonly activo: Prisma.FieldRef<"Usuario", 'Boolean'>
   readonly fechaCreacion: Prisma.FieldRef<"Usuario", 'DateTime'>
+  readonly passwordActualizada: Prisma.FieldRef<"Usuario", 'DateTime'>
 }
     
 

@@ -24,12 +24,31 @@ export type AuthRequest = Request & {
   user?: SessionUser;
 };
 
-function readUserId(payload: string | jwt.JwtPayload) {
+function readSession(payload: string | jwt.JwtPayload) {
   if (typeof payload !== 'object') return null;
 
   const id = payload.id;
 
-  return Number.isInteger(id) && id > 0 ? (id as number) : null;
+  if (!Number.isInteger(id) || id <= 0) return null;
+
+  return {
+    userId: id as number,
+    issuedAt: typeof payload.iat === 'number' ? payload.iat : null,
+  };
+}
+
+/**
+ * Una sesión emitida antes del último cambio de contraseña ya no vale: así,
+ * cambiar la contraseña cierra las sesiones abiertas en otros dispositivos.
+ * `iat` está en segundos; el cambio se guarda redondeado al segundo.
+ */
+function issuedBeforePasswordChange(
+  issuedAt: number | null,
+  passwordChangedAt: Date | null,
+) {
+  if (!passwordChangedAt) return false;
+
+  return issuedAt === null || issuedAt * 1000 < passwordChangedAt.getTime();
 }
 
 export async function requireAuth(
@@ -53,16 +72,16 @@ export async function requireAuth(
     });
   }
 
-  let userId: number | null;
+  let session: ReturnType<typeof readSession>;
 
   try {
     // Fijar el algoritmo evita que un token firmado de otra forma se acepte.
-    userId = readUserId(jwt.verify(token, secret, { algorithms: ['HS256'] }));
+    session = readSession(jwt.verify(token, secret, { algorithms: ['HS256'] }));
   } catch {
-    userId = null;
+    session = null;
   }
 
-  if (!userId) {
+  if (!session) {
     clearSessionCookie(res);
 
     return res.status(401).json({
@@ -71,9 +90,13 @@ export async function requireAuth(
   }
 
   try {
-    const user = await userRepository.findSessionUser(userId);
+    const user = await userRepository.findSessionUser(session.userId);
 
-    if (!user || !user.activo) {
+    if (
+      !user ||
+      !user.activo ||
+      issuedBeforePasswordChange(session.issuedAt, user.passwordActualizada)
+    ) {
       clearSessionCookie(res);
 
       return res.status(401).json({
