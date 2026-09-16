@@ -10,6 +10,8 @@ import { HttpError } from '@/utils/http-error';
 import {
   CreateApplicationData,
   ApplicationStatus,
+  MEMBER_APPLICATION_STATES,
+  MemberApplicationStatus,
   UpdateApplicationData,
 } from '@/types/application.type';
 
@@ -129,22 +131,148 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
   });
 }
 
+/** Las postulaciones recibidas en las ofertas de la empresa del socio. */
+export async function getReceived(actor: SessionUser) {
+  if (!actor.socioId) {
+    throw new HttpError(404, 'Socio no encontrado');
+  }
+
+  return applicationRepository.findReceivedBySocio(actor.socioId);
+}
+
+export async function getReceivedById(id: number, actor: SessionUser) {
+  const application = actor.socioId
+    ? await applicationRepository.findReceivedById(id, actor.socioId)
+    : null;
+
+  if (!application) {
+    throw new HttpError(404, 'Postulación no encontrada');
+  }
+
+  return application;
+}
+
+const STATUS_LABELS: Record<MemberApplicationStatus, string> = {
+  EN_REVISION: 'En revisión',
+  SELECCIONADO: 'Seleccionado',
+  NO_SELECCIONADO: 'No seleccionado',
+};
+
+function statusMessage(
+  estado: MemberApplicationStatus,
+  titulo: string,
+  empresa: string,
+) {
+  switch (estado) {
+    case 'EN_REVISION':
+      return `${empresa} está revisando tu postulación a «${titulo}».`;
+
+    case 'SELECCIONADO':
+      return `Tu postulación a «${titulo}» en ${empresa} fue seleccionada.`;
+
+    case 'NO_SELECCIONADO':
+      return `Tu postulación a «${titulo}» en ${empresa} no fue seleccionada. Gracias por tu interés.`;
+  }
+}
+
+/**
+ * La empresa solo cambia el estado, y solo a los que le corresponden. Las
+ * observaciones son el mensaje del postulante: la empresa las lee pero no las
+ * pisa. Cada cambio le llega al postulante como notificación.
+ */
+async function updateAsMember(
+  id: number,
+  data: Record<string, unknown>,
+  actor: SessionUser,
+) {
+  const application = await applicationRepository.findForStatusChange(id);
+
+  if (!application || application.oferta.socioId !== actor.socioId) {
+    throw new HttpError(404, 'Postulación no encontrada');
+  }
+
+  if (data.observaciones !== undefined) {
+    throw new HttpError(
+      400,
+      'Las observaciones las escribe el postulante y no se pueden modificar',
+    );
+  }
+
+  if (data.estado === undefined) {
+    throw new HttpError(400, 'Indicá el nuevo estado de la postulación');
+  }
+
+  if (
+    !MEMBER_APPLICATION_STATES.includes(data.estado as MemberApplicationStatus)
+  ) {
+    throw new HttpError(400, 'El estado de la postulación no es válido');
+  }
+
+  const estado = data.estado as MemberApplicationStatus;
+
+  if (application.estado === 'FINALIZADA') {
+    throw new HttpError(
+      409,
+      'La postulación está finalizada y ya no se puede cambiar',
+    );
+  }
+
+  if (application.estado !== estado) {
+    const recipient = application.postulante.usuario;
+
+    const changed = await applicationRepository.changeStatus({
+      id,
+      from: application.estado,
+      to: estado,
+      notification: recipient.activo
+        ? {
+            titulo: `Tu postulación: ${STATUS_LABELS[estado]}`,
+            mensaje: statusMessage(
+              estado,
+              application.oferta.titulo,
+              application.oferta.socio.razonSocial,
+            ),
+            creadoPorId: actor.id,
+            usuarioId: recipient.id,
+          }
+        : null,
+    });
+
+    if (!changed) {
+      throw new HttpError(
+        409,
+        'La postulación cambió mientras la estabas viendo. Actualizá la página.',
+      );
+    }
+  }
+
+  return getReceivedById(id, actor);
+}
+
 export async function update(
   id: number,
   data: UpdateApplicationData,
   actor: SessionUser,
 ) {
+  if (typeof data !== 'object' || data === null || Array.isArray(data)) {
+    throw new HttpError(400, 'Datos inválidos');
+  }
+
+  if (actor.tipo === 'SOCIO') {
+    return updateAsMember(id, data, actor);
+  }
+
   await findAccessible(id, actor);
 
   if (data.estado !== undefined && !APPLICATION_STATES.includes(data.estado)) {
-    throw new Error('El estado de la postulación no es válido');
+    throw new HttpError(400, 'El estado de la postulación no es válido');
   }
 
   if (
     data.observaciones !== undefined &&
     typeof data.observaciones !== 'string'
   ) {
-    throw new Error('El campo observaciones no es válido');
+    throw new HttpError(400, 'El campo observaciones no es válido');
   }
 
   return applicationRepository.update(id, {

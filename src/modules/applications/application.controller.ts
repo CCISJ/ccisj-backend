@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 import type { AuthRequest } from '@/middlewares/auth.middleware';
-import { statusFor } from '@/utils/http-error';
+import { HttpError, statusFor } from '@/utils/http-error';
+import { parseId } from '@/utils/params';
 import * as applicationService from './application.service';
 
 export async function getAll(_req: Request, res: Response) {
@@ -11,6 +12,42 @@ export async function getAll(_req: Request, res: Response) {
     res.status(500).json({
       message: 'Error al obtener las postulaciones',
     });
+  }
+}
+
+// Errores de validación del service: su mensaje es para el usuario. Otro
+// error es inesperado y su mensaje puede traer detalles internos de la base.
+function sendError(res: Response, error: unknown, fallback: string) {
+  res.status(statusFor(error, 500)).json({
+    message: error instanceof HttpError ? error.message : fallback,
+  });
+}
+
+export async function getReceived(req: AuthRequest, res: Response) {
+  try {
+    const applications = await applicationService.getReceived(req.user!);
+
+    res.json(applications);
+  } catch (error) {
+    sendError(res, error, 'Error al obtener las postulaciones');
+  }
+}
+
+export async function getReceivedById(req: AuthRequest, res: Response) {
+  try {
+    const id = parseId(req.params.id);
+
+    if (!id) {
+      return res.status(400).json({
+        message: 'ID inválido',
+      });
+    }
+
+    const application = await applicationService.getReceivedById(id, req.user!);
+
+    res.json(application);
+  } catch (error) {
+    sendError(res, error, 'Error al obtener la postulación');
   }
 }
 
@@ -55,9 +92,9 @@ export async function create(req: AuthRequest, res: Response) {
 
 export async function update(req: AuthRequest, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
+    if (!id) {
       return res.status(400).json({
         message: 'ID inválido',
       });
@@ -71,12 +108,7 @@ export async function update(req: AuthRequest, res: Response) {
 
     res.json(application);
   } catch (error) {
-    res.status(statusFor(error, 400)).json({
-      message:
-        error instanceof Error
-          ? error.message
-          : 'Error al actualizar la postulación',
-    });
+    sendError(res, error, 'Error al actualizar la postulación');
   }
 }
 
