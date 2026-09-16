@@ -60,8 +60,14 @@ export async function create(data: CreateNotificationData) {
   });
 }
 
+// Lo que envió la administración. Los avisos automáticos (por ejemplo, el de
+// una empresa que cambia el estado de una postulación) le llegan a su
+// destinatario pero no se listan acá.
 export async function findAll() {
   return prisma.notificacion.findMany({
+    where: {
+      creadoPor: { tipo: 'ADMIN' },
+    },
     orderBy: {
       fechaCreacion: 'desc',
     },

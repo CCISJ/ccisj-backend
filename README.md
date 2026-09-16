@@ -371,8 +371,8 @@ Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.
 | `/postulantes`    | Admin; cada postulante su propio perfil                                                             | Admin          | Admin; el postulante edita su perfil                                    |
 | `/categorias`     | Cualquier usuario                                                                                   | Admin          | Admin                                                                   |
 | `/ofertas`        | Cualquier usuario; cada socio las suyas con conteo de postulaciones en `/ofertas/mias`              | Admin y socios | Admin; cada socio solo las de su empresa                                |
-| `/postulaciones`  | Admin todas; el socio las de sus ofertas; el postulante las suyas                                   | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
-| `/notificaciones` | Admin todas; cada usuario las que recibió                                                           | Admin          | Cada usuario marca las suyas como leídas                                |
+| `/postulaciones`  | Admin todas; cada socio las de sus ofertas en `/postulaciones/recibidas`; el postulante las suyas   | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
+| `/notificaciones` | Admin las enviadas por admins; cada usuario las que recibió                                         | Admin          | Cada usuario marca las suyas como leídas                                |
 
 Ofertas:
 
@@ -384,6 +384,16 @@ Ofertas:
 - **Solo se borran sin postulaciones** (409 si tiene): en la base las
   postulaciones se borran en cascada con la oferta. Con postulaciones, se cierra.
 - Modalidad: `PRESENCIAL`, `REMOTO` o `HIBRIDO`.
+
+Postulaciones:
+
+- **La empresa solo cambia el estado**, y solo a `EN_REVISION`,
+  `SELECCIONADO` o `NO_SELECCIONADO`. `ENVIADA` la pone el sistema al
+  postularse; una postulación `FINALIZADA` ya no la cambia (409). Las
+  observaciones son el mensaje del postulante: la empresa no las edita.
+- **Cada cambio de estado le avisa al postulante** con una notificación normal,
+  creada en la misma transacción. Si el postulante está desactivado no se crea.
+  Estos avisos automáticos no aparecen en `GET /notificaciones` del admin.
 
 Reglas que conviene no romper al agregar endpoints:
 
