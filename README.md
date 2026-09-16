@@ -360,6 +360,15 @@ src/middlewares/auth.middleware.ts   requireAuth, requireRole, requireAdminOrDir
 
 El login admite 10 intentos fallidos cada 15 minutos por IP.
 
+**Cambiar la contraseña** (`POST /auth/cambiar-contrasena`, cualquier usuario
+con sesión): recibe `passwordActual` y `passwordNueva`. La nueva debe tener
+entre 10 y 128 caracteres, al menos una letra y un número, y ser distinta de la
+actual. Se guarda el momento del cambio en `usuario.password_actualizada` y
+`requireAuth` rechaza los tokens emitidos antes, así que **se cierran las
+sesiones abiertas en otros dispositivos**; la sesión desde la que se cambió
+recibe una cookie nueva y sigue. Admite 5 intentos fallidos cada 15 minutos por
+cuenta.
+
 ## Quién puede hacer qué
 
 Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.

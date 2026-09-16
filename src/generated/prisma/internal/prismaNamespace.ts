@@ -1211,7 +1211,8 @@ export const UsuarioScalarFieldEnum = {
   password: 'password',
   tipo: 'tipo',
   activo: 'activo',
-  fechaCreacion: 'fechaCreacion'
+  fechaCreacion: 'fechaCreacion',
+  passwordActualizada: 'passwordActualizada'
 } as const
 
 export type UsuarioScalarFieldEnum = (typeof UsuarioScalarFieldEnum)[keyof typeof UsuarioScalarFieldEnum]

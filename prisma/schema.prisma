@@ -54,6 +54,8 @@ model Usuario {
   tipo          TipoUsuario @map("tipo")
   activo        Boolean     @default(true)
   fechaCreacion DateTime    @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+  // Último cambio de contraseña: las sesiones emitidas antes dejan de valer.
+  passwordActualizada DateTime? @map("password_actualizada") @db.Timestamp(6)
 
   ofertas    Oferta[]
   postulante Postulante?

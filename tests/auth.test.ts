@@ -294,4 +294,154 @@ describe('Auth', () => {
 
     expect(response.status).toBe(401);
   });
+
+  describe('cambiar contraseña', () => {
+    const NEW_PASSWORD = 'NuevaClave2026';
+
+    let account: Awaited<ReturnType<typeof createUser>>;
+
+    beforeAll(async () => {
+      account = await createUser({
+        tipo: 'SOCIO',
+        loginEnabled: true,
+        email: uniqueEmail('auth-test-password'),
+      });
+    });
+
+    afterAll(async () => {
+      if (account) await deleteUsers([account.userId]);
+    });
+
+    const change = (body: unknown, cookie = account.cookie) =>
+      request(app)
+        .post('/auth/cambiar-contrasena')
+        .set('Cookie', cookie)
+        .send(body as object);
+
+    it('pide sesión', async () => {
+      const response = await request(app)
+        .post('/auth/cambiar-contrasena')
+        .send({ passwordActual: TEST_PASSWORD, passwordNueva: NEW_PASSWORD });
+
+      expect(response.status).toBe(401);
+    });
+
+    it.each([
+      ['sin contraseña actual', { passwordNueva: NEW_PASSWORD }],
+      ['sin contraseña nueva', { passwordActual: TEST_PASSWORD }],
+      [
+        'una nueva de menos de 10 caracteres',
+        { passwordActual: TEST_PASSWORD, passwordNueva: 'Corta123' },
+      ],
+      [
+        'una nueva sin números',
+        { passwordActual: TEST_PASSWORD, passwordNueva: 'SoloLetrasLargas' },
+      ],
+      [
+        'una nueva sin letras',
+        { passwordActual: TEST_PASSWORD, passwordNueva: '12345678901' },
+      ],
+      [
+        'una nueva de más de 128 caracteres',
+        {
+          passwordActual: TEST_PASSWORD,
+          passwordNueva: `a1${'x'.repeat(127)}`,
+        },
+      ],
+      [
+        'una nueva igual a la actual',
+        { passwordActual: TEST_PASSWORD, passwordNueva: TEST_PASSWORD },
+      ],
+      [
+        'valores que no son texto',
+        { passwordActual: { $ne: '' }, passwordNueva: NEW_PASSWORD },
+      ],
+    ])('rechaza %s', async (_label, body) => {
+      const response = await change(body);
+
+      expect(response.status).toBe(400);
+    });
+
+    it('rechaza un body que no es un objeto', async () => {
+      const response = await change([TEST_PASSWORD, NEW_PASSWORD]);
+
+      expect(response.status).toBe(400);
+    });
+
+    it('rechaza una contraseña actual incorrecta y no cambia nada', async () => {
+      const response = await change({
+        passwordActual: 'NoEsLaClave123',
+        passwordNueva: NEW_PASSWORD,
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('La contraseña actual no es correcta');
+
+      const stored = await prisma.usuario.findUnique({
+        where: { id: account.userId },
+      });
+
+      expect(await argon2.verify(stored!.password, TEST_PASSWORD)).toBe(true);
+      expect(stored!.passwordActualizada).toBeNull();
+    });
+
+    it('cambia la contraseña, mantiene esta sesión y cierra las demás', async () => {
+      const current = request.agent(app);
+      const otherDevice = request.agent(app);
+
+      await current
+        .post('/auth/login')
+        .send({ email: account.email, password: TEST_PASSWORD })
+        .expect(200);
+
+      await otherDevice
+        .post('/auth/login')
+        .send({ email: account.email, password: TEST_PASSWORD })
+        .expect(200);
+
+      // El token tiene precisión de segundos: la otra sesión tiene que ser
+      // de un segundo anterior al cambio.
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+
+      const response = await current
+        .post('/auth/cambiar-contrasena')
+        .send({ passwordActual: TEST_PASSWORD, passwordNueva: NEW_PASSWORD });
+
+      expect(response.status).toBe(200);
+      expect(response.headers['set-cookie']?.[0]).toMatch(/^token=/);
+      expect(JSON.stringify(response.body)).not.toContain(NEW_PASSWORD);
+
+      expect((await current.get('/auth/me')).status).toBe(200);
+      expect((await otherDevice.get('/auth/me')).status).toBe(401);
+
+      // Una cookie firmada antes del cambio tampoco vale.
+      expect(
+        (await request(app).get('/auth/me').set('Cookie', account.cookie))
+          .status,
+      ).toBe(401);
+
+      const stored = await prisma.usuario.findUnique({
+        where: { id: account.userId },
+      });
+
+      expect(stored!.password).not.toBe(NEW_PASSWORD);
+      expect(await argon2.verify(stored!.password, NEW_PASSWORD)).toBe(true);
+      expect(stored!.passwordActualizada).toBeInstanceOf(Date);
+
+      const oldLogin = await request(app)
+        .post('/auth/login')
+        .send({ email: account.email, password: TEST_PASSWORD });
+
+      expect(oldLogin.status).toBe(401);
+
+      const newSession = request.agent(app);
+
+      await newSession
+        .post('/auth/login')
+        .send({ email: account.email, password: NEW_PASSWORD })
+        .expect(200);
+
+      expect((await newSession.get('/auth/me')).status).toBe(200);
+    });
+  });
 });

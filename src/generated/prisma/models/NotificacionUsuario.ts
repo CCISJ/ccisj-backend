@@ -506,10 +506,6 @@ export type NotificacionUsuarioUncheckedUpdateManyWithoutNotificacionNestedInput
   deleteMany?: Prisma.NotificacionUsuarioScalarWhereInput | Prisma.NotificacionUsuarioScalarWhereInput[]
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type NotificacionUsuarioCreateWithoutUsuarioInput = {
   leida?: boolean
   fechaLectura?: Date | string | null

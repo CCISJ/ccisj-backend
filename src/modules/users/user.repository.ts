@@ -69,6 +69,7 @@ export function findSessionUser(id: number) {
       id: true,
       tipo: true,
       activo: true,
+      passwordActualizada: true,
       socio: {
         select: {
           id: true,
@@ -81,6 +82,25 @@ export function findSessionUser(id: number) {
         },
       },
     },
+  });
+}
+
+/** El hash de la contraseña, solo para verificarla antes de cambiarla. */
+export function findPasswordHash(id: number) {
+  return prisma.usuario.findUnique({
+    where: { id },
+    select: { password: true },
+  });
+}
+
+export function updatePassword(id: number, hash: string, changedAt: Date) {
+  return prisma.usuario.update({
+    where: { id },
+    data: {
+      password: hash,
+      passwordActualizada: changedAt,
+    },
+    select: { id: true },
   });
 }
 
