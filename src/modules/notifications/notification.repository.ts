@@ -106,11 +106,13 @@ export async function findByUserId(usuarioId: number) {
     },
     include: {
       notificacion: {
+        // Quien recibe un aviso solo necesita saber si vino de la
+        // administración o de una empresa: ni el email de acceso ni el ID de
+        // la cuenta que lo creó.
+        omit: { creadoPorId: true },
         include: {
           creadoPor: {
             select: {
-              id: true,
-              email: true,
               tipo: true,
             },
           },
@@ -135,40 +137,54 @@ export async function findPendingPopups(usuarioId: number) {
       },
     },
     include: {
-      notificacion: true,
-    },
-  });
-}
-
-export async function markAsRead(usuarioId: number, notificacionId: number) {
-  return prisma.notificacionUsuario.update({
-    where: {
-      notificacionId_usuarioId: {
-        notificacionId,
-        usuarioId,
+      notificacion: {
+        omit: { creadoPorId: true },
       },
     },
-    data: {
-      leida: true,
-      fechaLectura: new Date(),
-    },
   });
 }
 
-export async function markPopupAsSeen(
+/**
+ * Marca una notificación del usuario. Devuelve null si no la recibió: así una
+ * ajena o inexistente es un 404 y no un error de la base.
+ */
+async function markOwn(
   usuarioId: number,
   notificacionId: number,
+  data: {
+    leida?: boolean;
+    fechaLectura?: Date;
+    emergenteVista?: boolean;
+    fechaEmergenteVista?: Date;
+  },
 ) {
-  return prisma.notificacionUsuario.update({
+  const { count } = await prisma.notificacionUsuario.updateMany({
+    where: { notificacionId, usuarioId },
+    data,
+  });
+
+  if (count === 0) return null;
+
+  return prisma.notificacionUsuario.findUnique({
     where: {
       notificacionId_usuarioId: {
         notificacionId,
         usuarioId,
       },
     },
-    data: {
-      emergenteVista: true,
-      fechaEmergenteVista: new Date(),
-    },
+  });
+}
+
+export function markAsRead(usuarioId: number, notificacionId: number) {
+  return markOwn(usuarioId, notificacionId, {
+    leida: true,
+    fechaLectura: new Date(),
+  });
+}
+
+export function markPopupAsSeen(usuarioId: number, notificacionId: number) {
+  return markOwn(usuarioId, notificacionId, {
+    emergenteVista: true,
+    fechaEmergenteVista: new Date(),
   });
 }

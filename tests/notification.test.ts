@@ -412,7 +412,8 @@ describe('Notificaciones', () => {
         .patch(`/notificaciones/${created.body.id}/leida`)
         .set('Cookie', socio.cookie);
 
-      expect([400, 404]).toContain(response.status);
+      expect(response.status).toBe(404);
+      expect(response.body.message).toBe('Notificación no encontrada');
 
       const recipient = await prisma.notificacionUsuario.findUnique({
         where: {
@@ -424,6 +425,67 @@ describe('Notificaciones', () => {
       });
 
       expect(recipient!.leida).toBe(false);
+    });
+
+    it('quien recibe una notificación no ve el email ni el ID de quien la creó', async () => {
+      await request(app)
+        .post('/notificaciones')
+        .set('Cookie', admin.cookie)
+        .send({
+          titulo: 'Sin datos del creador',
+          mensaje: 'Mensaje',
+          tipo: 'EMERGENTE',
+          destinatarioTipo: 'USUARIOS',
+          usuarioIds: [postulante.userId],
+        });
+
+      for (const path of ['recibidas', 'emergentes']) {
+        const response = await request(app)
+          .get(`/notificaciones/${path}`)
+          .set('Cookie', postulante.cookie);
+
+        expect(response.status).toBe(200);
+        expect(response.body.length).toBeGreaterThan(0);
+
+        for (const item of response.body) {
+          expect(item.notificacion).not.toHaveProperty('creadoPorId');
+          expect(item.notificacion.creadoPor ?? {}).not.toHaveProperty('email');
+          expect(item.notificacion.creadoPor ?? {}).not.toHaveProperty('id');
+        }
+      }
+
+      const [received] = (
+        await request(app)
+          .get('/notificaciones/recibidas')
+          .set('Cookie', postulante.cookie)
+      ).body;
+
+      expect(received.notificacion.creadoPor).toEqual({ tipo: 'ADMIN' });
+    });
+
+    it('rechaza título o mensaje demasiado largos sin errores internos', async () => {
+      const response = await request(app)
+        .post('/notificaciones')
+        .set('Cookie', admin.cookie)
+        .send({
+          titulo: 'x'.repeat(151),
+          mensaje: 'Mensaje',
+          destinatarioTipo: 'TODOS',
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'El título no puede superar los 150 caracteres',
+      );
+    });
+
+    it('marcar con un ID que no es entero responde 400', async () => {
+      const response = await request(app)
+        .patch('/notificaciones/1.5/leida')
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('ID inválido');
     });
   });
 });
