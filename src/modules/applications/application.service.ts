@@ -1,20 +1,17 @@
-import * as applicationRepository from './application.repository';
-
-import * as offerRepository from '@/modules/offers/offer.repository';
-
-import * as applicantRepository from '@/modules/applicants/applicant.repository';
-
-import type { SessionUser } from '@/middlewares/auth.middleware';
-import { HttpError } from '@/utils/http-error';
 import { Prisma } from '@/generated/prisma/client';
-
+import type { SessionUser } from '@/middlewares/auth.middleware';
+import * as applicantRepository from '@/modules/applicants/applicant.repository';
+import * as offerRepository from '@/modules/offers/offer.repository';
 import {
-  CreateApplicationData,
   ApplicationStatus,
+  CreateApplicationData,
   MEMBER_APPLICATION_STATES,
   MemberApplicationStatus,
   UpdateApplicationData,
 } from '@/types/application.type';
+import { HttpError } from '@/utils/http-error';
+
+import * as applicationRepository from './application.repository';
 
 // El mensaje que el postulante deja al postularse (`observaciones`).
 const MESSAGE_MAX = 2000;

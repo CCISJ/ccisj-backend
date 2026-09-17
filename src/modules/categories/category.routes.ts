@@ -1,7 +1,8 @@
 import { Router } from 'express';
 
-import { getAll, getById, create, update, remove } from './category.controller';
 import { requireAuth, requireRole } from '@/middlewares/auth.middleware';
+
+import { create, getAll, getById, remove, update } from './category.controller';
 
 const router = Router();
 

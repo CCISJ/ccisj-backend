@@ -1,6 +1,8 @@
 import type { Request, Response } from 'express';
+
 import { parseId } from '@/utils/params';
 import { sendError } from '@/utils/send-error';
+
 import * as categoryService from './category.service';
 
 function invalidId(res: Response) {

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import * as usuarioRepository from '@/modules/users/user.repository';
 import { HttpError } from '@/utils/http-error';
-import { assertPasswordPolicy, PASSWORD_MAX } from '@/utils/password';
+import { PASSWORD_MAX, assertPasswordPolicy } from '@/utils/password';
 
 type LoginData = {
   email: string;

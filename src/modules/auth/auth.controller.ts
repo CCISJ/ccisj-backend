@@ -1,9 +1,10 @@
 import type { Request, Response } from 'express';
 
-import * as authService from './auth.service';
 import { AuthRequest } from '@/middlewares/auth.middleware';
-import { clearSessionCookie, setSessionCookie } from './session-cookie';
 import { HttpError } from '@/utils/http-error';
+
+import * as authService from './auth.service';
+import { clearSessionCookie, setSessionCookie } from './session-cookie';
 
 export async function login(req: Request, res: Response) {
   try {

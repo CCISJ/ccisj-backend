@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
 import { sendError } from '@/utils/send-error';

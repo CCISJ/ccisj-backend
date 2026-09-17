@@ -1,7 +1,9 @@
 import type { Request, Response } from 'express';
+
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
 import { sendError } from '@/utils/send-error';
+
 import * as applicantService from './applicant.service';
 
 // Un postulante solo accede a su propio perfil. A los demás se les responde

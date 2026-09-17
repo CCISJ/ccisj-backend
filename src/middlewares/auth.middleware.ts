@@ -1,10 +1,10 @@
-import type { MemberType } from '@/types/member.type';
-import type { TipoUsuario } from '@/types/user.type';
 import type { NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 
-import * as userRepository from '@/modules/users/user.repository';
 import { clearSessionCookie } from '@/modules/auth/session-cookie';
+import * as userRepository from '@/modules/users/user.repository';
+import type { MemberType } from '@/types/member.type';
+import type { TipoUsuario } from '@/types/user.type';
 
 /**
  * Usuario de la sesión, leído de la base en cada request. El token solo

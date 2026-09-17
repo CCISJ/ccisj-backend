@@ -1,7 +1,8 @@
-import * as applicantRepository from './applicant.repository';
 import * as usuarioRepository from '@/modules/users/user.repository';
-import { HttpError } from '@/utils/http-error';
 import { UpdateApplicantData } from '@/types/user.type';
+import { HttpError } from '@/utils/http-error';
+
+import * as applicantRepository from './applicant.repository';
 
 // Los mismos largos que la base (`VarChar(100)` y `VarChar(50)`): pasarse
 // terminaba en un error de Prisma en vez de un mensaje claro.
