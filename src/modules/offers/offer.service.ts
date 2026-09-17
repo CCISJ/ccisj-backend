@@ -303,6 +303,15 @@ export async function create(body: CreateOfferData, actor: SessionUser) {
     throw new HttpError(400, 'Socio no encontrado');
   }
 
+  // Al dar de baja un socio se cierran sus ofertas: la administración no le
+  // puede publicar una nueva.
+  if (!member.usuario.activo) {
+    throw new HttpError(
+      400,
+      'El socio está dado de baja: no puede publicar ofertas',
+    );
+  }
+
   const categoriaIds = await parseCategories(body.categoriaIds ?? []);
 
   // Se publica directo: toda oferta nueva nace activa.
@@ -376,6 +385,19 @@ export async function update(
       400,
       'Para reabrir la oferta, elegí una fecha de cierre a partir de hoy o quitala',
     );
+  }
+
+  // Las ofertas de un socio dado de baja quedan cerradas (el socio ya no
+  // entra, así que esto solo lo puede intentar la administración).
+  if (changes.estado === 'ACTIVA' && offer.estado !== 'ACTIVA') {
+    const member = await memberRepository.findById(offer.socioId);
+
+    if (!member?.usuario.activo) {
+      throw new HttpError(
+        400,
+        'El socio está dado de baja: no se puede reabrir la oferta',
+      );
+    }
   }
 
   return offerRepository.update(id, changes);

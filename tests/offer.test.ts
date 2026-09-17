@@ -94,7 +94,6 @@ describe('Offers', () => {
 
     expect(response.body.id).toBe(offerId);
     expect(response.body).toHaveProperty('socio');
-    expect(response.body).toHaveProperty('creador');
     expect(response.body).toHaveProperty('categorias');
   });
 
@@ -109,7 +108,9 @@ describe('Offers', () => {
       expect(response.body.socio).not.toHaveProperty(hidden);
     }
 
-    expect(response.body.creador).not.toHaveProperty('email');
+    // Ni quién la creó: si la publicó la administración no se tiene que notar.
+    expect(response.body).not.toHaveProperty('creador');
+    expect(response.body).not.toHaveProperty('creadaPor');
   });
 
   it('POST /ofertas falla sin categorías', async () => {
@@ -239,7 +240,12 @@ describe('Offers', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.socioId).toBe(socio.socioId);
-      expect(response.body.creadaPor).toBe(socio.userId);
+
+      const stored = await prisma.oferta.findUnique({
+        where: { id: response.body.id },
+      });
+
+      expect(stored!.creadaPor).toBe(socio.userId);
     });
 
     it('un socio no edita ni borra ofertas de otra empresa', async () => {
@@ -277,7 +283,71 @@ describe('Offers', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.socioId).toBe(otherSocio.socioId);
-      expect(response.body.creadaPor).toBe(admin.userId);
+
+      const stored = await prisma.oferta.findUnique({
+        where: { id: response.body.id },
+      });
+
+      expect(stored!.creadaPor).toBe(admin.userId);
+
+      // Para un postulante se ve igual que una publicada por la empresa.
+      const [listed] = (
+        await request(app).get('/ofertas').set('Cookie', postulante.cookie)
+      ).body.filter((offer: { id: number }) => offer.id === response.body.id);
+
+      expect(listed).not.toHaveProperty('creador');
+      expect(listed).not.toHaveProperty('creadaPor');
+    });
+
+    it('no se publica ni se reabre una oferta de un socio dado de baja', async () => {
+      const baja = await createMember();
+
+      try {
+        const offer = await prisma.oferta.create({
+          data: {
+            socioId: baja.socioId,
+            creadaPor: admin.userId,
+            titulo: 'Oferta de empresa dada de baja',
+            descripcion: 'Oferta de prueba',
+            estado: 'CERRADA',
+          },
+        });
+
+        await prisma.usuario.update({
+          where: { id: baja.userId },
+          data: { activo: false },
+        });
+
+        const create = await request(app)
+          .post('/ofertas')
+          .set('Cookie', admin.cookie)
+          .send({ ...baseOffer(), socioId: baja.socioId });
+
+        expect(create.status).toBe(400);
+        expect(create.body.message).toBe(
+          'El socio está dado de baja: no puede publicar ofertas',
+        );
+
+        const reopen = await request(app)
+          .patch(`/ofertas/${offer.id}`)
+          .set('Cookie', admin.cookie)
+          .send({ estado: 'ACTIVA' });
+
+        expect(reopen.status).toBe(400);
+        expect(reopen.body.message).toBe(
+          'El socio está dado de baja: no se puede reabrir la oferta',
+        );
+
+        // Editar otros datos o dejarla cerrada sí se puede.
+        const edit = await request(app)
+          .patch(`/ofertas/${offer.id}`)
+          .set('Cookie', admin.cookie)
+          .send({ titulo: 'Oferta corregida', estado: 'CERRADA' });
+
+        expect(edit.status).toBe(200);
+      } finally {
+        await deleteUsers([baja.userId]);
+      }
     });
 
     it('el administrador edita ofertas de cualquier socio', async () => {
