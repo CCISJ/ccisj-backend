@@ -404,6 +404,18 @@ Postulaciones:
   creada en la misma transacción. Si el postulante está desactivado no se crea.
   Estos avisos automáticos no aparecen en `GET /notificaciones` del admin.
 
+Baja de un socio (`DELETE /socios/:id`, solo admin):
+
+- Es lógica: se desactiva el usuario y el socio sigue en la base.
+- **Sus ofertas activas se cierran** y las postulaciones que la empresa no
+  resolvió (`ENVIADA` o `EN_REVISION`, en cualquiera de sus ofertas) pasan a
+  `FINALIZADA`. Las `SELECCIONADO` y `NO_SELECCIONADO` quedan como están.
+- Cada postulante activo afectado recibe **un aviso por oferta**, sin mencionar
+  la baja. Lo crea la cuenta de la empresa, así que tampoco aparece en
+  `GET /notificaciones` del admin.
+- Todo va en una transacción. Si la cuenta se reactiva, las ofertas siguen
+  cerradas.
+
 Reglas que conviene no romper al agregar endpoints:
 
 - **Quién hace la acción sale de `req.user`, nunca del body.** El socio de una
