@@ -1,6 +1,7 @@
 import { TipoNotificacion } from '@/types/notification.type';
 import * as notificationRepository from './notification.repository';
 import * as userRepository from '../users/user.repository';
+import { HttpError } from '@/utils/http-error';
 
 type DestinatarioTipo = 'TODOS' | 'SOCIOS' | 'POSTULANTES' | 'USUARIOS';
 
@@ -15,6 +16,11 @@ type CreateNotificationInput = {
 
 const NOTIFICATION_TYPES: TipoNotificacion[] = ['NORMAL', 'EMERGENTE'];
 
+// El título entra en la base hasta 150 caracteres; el mensaje no tiene tope en
+// la base, pero un comunicado no necesita más.
+const TITLE_MAX = 150;
+const MESSAGE_MAX = 5000;
+
 export async function create(data: CreateNotificationInput) {
   if (typeof data.titulo !== 'string' || !data.titulo.trim()) {
     throw new Error('El título es obligatorio');
@@ -22,6 +28,16 @@ export async function create(data: CreateNotificationInput) {
 
   if (typeof data.mensaje !== 'string' || !data.mensaje.trim()) {
     throw new Error('El mensaje es obligatorio');
+  }
+
+  if (data.titulo.trim().length > TITLE_MAX) {
+    throw new Error(`El título no puede superar los ${TITLE_MAX} caracteres`);
+  }
+
+  if (data.mensaje.trim().length > MESSAGE_MAX) {
+    throw new Error(
+      `El mensaje no puede superar los ${MESSAGE_MAX} caracteres`,
+    );
   }
 
   if (data.tipo !== undefined && !NOTIFICATION_TYPES.includes(data.tipo)) {
@@ -84,13 +100,25 @@ export async function getPendingPopups(usuarioId: number) {
   return notificationRepository.findPendingPopups(usuarioId);
 }
 
+function assertReceived<T>(notification: T | null) {
+  if (!notification) {
+    throw new HttpError(404, 'Notificación no encontrada');
+  }
+
+  return notification;
+}
+
 export async function markAsRead(usuarioId: number, notificacionId: number) {
-  return notificationRepository.markAsRead(usuarioId, notificacionId);
+  return assertReceived(
+    await notificationRepository.markAsRead(usuarioId, notificacionId),
+  );
 }
 
 export async function markPopupAsSeen(
   usuarioId: number,
   notificacionId: number,
 ) {
-  return notificationRepository.markPopupAsSeen(usuarioId, notificacionId);
+  return assertReceived(
+    await notificationRepository.markPopupAsSeen(usuarioId, notificacionId),
+  );
 }

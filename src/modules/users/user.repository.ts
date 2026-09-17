@@ -1,4 +1,5 @@
 import { prisma } from '@/config/prisma';
+import { Prisma } from '@/generated/prisma/client';
 import { TipoUsuario } from '@/types/user.type';
 
 export function findAll() {
@@ -104,9 +105,28 @@ export function updatePassword(id: number, hash: string, changedAt: Date) {
   });
 }
 
+// Sin distinguir mayúsculas, para el login y para detectar emails repetidos.
+// Los emails nuevos se guardan en minúsculas (ver `normalizeEmail`).
 export function findByEmail(email: string) {
+  return prisma.usuario.findFirst({
+    where: {
+      email: {
+        equals: email,
+        mode: 'insensitive',
+      },
+    },
+  });
+}
+
+/** Si la cuenta es de un socio o de un postulante. */
+export function findProfiles(id: number) {
   return prisma.usuario.findUnique({
-    where: { email },
+    where: { id },
+    select: {
+      tipo: true,
+      socio: { select: { id: true } },
+      postulante: { select: { id: true } },
+    },
   });
 }
 
@@ -233,8 +253,26 @@ export function update(
   });
 }
 
-export function remove(id: number) {
-  return prisma.usuario.delete({
-    where: { id },
-  });
+/**
+ * Borra la cuenta si no tiene historial: una empresa, ofertas publicadas o
+ * notificaciones enviadas la frenan (restricción de la base). Devuelve false
+ * en ese caso. Un postulante se borra con su perfil, CV y postulaciones.
+ */
+export async function remove(id: number) {
+  try {
+    await prisma.usuario.delete({
+      where: { id },
+    });
+
+    return true;
+  } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2003'
+    ) {
+      return false;
+    }
+
+    throw error;
+  }
 }

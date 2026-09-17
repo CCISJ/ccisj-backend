@@ -85,7 +85,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: testEmail,
-        password: 'test123',
+        password: 'Clave12345',
         tipo: 'POSTULANTE',
       });
 
@@ -123,7 +123,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: testEmail,
-        password: 'otra-password',
+        password: 'OtraClave123',
         tipo: 'POSTULANTE',
       });
 
@@ -162,8 +162,8 @@ describe('Usuarios', () => {
         email: `no-existe-${Date.now()}@ccisj.uy`,
       });
 
-    expect(response.status).toBe(400);
-    expect(response.body).toHaveProperty('message');
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Usuario no encontrado');
   });
 
   it('PATCH /usuarios/:id devuelve 400 si el ID es inválido', async () => {
@@ -220,7 +220,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `usuario-hash-${Date.now()}@ccisj.uy`,
-        password: 'clave-en-claro',
+        password: 'clave-en-claro-1',
         tipo: 'POSTULANTE',
       });
 
@@ -231,7 +231,7 @@ describe('Usuarios', () => {
     });
 
     try {
-      expect(stored!.password).not.toBe('clave-en-claro');
+      expect(stored!.password).not.toBe('clave-en-claro-1');
       expect(stored!.password.startsWith('$argon2')).toBe(true);
     } finally {
       await prisma.usuario.delete({ where: { id: response.body.id } });
@@ -244,11 +244,199 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `usuario-tipo-${Date.now()}@ccisj.uy`,
-        password: 'test123',
+        password: 'Clave12345',
         tipo: 'SUPERADMIN',
       });
 
     expect(response.status).toBe(400);
+  });
+
+  describe('reglas de las cuentas', () => {
+    let socio: Awaited<ReturnType<typeof createMember>>;
+    let postulante: Awaited<ReturnType<typeof createApplicant>>;
+    const created: number[] = [];
+
+    beforeAll(async () => {
+      socio = await createMember();
+      postulante = await createApplicant();
+    });
+
+    afterAll(async () => {
+      await deleteUsers([socio.userId, postulante.userId, ...created]);
+    });
+
+    function createUser(body: Record<string, unknown>) {
+      return request(app)
+        .post('/usuarios')
+        .set('Cookie', admin.cookie)
+        .send(body);
+    }
+
+    it('la contraseña cumple las mismas reglas que al cambiarla', async () => {
+      const email = `usuario-reglas-${Date.now()}@ccisj.uy`;
+
+      const cases = [
+        ['Corta1', 'La contraseña debe tener al menos 10 caracteres'],
+        [
+          'sinnumeros',
+          'La contraseña debe tener al menos una letra y un número',
+        ],
+        [
+          '1234567890',
+          'La contraseña debe tener al menos una letra y un número',
+        ],
+      ];
+
+      for (const [password, message] of cases) {
+        const response = await createUser({
+          email,
+          password,
+          tipo: 'POSTULANTE',
+        });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(message);
+      }
+    });
+
+    it('valida el formato del email y lo guarda en minúsculas', async () => {
+      const invalid = await createUser({
+        email: 'no-es-un-email',
+        password: 'Clave12345',
+        tipo: 'POSTULANTE',
+      });
+
+      expect(invalid.status).toBe(400);
+      expect(invalid.body.message).toBe('El email no es válido');
+
+      const suffix = Date.now();
+      const response = await createUser({
+        email: `  Usuario.Mayus-${suffix}@CCISJ.uy `,
+        password: 'Clave12345',
+        tipo: 'POSTULANTE',
+      });
+
+      expect(response.status).toBe(201);
+      created.push(response.body.id);
+      expect(response.body.email).toBe(`usuario.mayus-${suffix}@ccisj.uy`);
+
+      // El mismo email con otras mayúsculas es un repetido.
+      const duplicate = await createUser({
+        email: `USUARIO.MAYUS-${suffix}@ccisj.uy`,
+        password: 'Clave12345',
+        tipo: 'POSTULANTE',
+      });
+
+      expect(duplicate.status).toBe(400);
+      expect(duplicate.body.message).toBe('El email ya está registrado');
+    });
+
+    it('no crea cuentas de socio sueltas, sin su empresa', async () => {
+      const response = await createUser({
+        email: `socio-suelto-${Date.now()}@ccisj.uy`,
+        password: 'Clave12345',
+        tipo: 'SOCIO',
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Las cuentas de socio se crean desde la sección Socios',
+      );
+    });
+
+    it('no cambia el tipo de una cuenta con ficha de socio o postulante', async () => {
+      for (const userId of [socio.userId, postulante.userId]) {
+        const response = await request(app)
+          .patch(`/usuarios/${userId}`)
+          .set('Cookie', admin.cookie)
+          .send({ tipo: 'ADMIN' });
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toBe(
+          'No se puede cambiar el tipo de una cuenta que tiene ficha de socio o de postulante',
+        );
+      }
+
+      const stored = await prisma.usuario.findUnique({
+        where: { id: socio.userId },
+      });
+
+      expect(stored!.tipo).toBe('SOCIO');
+    });
+
+    it('un socio se da de baja desde Socios, no desde Usuarios', async () => {
+      const deactivate = await request(app)
+        .patch(`/usuarios/${socio.userId}`)
+        .set('Cookie', admin.cookie)
+        .send({ activo: false });
+
+      expect(deactivate.status).toBe(400);
+      expect(deactivate.body.message).toBe(
+        'Para dar de baja un socio usá la sección Socios: así también se cierran sus ofertas',
+      );
+
+      // Reactivar sí se hace desde acá.
+      await prisma.usuario.update({
+        where: { id: socio.userId },
+        data: { activo: false },
+      });
+
+      const reactivate = await request(app)
+        .patch(`/usuarios/${socio.userId}`)
+        .set('Cookie', admin.cookie)
+        .send({ activo: true });
+
+      expect(reactivate.status).toBe(200);
+      expect(reactivate.body.activo).toBe(true);
+    });
+
+    it('el administrador no se quita el acceso a sí mismo', async () => {
+      const demote = await request(app)
+        .patch(`/usuarios/${admin.userId}`)
+        .set('Cookie', admin.cookie)
+        .send({ tipo: 'POSTULANTE' });
+
+      const deactivate = await request(app)
+        .patch(`/usuarios/${admin.userId}`)
+        .set('Cookie', admin.cookie)
+        .send({ activo: false });
+
+      const remove = await request(app)
+        .delete(`/usuarios/${admin.userId}`)
+        .set('Cookie', admin.cookie);
+
+      expect(demote.status).toBe(400);
+      expect(deactivate.status).toBe(400);
+      expect(remove.status).toBe(400);
+
+      const stored = await prisma.usuario.findUnique({
+        where: { id: admin.userId },
+      });
+
+      expect(stored).toMatchObject({ tipo: 'ADMIN', activo: true });
+    });
+
+    it('no elimina una cuenta con historial y lo explica', async () => {
+      const response = await request(app)
+        .delete(`/usuarios/${socio.userId}`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(409);
+      expect(response.body.message).toBe(
+        'La cuenta tiene datos asociados (empresa, ofertas o notificaciones enviadas) y no se puede eliminar. Desactivala.',
+      );
+    });
+
+    it('no reenvía mensajes internos de la base', async () => {
+      const response = await request(app)
+        .patch(`/usuarios/${postulante.userId}`)
+        .set('Cookie', admin.cookie)
+        .send({ email: `${'x'.repeat(250)}@ccisj.uy` });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('El email no es válido');
+      expect(JSON.stringify(response.body)).not.toMatch(/prisma|invocation/i);
+    });
   });
 
   describe('permisos', () => {
@@ -281,7 +469,7 @@ describe('Usuarios', () => {
         .set('Cookie', socio.cookie)
         .send({
           email: `escalada-${Date.now()}@ccisj.uy`,
-          password: 'test123',
+          password: 'Clave12345',
           tipo: 'ADMIN',
         });
 
@@ -303,7 +491,6 @@ describe('Usuarios', () => {
 
       expect(user!.tipo).toBe('POSTULANTE');
     });
-
 
     it('GET /usuarios/destinatarios-notificaciones es solo para ADMIN', async () => {
       const asSocio = await request(app)
@@ -359,8 +546,16 @@ describe('Usuarios', () => {
       });
 
       expect(adminResult).toBeUndefined();
-      expect(response.body.every((user: { activo?: boolean }) => !('activo' in user))).toBe(true);
-      expect(response.body.every((user: { password?: string }) => !('password' in user))).toBe(true);
+      expect(
+        response.body.every(
+          (user: { activo?: boolean }) => !('activo' in user),
+        ),
+      ).toBe(true);
+      expect(
+        response.body.every(
+          (user: { password?: string }) => !('password' in user),
+        ),
+      ).toBe(true);
     });
 
     it('GET /usuarios/destinatarios-notificaciones excluye usuarios inactivos', async () => {

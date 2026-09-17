@@ -1,13 +1,23 @@
 import type { Request, Response } from 'express';
+import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { parseId } from '@/utils/params';
+import { sendError } from '@/utils/send-error';
 import * as userService from './user.service';
+
+function invalidId(res: Response) {
+  return res.status(400).json({
+    message: 'ID inválido',
+  });
+}
 
 export async function getAll(_req: Request, res: Response) {
   try {
     const usuarios = await userService.getAll();
 
     res.json(usuarios);
-  } catch {
-    res.status(500).json({
+  } catch (error) {
+    sendError(res, error, {
+      status: 500,
       message: 'Error al obtener usuarios',
     });
   }
@@ -15,22 +25,15 @@ export async function getAll(_req: Request, res: Response) {
 
 export async function getById(req: Request, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
-      return res.status(400).json({
-        message: 'ID inválido',
-      });
-    }
+    if (!id) return invalidId(res);
 
     const usuario = await userService.getById(id);
 
     res.json(usuario);
   } catch (error) {
-    res.status(404).json({
-      message:
-        error instanceof Error ? error.message : 'Error al obtener usuario',
-    });
+    sendError(res, error, { status: 404, message: 'Error al obtener usuario' });
   }
 }
 
@@ -40,7 +43,8 @@ export async function getNotificationRecipients(_req: Request, res: Response) {
 
     return res.json(users);
   } catch (error) {
-    return res.status(500).json({
+    return sendError(res, error, {
+      status: 500,
       message: 'Error al obtener los destinatarios',
     });
   }
@@ -52,51 +56,40 @@ export async function create(req: Request, res: Response) {
 
     res.status(201).json(usuario);
   } catch (error) {
-    res.status(400).json({
-      message:
-        error instanceof Error ? error.message : 'Error al crear usuario',
-    });
+    sendError(res, error, { status: 400, message: 'Error al crear usuario' });
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthRequest, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
-      return res.status(400).json({
-        message: 'ID inválido',
-      });
-    }
+    if (!id) return invalidId(res);
 
-    const usuario = await userService.update(id, req.body);
+    const usuario = await userService.update(id, req.body, req.user!.id);
 
     res.json(usuario);
   } catch (error) {
-    res.status(400).json({
-      message:
-        error instanceof Error ? error.message : 'Error al actualizar usuario',
+    sendError(res, error, {
+      status: 400,
+      message: 'Error al actualizar usuario',
     });
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthRequest, res: Response) {
   try {
-    const id = Number(req.params.id);
+    const id = parseId(req.params.id);
 
-    if (Number.isNaN(id)) {
-      return res.status(400).json({
-        message: 'ID inválido',
-      });
-    }
+    if (!id) return invalidId(res);
 
-    await userService.remove(id);
+    await userService.remove(id, req.user!.id);
 
     res.status(204).send();
   } catch (error) {
-    res.status(404).json({
-      message:
-        error instanceof Error ? error.message : 'Error al eliminar usuario',
+    sendError(res, error, {
+      status: 404,
+      message: 'Error al eliminar usuario',
     });
   }
 }

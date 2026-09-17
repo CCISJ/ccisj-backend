@@ -6,6 +6,7 @@ import * as applicantRepository from '@/modules/applicants/applicant.repository'
 
 import type { SessionUser } from '@/middlewares/auth.middleware';
 import { HttpError } from '@/utils/http-error';
+import { Prisma } from '@/generated/prisma/client';
 
 import {
   CreateApplicationData,
@@ -14,6 +15,9 @@ import {
   MemberApplicationStatus,
   UpdateApplicationData,
 } from '@/types/application.type';
+
+// El mensaje que el postulante deja al postularse (`observaciones`).
+const MESSAGE_MAX = 2000;
 
 const APPLICATION_STATES: ApplicationStatus[] = [
   'ENVIADA',
@@ -78,7 +82,7 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     throw new Error('Faltan datos obligatorios');
   }
 
-  if (!Number.isInteger(data.ofertaId)) {
+  if (!Number.isInteger(data.ofertaId) || data.ofertaId <= 0) {
     throw new Error('La oferta no es válida');
   }
 
@@ -87,6 +91,12 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     typeof data.observaciones !== 'string'
   ) {
     throw new Error('El campo observaciones no es válido');
+  }
+
+  if (data.observaciones && data.observaciones.trim().length > MESSAGE_MAX) {
+    throw new Error(
+      `El mensaje no puede superar los ${MESSAGE_MAX} caracteres`,
+    );
   }
 
   const offer = await offerRepository.findById(data.ofertaId);
@@ -124,11 +134,24 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     throw new Error('El postulante ya se postuló a esta oferta');
   }
 
-  return applicationRepository.create({
-    ofertaId: data.ofertaId,
-    postulanteId,
-    observaciones: data.observaciones?.trim(),
-  });
+  try {
+    return await applicationRepository.create({
+      ofertaId: data.ofertaId,
+      postulanteId,
+      observaciones: data.observaciones?.trim(),
+    });
+  } catch (error) {
+    // Dos envíos a la vez (doble clic): la verificación de arriba no alcanza
+    // y lo frena la restricción única de la base.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      throw new Error('El postulante ya se postuló a esta oferta');
+    }
+
+    throw error;
+  }
 }
 
 /** Las postulaciones recibidas en las ofertas de la empresa del socio. */
@@ -273,6 +296,13 @@ export async function update(
     typeof data.observaciones !== 'string'
   ) {
     throw new HttpError(400, 'El campo observaciones no es válido');
+  }
+
+  if (data.observaciones && data.observaciones.length > MESSAGE_MAX) {
+    throw new HttpError(
+      400,
+      `Las observaciones no pueden superar los ${MESSAGE_MAX} caracteres`,
+    );
   }
 
   return applicationRepository.update(id, {

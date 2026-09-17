@@ -197,6 +197,62 @@ describe('Applications', () => {
     expect(response.status).toBe(404);
   });
 
+  it('POST /postulaciones con doble envío simultáneo crea una sola y no da error interno', async () => {
+    const offer = await prisma.oferta.create({
+      data: {
+        socioId: socio.socioId,
+        creadaPor: socio.userId,
+        titulo: 'Oferta para doble envío',
+        descripcion: 'Oferta de prueba',
+      },
+    });
+
+    const responses = await Promise.all(
+      [1, 2, 3].map(() =>
+        request(app)
+          .post('/postulaciones')
+          .set('Cookie', otherPostulante.cookie)
+          .send({ ofertaId: offer.id }),
+      ),
+    );
+
+    const statuses = responses.map((r) => r.status).sort();
+
+    expect(statuses.filter((s) => s === 201)).toHaveLength(1);
+    expect(statuses.every((s) => s === 201 || s === 400)).toBe(true);
+
+    for (const response of responses.filter((r) => r.status === 400)) {
+      expect(response.body.message).toBe(
+        'El postulante ya se postuló a esta oferta',
+      );
+    }
+
+    expect(
+      await prisma.postulacion.count({ where: { ofertaId: offer.id } }),
+    ).toBe(1);
+  });
+
+  it('POST /postulaciones limita el largo del mensaje', async () => {
+    const response = await request(app)
+      .post('/postulaciones')
+      .set('Cookie', otherPostulante.cookie)
+      .send({ ofertaId: offerId, observaciones: 'x'.repeat(2001) });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'El mensaje no puede superar los 2000 caracteres',
+    );
+  });
+
+  it('un ID que no es entero responde 400 sin llegar a la base', async () => {
+    const response = await request(app)
+      .get('/postulaciones/1.5')
+      .set('Cookie', admin.cookie);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('ID inválido');
+  });
+
   describe('permisos', () => {
     it('GET /postulaciones devuelve 401 sin sesión', async () => {
       const response = await request(app).get('/postulaciones');

@@ -91,7 +91,7 @@ describe('Applicants', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `applicant-test-${Date.now()}@ccisj.uy`,
-        password: 'test123',
+        password: 'Clave12345',
         tipo: 'POSTULANTE',
       });
 
@@ -151,9 +151,9 @@ describe('Applicants', () => {
       .post('/usuarios')
       .set('Cookie', admin.cookie)
       .send({
-        email: `member-as-applicant-${Date.now()}@ccisj.uy`,
-        password: 'test123',
-        tipo: 'SOCIO',
+        email: `admin-as-applicant-${Date.now()}@ccisj.uy`,
+        password: 'Clave12345',
+        tipo: 'ADMIN',
       });
 
     expect(userResponse.status).toBe(201);
@@ -222,8 +222,29 @@ describe('Applicants', () => {
         nombre: 'No existe',
       });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
     expect(response.body).toHaveProperty('message');
+  });
+
+  it('PATCH /postulantes/:id valida los largos sin errores internos', async () => {
+    const response = await request(app)
+      .patch(`/postulantes/${createdApplicantId}`)
+      .set('Cookie', admin.cookie)
+      .send({ nombre: 'x'.repeat(101) });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'El nombre no puede superar los 100 caracteres',
+    );
+  });
+
+  it('POST /postulantes rechaza un body vacío sin errores internos', async () => {
+    const response = await request(app)
+      .post('/postulantes')
+      .set('Cookie', admin.cookie);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('Datos inválidos');
   });
 
   it('PATCH /postulantes/:id devuelve 400 si el ID es inválido', async () => {

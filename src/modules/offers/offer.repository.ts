@@ -26,7 +26,13 @@ export type UpdateOfferData = {
 
 // Las ofertas las ven todos los usuarios, postulantes incluidos: de la empresa
 // va solo lo público. Antes viajaba el socio entero (RUT, BPS, observaciones)
-// y el email de la cuenta que la creó.
+// y el email de la cuenta que la creó. Tampoco va quién la creó (ni la cuenta
+// ni su ID): la administración publica en nombre de una empresa y el
+// postulante no tiene que notar la diferencia (definido por el cliente).
+const offerOmit = {
+  creadaPor: true,
+} as const;
+
 const offerInclude = {
   socio: {
     select: {
@@ -34,13 +40,6 @@ const offerInclude = {
       razonSocial: true,
       giroComercial: true,
       ciudad: true,
-    },
-  },
-
-  creador: {
-    select: {
-      id: true,
-      tipo: true,
     },
   },
 
@@ -82,6 +81,7 @@ export function closeExpired(now: Date) {
 export function findAll() {
   return prisma.oferta.findMany({
     include: offerInclude,
+    omit: offerOmit,
     orderBy: {
       fechaPublicacion: 'desc',
     },
@@ -92,6 +92,7 @@ export function findById(id: number) {
   return prisma.oferta.findUnique({
     where: { id },
     include: offerInclude,
+    omit: offerOmit,
   });
 }
 
@@ -131,6 +132,7 @@ export function create(data: CreateOfferData) {
     },
 
     include: offerInclude,
+    omit: offerOmit,
   });
 }
 
@@ -166,6 +168,7 @@ export async function update(id: number, data: UpdateOfferData) {
       },
 
       include: offerInclude,
+      omit: offerOmit,
     });
   });
 }
