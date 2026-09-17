@@ -133,25 +133,129 @@ describe('Categories', () => {
         nombre: 'No existe',
       });
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('Categoría no encontrada');
   });
 
-  it('DELETE /categorias/:id elimina una categoría', async () => {
+  it('POST /categorias no deja fijar campos que no son del alta', async () => {
+    const response = await request(app)
+      .post('/categorias')
+      .set('Cookie', admin.cookie)
+      .send({
+        id: 999999,
+        nombre: `Categoria Campos ${Date.now()}`,
+        activa: false,
+      });
+
+    try {
+      expect(response.status).toBe(201);
+      expect(response.body.id).not.toBe(999999);
+      expect(response.body.activa).toBe(true);
+    } finally {
+      if (response.body?.id) {
+        await prisma.categoria.deleteMany({ where: { id: response.body.id } });
+      }
+    }
+  });
+
+  it('POST /categorias valida tipos y largos', async () => {
+    const cases = [
+      {
+        body: { nombre: { contains: 'a' } },
+        message: 'El nombre es obligatorio',
+      },
+      {
+        body: { nombre: 'x'.repeat(101) },
+        message: 'El nombre no puede superar los 100 caracteres',
+      },
+      {
+        body: { nombre: `Larga ${Date.now()}`, descripcion: 'x'.repeat(256) },
+        message: 'La descripción no puede superar los 255 caracteres',
+      },
+    ];
+
+    for (const { body, message } of cases) {
+      const response = await request(app)
+        .post('/categorias')
+        .set('Cookie', admin.cookie)
+        .send(body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(message);
+    }
+  });
+
+  it('el nombre repetido se detecta sin distinguir mayúsculas', async () => {
+    const response = await request(app)
+      .post('/categorias')
+      .set('Cookie', admin.cookie)
+      .send({ nombre: `  ${updatedName.toUpperCase()} ` });
+
+    expect(response.status).toBe(400);
+    // La del test anterior quedó desactivada.
+    expect(response.body.message).toBe(
+      'La categoría ya existe y está desactivada: reactivala en lugar de crear otra',
+    );
+  });
+
+  it('DELETE /categorias/:id desactiva la categoría en vez de borrarla', async () => {
+    await prisma.categoria.update({
+      where: { id: createdCategoryId },
+      data: { activa: true },
+    });
+
     const response = await request(app)
       .delete(`/categorias/${createdCategoryId}`)
       .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(204);
 
-    const deletedCategory = await prisma.categoria.findUnique({
+    const category = await prisma.categoria.findUnique({
       where: {
         id: createdCategoryId,
       },
     });
 
-    expect(deletedCategory).toBeNull();
+    expect(category).not.toBeNull();
+    expect(category!.activa).toBe(false);
 
-    createdCategoryId = 0;
+    const reactivated = await request(app)
+      .patch(`/categorias/${createdCategoryId}`)
+      .set('Cookie', admin.cookie)
+      .send({ activa: true });
+
+    expect(reactivated.status).toBe(200);
+    expect(reactivated.body.activa).toBe(true);
+  });
+
+  it('desactivar una categoría no la quita de las ofertas que la tienen', async () => {
+    const member = await createMember();
+
+    try {
+      const offer = await prisma.oferta.create({
+        data: {
+          socioId: member.socioId,
+          creadaPor: member.userId,
+          titulo: 'Oferta con categoría',
+          descripcion: 'Oferta de prueba',
+          categorias: { create: { categoriaId: createdCategoryId } },
+        },
+      });
+
+      const response = await request(app)
+        .delete(`/categorias/${createdCategoryId}`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(204);
+
+      const links = await prisma.ofertaCategoria.count({
+        where: { ofertaId: offer.id, categoriaId: createdCategoryId },
+      });
+
+      expect(links).toBe(1);
+    } finally {
+      await deleteUsers([member.userId]);
+    }
   });
 
   it('DELETE /categorias/:id devuelve 404 si no existe', async () => {
@@ -160,6 +264,17 @@ describe('Categories', () => {
       .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(404);
+  });
+
+  it('un ID que no es entero se rechaza sin llegar a la base', async () => {
+    for (const id of ['1.5', '0', '-1']) {
+      const response = await request(app)
+        .delete(`/categorias/${id}`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('ID inválido');
+    }
   });
 
   describe('permisos', () => {
