@@ -378,5 +378,9 @@ export async function remove(id: number) {
     throw new Error('Socio no encontrado');
   }
 
-  return memberRepository.remove(id, member.usuarioId);
+  // El aviso no cuenta que la empresa se dio de baja: solo que la oferta cerró.
+  return memberRepository.remove(id, member.usuarioId, (offerTitle) => ({
+    titulo: 'Tu postulación: Finalizada',
+    mensaje: `La oferta «${offerTitle}» de ${member.razonSocial} se cerró y tu postulación quedó finalizada. Gracias por tu interés.`,
+  }));
 }

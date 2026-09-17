@@ -694,4 +694,233 @@ describe('Socios', () => {
       expect(response.status).toBe(401);
     });
   });
+
+  describe('baja de socio: ofertas y postulaciones', () => {
+    let empresa: Awaited<ReturnType<typeof createMember>>;
+    let otraEmpresa: Awaited<ReturnType<typeof createMember>>;
+    let enviada: Awaited<ReturnType<typeof createApplicant>>;
+    let enRevision: Awaited<ReturnType<typeof createApplicant>>;
+    let seleccionado: Awaited<ReturnType<typeof createApplicant>>;
+    let noSeleccionado: Awaited<ReturnType<typeof createApplicant>>;
+    let desactivado: Awaited<ReturnType<typeof createApplicant>>;
+
+    const offers = {} as Record<
+      'activa' | 'cerrada' | 'sinPostulaciones' | 'ajena',
+      number
+    >;
+
+    function createOffer(
+      socioId: number,
+      creadaPor: number,
+      titulo: string,
+      estado: 'ACTIVA' | 'CERRADA' = 'ACTIVA',
+    ) {
+      return prisma.oferta.create({
+        data: {
+          socioId,
+          creadaPor,
+          titulo,
+          descripcion: 'Oferta de prueba',
+          estado,
+        },
+      });
+    }
+
+    function applicationsOf(ofertaId: number) {
+      return prisma.postulacion.findMany({
+        where: { ofertaId },
+        select: { postulanteId: true, estado: true },
+      });
+    }
+
+    function noticesFor(userId: number) {
+      return prisma.notificacionUsuario.findMany({
+        where: { usuarioId: userId },
+        include: { notificacion: true },
+      });
+    }
+
+    beforeAll(async () => {
+      empresa = await createMember();
+      otraEmpresa = await createMember();
+
+      [enviada, enRevision, seleccionado, noSeleccionado, desactivado] =
+        await Promise.all([
+          createApplicant(),
+          createApplicant(),
+          createApplicant(),
+          createApplicant(),
+          createApplicant(),
+        ]);
+
+      await prisma.usuario.update({
+        where: { id: desactivado.userId },
+        data: { activo: false },
+      });
+
+      const activa = await createOffer(
+        empresa.socioId,
+        empresa.userId,
+        'Cajero',
+      );
+      const cerrada = await createOffer(
+        empresa.socioId,
+        empresa.userId,
+        'Repartidor',
+        'CERRADA',
+      );
+      const sinPostulaciones = await createOffer(
+        empresa.socioId,
+        admin.userId,
+        'Vendedor',
+      );
+      const ajena = await createOffer(
+        otraEmpresa.socioId,
+        otraEmpresa.userId,
+        'Administrativo',
+      );
+
+      offers.activa = activa.id;
+      offers.cerrada = cerrada.id;
+      offers.sinPostulaciones = sinPostulaciones.id;
+      offers.ajena = ajena.id;
+
+      await prisma.postulacion.createMany({
+        data: [
+          { ofertaId: activa.id, postulanteId: enviada.postulanteId },
+          {
+            ofertaId: activa.id,
+            postulanteId: enRevision.postulanteId,
+            estado: 'EN_REVISION',
+          },
+          {
+            ofertaId: activa.id,
+            postulanteId: seleccionado.postulanteId,
+            estado: 'SELECCIONADO',
+          },
+          {
+            ofertaId: activa.id,
+            postulanteId: noSeleccionado.postulanteId,
+            estado: 'NO_SELECCIONADO',
+          },
+          { ofertaId: activa.id, postulanteId: desactivado.postulanteId },
+          // Una oferta ya cerrada con una postulación sin resolver.
+          {
+            ofertaId: cerrada.id,
+            postulanteId: enviada.postulanteId,
+            estado: 'EN_REVISION',
+          },
+          // La otra empresa no se toca.
+          { ofertaId: ajena.id, postulanteId: enviada.postulanteId },
+        ],
+      });
+
+      const response = await request(app)
+        .delete(`/socios/${empresa.socioId}`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(200);
+    });
+
+    afterAll(async () => {
+      // Las ofertas se borran antes que los usuarios (y con ellas sus
+      // postulaciones); las notificaciones las creó la empresa.
+      await deleteUsers([empresa.userId, otraEmpresa.userId]);
+      await deleteUsers([
+        enviada.userId,
+        enRevision.userId,
+        seleccionado.userId,
+        noSeleccionado.userId,
+        desactivado.userId,
+      ]);
+    });
+
+    it('cierra las ofertas activas de la empresa y no las de otras', async () => {
+      const estados = await prisma.oferta.findMany({
+        where: { id: { in: Object.values(offers) } },
+        select: { id: true, estado: true },
+      });
+
+      const byId = new Map(estados.map((o) => [o.id, o.estado]));
+
+      expect(byId.get(offers.activa)).toBe('CERRADA');
+      expect(byId.get(offers.cerrada)).toBe('CERRADA');
+      expect(byId.get(offers.sinPostulaciones)).toBe('CERRADA');
+      expect(byId.get(offers.ajena)).toBe('ACTIVA');
+    });
+
+    it('finaliza solo las postulaciones sin resolver', async () => {
+      const activa = new Map(
+        (await applicationsOf(offers.activa)).map((a) => [
+          a.postulanteId,
+          a.estado,
+        ]),
+      );
+
+      expect(activa.get(enviada.postulanteId)).toBe('FINALIZADA');
+      expect(activa.get(enRevision.postulanteId)).toBe('FINALIZADA');
+      expect(activa.get(desactivado.postulanteId)).toBe('FINALIZADA');
+      expect(activa.get(seleccionado.postulanteId)).toBe('SELECCIONADO');
+      expect(activa.get(noSeleccionado.postulanteId)).toBe('NO_SELECCIONADO');
+
+      expect(await applicationsOf(offers.cerrada)).toEqual([
+        { postulanteId: enviada.postulanteId, estado: 'FINALIZADA' },
+      ]);
+
+      expect(await applicationsOf(offers.ajena)).toEqual([
+        { postulanteId: enviada.postulanteId, estado: 'ENVIADA' },
+      ]);
+    });
+
+    it('avisa a cada postulante activo una vez por oferta finalizada', async () => {
+      const notices = await noticesFor(enviada.userId);
+
+      expect(notices).toHaveLength(2);
+
+      const mensajes = notices.map((n) => n.notificacion.mensaje).sort();
+
+      expect(mensajes[0]).toContain('«Cajero»');
+      expect(mensajes[1]).toContain('«Repartidor»');
+
+      for (const notice of notices) {
+        expect(notice.leida).toBe(false);
+        expect(notice.notificacion.titulo).toBe('Tu postulación: Finalizada');
+        expect(notice.notificacion.creadoPorId).toBe(empresa.userId);
+        // No se cuenta que la empresa se dio de baja.
+        expect(notice.notificacion.mensaje).not.toMatch(/baja/i);
+      }
+
+      expect(await noticesFor(enRevision.userId)).toHaveLength(1);
+    });
+
+    it('no avisa a quien no cambió de estado ni a postulantes desactivados', async () => {
+      expect(await noticesFor(seleccionado.userId)).toHaveLength(0);
+      expect(await noticesFor(noSeleccionado.userId)).toHaveLength(0);
+      expect(await noticesFor(desactivado.userId)).toHaveLength(0);
+    });
+
+    it('el aviso no aparece entre las notificaciones del admin', async () => {
+      const response = await request(app)
+        .get('/notificaciones')
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(200);
+
+      const creators = (response.body as { creadoPorId?: number }[]).map(
+        (n) => n.creadoPorId,
+      );
+
+      expect(creators).not.toContain(empresa.userId);
+    });
+
+    it('repetir la baja no duplica avisos ni cambia nada más', async () => {
+      const response = await request(app)
+        .delete(`/socios/${empresa.socioId}`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(200);
+      expect(await noticesFor(enviada.userId)).toHaveLength(2);
+      expect(await noticesFor(enRevision.userId)).toHaveLength(1);
+    });
+  });
 });

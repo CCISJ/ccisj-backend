@@ -211,13 +211,93 @@ export function update(
   });
 }
 
-export function remove(id: number, usuarioId: number) {
-  return prisma.$transaction(async (tx) => {
-    await tx.usuario.update({
-      where: { id: usuarioId },
-      data: {
-        activo: false,
-      },
-    });
-  });
+// Postulaciones que la empresa todavía no resolvió. Con la baja ya nadie las va
+// a revisar; las seleccionadas o no seleccionadas quedan como están.
+const OPEN_APPLICATION_STATES = ['ENVIADA', 'EN_REVISION'] as const;
+
+type ClosedOfferNotice = (offerTitle: string) => {
+  titulo: string;
+  mensaje: string;
+};
+
+/**
+ * Baja lógica del socio: se desactiva la cuenta, sus ofertas activas se cierran
+ * y las postulaciones sin resolver pasan a FINALIZADA, con un aviso por oferta a
+ * los postulantes activos. Todo en una transacción: se aplica completo o nada.
+ * Si después se reactiva la cuenta, las ofertas siguen cerradas.
+ */
+export function remove(
+  id: number,
+  usuarioId: number,
+  closedOfferNotice: ClosedOfferNotice,
+) {
+  return prisma.$transaction(
+    async (tx) => {
+      await tx.usuario.update({
+        where: { id: usuarioId },
+        data: {
+          activo: false,
+        },
+      });
+
+      await tx.oferta.updateMany({
+        where: { socioId: id, estado: 'ACTIVA' },
+        data: { estado: 'CERRADA' },
+      });
+
+      const finalized = await tx.postulacion.updateManyAndReturn({
+        where: {
+          estado: { in: [...OPEN_APPLICATION_STATES] },
+          oferta: { socioId: id },
+        },
+        data: { estado: 'FINALIZADA' },
+        select: { ofertaId: true, postulanteId: true },
+      });
+
+      if (finalized.length === 0) return;
+
+      const offers = await tx.oferta.findMany({
+        where: { id: { in: [...new Set(finalized.map((a) => a.ofertaId))] } },
+        select: { id: true, titulo: true },
+      });
+
+      // A un postulante desactivado no se le crea el aviso, igual que cuando
+      // la empresa cambia un estado.
+      const recipients = await tx.postulante.findMany({
+        where: {
+          id: { in: [...new Set(finalized.map((a) => a.postulanteId))] },
+          usuario: { activo: true },
+        },
+        select: { id: true, usuarioId: true },
+      });
+
+      const userByApplicant = new Map(
+        recipients.map((r) => [r.id, r.usuarioId]),
+      );
+
+      for (const offer of offers) {
+        const userIds = finalized
+          .filter((a) => a.ofertaId === offer.id)
+          .map((a) => userByApplicant.get(a.postulanteId))
+          .filter((userId) => userId !== undefined);
+
+        if (userIds.length === 0) continue;
+
+        await tx.notificacion.create({
+          data: {
+            ...closedOfferNotice(offer.titulo),
+            tipo: 'NORMAL',
+            // Es un aviso automático de la empresa, no un envío del admin: así
+            // no aparece entre las notificaciones que ve la administración.
+            creadoPorId: usuarioId,
+            destinatarios: {
+              create: userIds.map((userId) => ({ usuarioId: userId })),
+            },
+          },
+        });
+      }
+    },
+    // Una empresa con muchas ofertas son varias consultas contra la base remota.
+    { timeout: 15_000 },
+  );
 }
