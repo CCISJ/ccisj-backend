@@ -39,7 +39,6 @@ enum TipoUsuario {
   @@map("tipo_usuario")
 }
 
-
 enum TipoNotificacion {
   NORMAL
   EMERGENTE
@@ -47,15 +46,36 @@ enum TipoNotificacion {
   @@map("tipo_notificacion")
 }
 
+enum TipoAjusteCuota {
+  ADICIONAL
+  DESCUENTO
+
+  @@map("tipo_ajuste_cuota")
+}
+
+enum EstadoCuota {
+  PENDIENTE
+  PAGADA
+  ANULADA
+
+  @@map("estado_cuota")
+}
+
+enum EstadoPagoCuota {
+  ACTIVO
+  ANULADO
+
+  @@map("estado_pago_cuota")
+}
+
 model Usuario {
-  id            Int         @id @default(autoincrement())
-  email         String      @unique @db.VarChar(255)
-  password      String      @db.VarChar(255)
-  tipo          TipoUsuario @map("tipo")
-  activo        Boolean     @default(true)
-  fechaCreacion DateTime    @default(now()) @map("fecha_creacion") @db.Timestamp(6)
-  // Último cambio de contraseña: las sesiones emitidas antes dejan de valer.
-  passwordActualizada DateTime? @map("password_actualizada") @db.Timestamp(6)
+  id                  Int         @id @default(autoincrement())
+  email               String      @unique @db.VarChar(255)
+  password            String      @db.VarChar(255)
+  tipo                TipoUsuario @map("tipo")
+  activo              Boolean     @default(true)
+  fechaCreacion       DateTime    @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+  passwordActualizada DateTime?   @map("password_actualizada") @db.Timestamp(6)
 
   ofertas    Oferta[]
   postulante Postulante?
@@ -63,7 +83,7 @@ model Usuario {
 
   notificacionesCreadas   Notificacion[]        @relation("NotificacionCreadaPor")
   notificacionesRecibidas NotificacionUsuario[]
-
+  pagoCuotas              PagoCuota[]
 
   @@map("usuario")
 }
@@ -74,10 +94,10 @@ model Notificacion {
   mensaje       String
   tipo          TipoNotificacion @default(NORMAL)
   fechaCreacion DateTime         @default(now()) @map("fecha_creacion") @db.Timestamp(6)
-  activa       Boolean          @default(true)
+  activa        Boolean          @default(true)
 
   creadoPorId Int     @map("creado_por_id")
-  creadoPor   Usuario @relation("NotificacionCreadaPor",fields: [creadoPorId],references: [id],onDelete: NoAction,onUpdate: NoAction)
+  creadoPor   Usuario @relation("NotificacionCreadaPor", fields: [creadoPorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   destinatarios NotificacionUsuario[]
 
@@ -93,40 +113,43 @@ model NotificacionUsuario {
   emergenteVista      Boolean   @default(false) @map("emergente_vista")
   fechaEmergenteVista DateTime? @map("fecha_emergente_vista") @db.Timestamp(6)
 
-  notificacion Notificacion @relation(fields: [notificacionId], references: [id],onDelete: Cascade,onUpdate: NoAction)
-  usuario Usuario @relation(fields: [usuarioId],references: [id],onDelete: Cascade,onUpdate: NoAction)
+  notificacion Notificacion @relation(fields: [notificacionId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  usuario      Usuario      @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@unique([notificacionId, usuarioId])
   @@map("notificacion_usuario")
 }
 
-
 model Socio {
-  id                 Int        @id @default(autoincrement())
-  usuarioId          Int        @unique
+  id        Int @id @default(autoincrement())
+  usuarioId Int @unique
 
-  razonSocial        String
-  titular            String
-  giroComercial      String
-  tipo               TipoSocio
+  razonSocial   String
+  titular       String
+  giroComercial String
+  tipo          TipoSocio
 
-  rut                String     @unique
-  numeroBps          String     @unique 
+  rut       String @unique
+  numeroBps String @unique
 
   fechaInicioEmpresa DateTime
   fechaAfiliacion    DateTime
 
-  direccion          String
-  ciudad             String
+  direccion String
+  ciudad    String
 
-  celular            String
-  telefono           String
-  email              String
+  celular  String
+  telefono String
+  email    String
 
-  observaciones      String?
+  observaciones String?
 
-  usuario            Usuario    @relation(fields: [usuarioId], references: [id])
-  ofertas            Oferta[]
+  ajustesCuota AjusteCuotaSocio[]
+  cuotas       Cuota[]
+  pagosCuota   PagoCuota[]
+
+  usuario Usuario  @relation(fields: [usuarioId], references: [id])
+  ofertas Oferta[]
 }
 
 model Postulante {
@@ -137,7 +160,7 @@ model Postulante {
   telefono  String? @db.VarChar(50)
 
   usuario       Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
-  cvs Cv[]
+  cvs           Cv[]
   postulaciones Postulacion[]
 
   @@map("postulante")
@@ -213,3 +236,77 @@ model Postulacion {
   @@map("postulacion")
 }
 
+model ConfiguracionCuota {
+  id            Int      @id @default(autoincrement())
+  importeBase   Decimal  @map("importe_base") @db.Decimal(10, 2)
+  vigenciaDesde DateTime @map("vigencia_desde") @db.Date
+  fechaCreacion DateTime @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+
+  @@map("configuracion_cuota")
+}
+
+model AjusteCuotaSocio {
+  id            Int             @id @default(autoincrement())
+  socioId       Int             @map("socio_id")
+  tipo          TipoAjusteCuota
+  importe       Decimal         @db.Decimal(10, 2)
+  fechaDesde    DateTime        @map("fecha_desde") @db.Date
+  fechaHasta    DateTime?       @map("fecha_hasta") @db.Date
+  motivo        String?         @db.VarChar(255)
+  activo        Boolean         @default(true)
+  fechaCreacion DateTime        @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+
+  socio Socio @relation(fields: [socioId], references: [id], onDelete: NoAction)
+
+  @@map("ajuste_cuota_socio")
+}
+
+model Cuota {
+  id               Int      @id @default(autoincrement())
+  socioId          Int      @map("socio_id")
+  periodoDesde     DateTime @map("periodo_desde") @db.Date
+  periodoHasta     DateTime @map("periodo_hasta") @db.Date
+  fechaVencimiento DateTime @map("fecha_vencimiento") @db.Date
+
+  importeBase    Decimal @map("importe_base") @db.Decimal(10, 2)
+  importeAjustes Decimal @default(0) @map("importe_ajustes") @db.Decimal(10, 2)
+  importeTotal   Decimal @map("importe_total") @db.Decimal(10, 2)
+
+  estado        EstadoCuota @default(PENDIENTE)
+  fechaCreacion DateTime    @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+
+  socio Socio              @relation(fields: [socioId], references: [id], onDelete: NoAction)
+  pagos PagoCuotaDetalle[]
+
+  @@map("cuota")
+}
+
+model PagoCuota {
+  id              Int @id @default(autoincrement())
+  socioId         Int @map("socio_id")
+  registradoPorId Int @map("registrado_por_id")
+
+  importe   Decimal         @db.Decimal(10, 2)
+  fechaPago DateTime        @map("fecha_pago") @db.Timestamp(6)
+  estado    EstadoPagoCuota @default(ACTIVO)
+
+  fechaCreacion DateTime @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+
+  socio         Socio              @relation(fields: [socioId], references: [id], onDelete: NoAction)
+  registradoPor Usuario            @relation(fields: [registradoPorId], references: [id], onDelete: NoAction)
+  detalles      PagoCuotaDetalle[]
+
+  @@map("pago_cuota")
+}
+
+model PagoCuotaDetalle {
+  id      Int @id @default(autoincrement())
+  pagoId  Int @map("pago_id")
+  cuotaId Int @map("cuota_id")
+
+  pago  PagoCuota @relation(fields: [pagoId], references: [id], onDelete: Cascade)
+  cuota Cuota     @relation(fields: [cuotaId], references: [id], onDelete: NoAction)
+
+  @@unique([pagoId, cuotaId])
+  @@map("pago_cuota_detalle")
+}
