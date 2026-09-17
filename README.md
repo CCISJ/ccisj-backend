@@ -358,7 +358,9 @@ src/modules/auth/                    login, logout y cookie de sesión
 src/middlewares/auth.middleware.ts   requireAuth, requireRole, requireAdminOrDirectivo
 ```
 
-El login admite 10 intentos fallidos cada 15 minutos por IP.
+El login admite 10 intentos fallidos cada 15 minutos por IP. El email **no
+distingue mayúsculas**: los emails nuevos se guardan en minúsculas y las
+búsquedas (login, emails repetidos) ignoran mayúsculas.
 
 **Cambiar la contraseña** (`POST /auth/cambiar-contrasena`, cualquier usuario
 con sesión): recibe `passwordActual` y `passwordNueva`. La nueva debe tener
@@ -393,6 +395,27 @@ Ofertas:
 - **Solo se borran sin postulaciones** (409 si tiene): en la base las
   postulaciones se borran en cascada con la oferta. Con postulaciones, se cierra.
 - Modalidad: `PRESENCIAL`, `REMOTO` o `HIBRIDO`.
+- **No dicen quién las creó** (ni `creador` ni `creadaPor`): la administración
+  publica en nombre de una empresa y el postulante no lo nota.
+- No se publica ni se reabre una oferta de un socio dado de baja.
+
+Categorías: `DELETE /categorias/:id` **desactiva** (`activa: false`), no borra.
+Una desactivada no se elige en ofertas nuevas, las ofertas que la tenían la
+conservan y se reactiva con `PATCH { activa: true }`. Los nombres repetidos se
+detectan sin distinguir mayúsculas.
+
+Usuarios (`/usuarios`, solo admin):
+
+- La contraseña cumple las mismas reglas que al cambiarla. La contraseña
+  inicial de un socio se genera con 12 caracteres (letras y números, sin
+  caracteres que se confunden).
+- Las cuentas de socio se crean desde `/socios` (con su empresa), no sueltas.
+- No se cambia el tipo de una cuenta con ficha de socio o postulante, ni se
+  desactiva un socio desde acá (va por `/socios`, que cierra sus ofertas).
+  Reactivarlo sí.
+- El admin no se quita el rol, ni se desactiva ni se elimina a sí mismo.
+- Una cuenta con historial (empresa, ofertas, notificaciones enviadas) no se
+  elimina: 409, hay que desactivarla.
 
 Postulaciones:
 
@@ -424,6 +447,13 @@ Reglas que conviene no romper al agregar endpoints:
   pueda averiguar qué IDs existen.
 - **No pasar `req.body` directo a Prisma.** Armar el objeto solo con los campos
   permitidos; si no, se pueden pisar `usuarioId`, `tipo` o crear relaciones.
+- **No reenviar el mensaje de un error cualquiera.** Los errores de Prisma
+  traen la consulta y nombres de tablas. Usar `sendError`
+  (`src/utils/send-error.ts`): responde el mensaje de un `HttpError` o de un
+  `new Error` del service, traduce los errores conocidos de Prisma (repetido →
+  409, inexistente → 404) y para el resto da un 500 genérico.
+- **IDs de ruta con `parseId`** (`src/utils/params.ts`): `Number('1.5')` no es
+  `NaN` y llegaba a Prisma.
 
 Para proteger una ruta nueva:
 
