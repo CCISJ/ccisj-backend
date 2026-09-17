@@ -1,6 +1,12 @@
 import { Router } from 'express';
 
 import {
+  requireAdmin,
+  requireAuth,
+  requireRole,
+} from '@/middlewares/auth.middleware';
+
+import {
   create,
   getAll,
   getMine,
@@ -8,12 +14,6 @@ import {
   markAsRead,
   markPopupAsSeen,
 } from './notification.controller';
-
-import {
-  requireAdmin,
-  requireAuth,
-  requireRole,
-} from '@/middlewares/auth.middleware';
 
 const router = Router();
 

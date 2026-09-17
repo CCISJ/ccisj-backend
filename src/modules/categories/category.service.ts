@@ -1,4 +1,5 @@
 import { HttpError } from '@/utils/http-error';
+
 import * as categoryRepository from './category.repository';
 
 // Los mismos largos que la base (`VarChar(100)` y `VarChar(255)`): pasarse

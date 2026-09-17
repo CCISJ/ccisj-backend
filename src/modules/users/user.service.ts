@@ -4,6 +4,7 @@ import { TipoUsuario } from '@/types/user.type';
 import { EMAIL_MAX, EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
 import { assertPasswordPolicy } from '@/utils/password';
+
 import * as userRepository from './user.repository';
 
 const USER_TYPES: TipoUsuario[] = ['ADMIN', 'POSTULANTE', 'SOCIO'];

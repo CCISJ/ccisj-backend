@@ -1,7 +1,9 @@
 import type { Request, Response } from 'express';
+
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { HttpError, statusFor } from '@/utils/http-error';
 import { parseId } from '@/utils/params';
+
 import * as offerService from './offer.service';
 
 // Las validaciones del service lanzan HttpError con un mensaje pensado para

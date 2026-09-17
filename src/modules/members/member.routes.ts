@@ -1,19 +1,20 @@
 import { Router } from 'express';
 
 import {
-  getAll,
-  getById,
-  getMe,
-  updateMe,
-  create,
-  update,
-  remove,
-} from './member.controller';
-import {
   requireAdminOrDirectivo,
   requireAuth,
   requireRole,
 } from '@/middlewares/auth.middleware';
+
+import {
+  create,
+  getAll,
+  getById,
+  getMe,
+  remove,
+  update,
+  updateMe,
+} from './member.controller';
 
 const router = Router();
 

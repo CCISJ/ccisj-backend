@@ -1,7 +1,8 @@
 import { TipoNotificacion } from '@/types/notification.type';
-import * as notificationRepository from './notification.repository';
-import * as userRepository from '../users/user.repository';
 import { HttpError } from '@/utils/http-error';
+
+import * as userRepository from '../users/user.repository';
+import * as notificationRepository from './notification.repository';
 
 type DestinatarioTipo = 'TODOS' | 'SOCIOS' | 'POSTULANTES' | 'USUARIOS';
 

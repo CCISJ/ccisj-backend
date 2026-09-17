@@ -1,21 +1,21 @@
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express, {
   type NextFunction,
   type Request,
   type Response,
 } from 'express';
-import cors from 'cors';
-import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
 
-import userRoutes from './modules/users/user.routes';
-import memberRoutes from './modules/members/member.routes';
 import applicantRoutes from './modules/applicants/applicant.routes';
-import categoryRoutes from './modules/categories/category.routes';
-import offerRoutes from './modules/offers/offer.routes';
 import applicationRoutes from './modules/applications/application.routes';
 import authRoutes from './modules/auth/auth.routes';
+import categoryRoutes from './modules/categories/category.routes';
+import memberRoutes from './modules/members/member.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
+import offerRoutes from './modules/offers/offer.routes';
+import userRoutes from './modules/users/user.routes';
 
 const app = express();
 

@@ -1,15 +1,16 @@
 import { Router } from 'express';
 
+import { requireAuth, requireRole } from '@/middlewares/auth.middleware';
+
 import {
+  create,
   getAll,
   getById,
   getMine,
   getMineById,
-  create,
-  update,
   remove,
+  update,
 } from './offer.controller';
-import { requireAuth, requireRole } from '@/middlewares/auth.middleware';
 
 const router = Router();
 

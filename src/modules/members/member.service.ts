@@ -1,15 +1,17 @@
+import argon2 from 'argon2';
+
+import { Prisma } from '@/generated/prisma/client';
 import {
   CreateMemberData,
   MemberType,
   OwnEditableField,
 } from '@/types/member.type';
-import { Prisma } from '@/generated/prisma/client';
 import { EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
 import { generatePassword } from '@/utils/password';
-import * as memberRepository from './member.repository';
+
 import * as usuarioRepository from '../users/user.repository';
-import argon2 from 'argon2';
+import * as memberRepository from './member.repository';
 
 const PHONE_PATTERN = /^\+?[\d\s()-]{6,20}$/;
 const PHONE_INVALID = 'solo puede tener números, espacios, +, - y paréntesis';

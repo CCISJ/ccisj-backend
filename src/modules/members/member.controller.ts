@@ -1,7 +1,9 @@
 import type { Response } from 'express';
+
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
 import { sendError } from '@/utils/send-error';
+
 import * as memberService from './member.service';
 
 function invalidId(res: Response) {

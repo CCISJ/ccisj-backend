@@ -1,8 +1,9 @@
 import type { Request, Response } from 'express';
-import type { AuthRequest } from '@/middlewares/auth.middleware';
 
+import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
 import { sendError } from '@/utils/send-error';
+
 import * as applicationService from './application.service';
 
 export async function getAll(_req: Request, res: Response) {
