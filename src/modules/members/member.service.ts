@@ -4,14 +4,15 @@ import {
   OwnEditableField,
 } from '@/types/member.type';
 import { Prisma } from '@/generated/prisma/client';
+import { EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
+import { generatePassword } from '@/utils/password';
 import * as memberRepository from './member.repository';
 import * as usuarioRepository from '../users/user.repository';
 import argon2 from 'argon2';
-import crypto from 'node:crypto';
 
 const PHONE_PATTERN = /^\+?[\d\s()-]{6,20}$/;
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_INVALID = 'solo puede tener números, espacios, +, - y paréntesis';
 
 // El número de empresa del BPS tiene entre 7 y 12 dígitos. Vale igual para el
 // alta que hace la administración y para lo que edita el propio socio.
@@ -30,6 +31,27 @@ const TEXT_FIELDS = [
   'telefono',
   'email',
 ] as const;
+
+// Largo máximo y nombre para los mensajes. La base no limita estos campos:
+// sin tope se podía guardar cualquier cosa. Son los mismos largos que usa la
+// empresa al editar sus datos.
+const TEXT_RULES: Record<
+  (typeof TEXT_FIELDS)[number],
+  { label: string; max: number }
+> = {
+  razonSocial: { label: 'La razón social', max: 150 },
+  titular: { label: 'El titular', max: 150 },
+  giroComercial: { label: 'El giro comercial', max: 100 },
+  rut: { label: 'El RUT', max: 50 },
+  numeroBps: { label: 'El número de BPS', max: 12 },
+  direccion: { label: 'La dirección', max: 150 },
+  ciudad: { label: 'La ciudad', max: 80 },
+  celular: { label: 'El celular', max: 20 },
+  telefono: { label: 'El teléfono', max: 20 },
+  email: { label: 'El email', max: 255 },
+};
+
+const OBSERVATIONS_MAX = 2000;
 
 const DATE_FIELDS = ['fechaInicioEmpresa', 'fechaAfiliacion'] as const;
 
@@ -58,10 +80,31 @@ function parseMemberData(body: unknown): Partial<CreateMemberData> {
     }
 
     data[field] = value.trim();
+
+    const { label, max } = TEXT_RULES[field];
+
+    if (field !== 'numeroBps' && data[field].length > max) {
+      throw new Error(`${label} no puede superar los ${max} caracteres`);
+    }
   }
 
   if (data.numeroBps !== undefined && !BPS_PATTERN.test(data.numeroBps)) {
     throw new Error(BPS_INVALID);
+  }
+
+  for (const field of ['telefono', 'celular'] as const) {
+    if (data[field] !== undefined && !PHONE_PATTERN.test(data[field])) {
+      throw new Error(`${TEXT_RULES[field].label} ${PHONE_INVALID}`);
+    }
+  }
+
+  // Es también el email de acceso de la cuenta: en minúsculas, como todos.
+  if (data.email !== undefined) {
+    data.email = normalizeEmail(data.email);
+
+    if (!EMAIL_PATTERN.test(data.email)) {
+      throw new Error('El email no es válido');
+    }
   }
 
   for (const field of DATE_FIELDS) {
@@ -98,6 +141,12 @@ function parseMemberData(body: unknown): Partial<CreateMemberData> {
 
     // Vacío o null borra las observaciones.
     data.observaciones = observaciones?.trim() || null;
+
+    if (data.observaciones && data.observaciones.length > OBSERVATIONS_MAX) {
+      throw new Error(
+        `Las observaciones no pueden superar los ${OBSERVATIONS_MAX} caracteres`,
+      );
+    }
   }
 
   return data;
@@ -115,7 +164,7 @@ export async function getById(id: number) {
   const member = await memberRepository.findById(id);
 
   if (!member) {
-    throw new Error('Socio no encontrado');
+    throw new HttpError(404, 'Socio no encontrado');
   }
 
   return member;
@@ -125,7 +174,7 @@ export async function getDirectoryEntry(id: number) {
   const member = await memberRepository.findDirectoryEntry(id);
 
   if (!member) {
-    throw new Error('Socio no encontrado');
+    throw new HttpError(404, 'Socio no encontrado');
   }
 
   return member;
@@ -142,8 +191,6 @@ type FieldRule = {
   tooLong: string;
   invalid?: string;
 };
-
-const PHONE_INVALID = 'solo puede tener números, espacios, +, - y paréntesis';
 
 const OWN_FIELD_RULES: Record<OwnEditableField, FieldRule> = {
   telefono: {
@@ -317,7 +364,9 @@ export async function create(body: unknown) {
     throw new Error('El número de BPS ya está registrado');
   }
 
-  const passwordInicial = crypto.randomBytes(6).toString('base64url');
+  // La administración la entrega a mano: 12 caracteres sin letras que se
+  // confundan, que cumplen las mismas reglas que una contraseña elegida.
+  const passwordInicial = generatePassword();
 
   const passwordHash = await argon2.hash(passwordInicial);
 
@@ -339,7 +388,7 @@ export async function update(id: number, body: unknown) {
   const member = await memberRepository.findById(id);
 
   if (!member) {
-    throw new Error('Socio no encontrado');
+    throw new HttpError(404, 'Socio no encontrado');
   }
 
   if (data.rut && data.rut !== member.rut) {
@@ -375,7 +424,7 @@ export async function remove(id: number) {
   const member = await memberRepository.findById(id);
 
   if (!member) {
-    throw new Error('Socio no encontrado');
+    throw new HttpError(404, 'Socio no encontrado');
   }
 
   // El aviso no cuenta que la empresa se dio de baja: solo que la oferta cerró.

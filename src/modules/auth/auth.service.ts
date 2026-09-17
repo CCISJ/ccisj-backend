@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 
 import * as usuarioRepository from '@/modules/users/user.repository';
 import { HttpError } from '@/utils/http-error';
+import { assertPasswordPolicy, PASSWORD_MAX } from '@/utils/password';
 
 type LoginData = {
   email: string;
@@ -119,9 +120,6 @@ export async function me(userId: number) {
   };
 }
 
-export const PASSWORD_MIN = 10;
-export const PASSWORD_MAX = 128;
-
 /**
  * Cambia la contraseña de la cuenta de la sesión. Pide la actual, valida la
  * nueva y marca el momento del cambio, con lo que las demás sesiones de la
@@ -142,27 +140,7 @@ export async function changePassword(userId: number, body: unknown) {
     throw new HttpError(400, 'Ingresá la nueva contraseña');
   }
 
-  // Sin recortar espacios: la contraseña es exactamente lo que se escribió.
-  if (passwordNueva.length < PASSWORD_MIN) {
-    throw new HttpError(
-      400,
-      `La nueva contraseña debe tener al menos ${PASSWORD_MIN} caracteres`,
-    );
-  }
-
-  if (passwordNueva.length > PASSWORD_MAX) {
-    throw new HttpError(
-      400,
-      `La nueva contraseña no puede superar los ${PASSWORD_MAX} caracteres`,
-    );
-  }
-
-  if (!/\p{L}/u.test(passwordNueva) || !/\p{Nd}/u.test(passwordNueva)) {
-    throw new HttpError(
-      400,
-      'La nueva contraseña debe tener al menos una letra y un número',
-    );
-  }
+  assertPasswordPolicy(passwordNueva, 'La nueva contraseña');
 
   if (passwordNueva === passwordActual) {
     throw new HttpError(

@@ -255,6 +255,77 @@ describe('Socios', () => {
     );
   });
 
+  it('POST /socios genera una contraseña inicial que cumple las reglas y guarda el email en minúsculas', async () => {
+    const suffix = Date.now();
+
+    const response = await request(app)
+      .post('/socios')
+      .set('Cookie', admin.cookie)
+      .send({
+        ...testMember,
+        rut: `PASS-RUT-${suffix}`,
+        numeroBps: uniqueBps(),
+        email: `Socio.Mayus-${suffix}@CCISJ.uy`,
+      });
+
+    expect(response.status).toBe(201);
+
+    try {
+      const { passwordInicial } = response.body;
+
+      expect(passwordInicial).toMatch(/^[a-zA-Z2-9]{12}$/);
+      expect(passwordInicial).toMatch(/[a-zA-Z]/);
+      expect(passwordInicial).toMatch(/\d/);
+      // Sin caracteres que se confunden al entregarla a mano.
+      expect(passwordInicial).not.toMatch(/[01lIO]/);
+
+      expect(response.body.email).toBe(`socio.mayus-${suffix}@ccisj.uy`);
+
+      const login = await request(app)
+        .post('/auth/login')
+        .send({
+          email: `socio.mayus-${suffix}@ccisj.uy`,
+          password: passwordInicial,
+        });
+
+      expect(login.status).toBe(200);
+    } finally {
+      const member = await prisma.socio.findUnique({
+        where: { id: response.body.socioId },
+      });
+
+      if (member) await deleteUsers([member.usuarioId]);
+    }
+  });
+
+  it('POST /socios valida largos, teléfonos y email', async () => {
+    const cases = [
+      [
+        { razonSocial: 'x'.repeat(151) },
+        'La razón social no puede superar los 150 caracteres',
+      ],
+      [
+        { telefono: 'llamar a Juan' },
+        'El teléfono solo puede tener números, espacios, +, - y paréntesis',
+      ],
+      [{ email: 'no-es-un-email' }, 'El email no es válido'],
+      [
+        { observaciones: 'x'.repeat(2001) },
+        'Las observaciones no pueden superar los 2000 caracteres',
+      ],
+    ] as const;
+
+    for (const [change, message] of cases) {
+      const response = await request(app)
+        .post('/socios')
+        .set('Cookie', admin.cookie)
+        .send({ ...testMember, ...change });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(message);
+    }
+  });
+
   it('PATCH /socios/:id actualiza un socio', async () => {
     const response = await request(app)
       .patch(`/socios/${createdMemberId}`)

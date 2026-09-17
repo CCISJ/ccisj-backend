@@ -61,6 +61,18 @@ describe('Auth', () => {
     expect(response.headers['set-cookie']).toBeDefined();
   });
 
+  it('POST /auth/login no distingue mayúsculas en el email', async () => {
+    const response = await request(app)
+      .post('/auth/login')
+      .send({
+        email: ` ${email.charAt(0).toUpperCase()}${email.slice(1).toUpperCase()} `,
+        password,
+      });
+
+    expect(response.status).toBe(200);
+    expect(response.body.user.id).toBe(userId);
+  });
+
   it('POST /auth/login falla con contraseña incorrecta', async () => {
     const response = await request(app).post('/auth/login').send({
       email,
