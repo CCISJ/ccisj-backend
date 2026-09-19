@@ -33,6 +33,19 @@ export function findById(id: number) {
   });
 }
 
+export async function findActive() {
+  return prisma.socio.findMany({
+    where: {
+      usuario: {
+        activo: true,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
 // Lo que un socio directivo puede ver de los demás socios. Sin RUT, BPS,
 // observaciones internas ni datos de la cuenta, y solo socios activos.
 const directorySelect = {

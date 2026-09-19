@@ -55,17 +55,11 @@ enum TipoAjusteCuota {
 
 enum EstadoCuota {
   PENDIENTE
+  PARCIAL
   PAGADA
   ANULADA
 
   @@map("estado_cuota")
-}
-
-enum EstadoPagoCuota {
-  ACTIVO
-  ANULADO
-
-  @@map("estado_pago_cuota")
 }
 
 model Usuario {
@@ -239,7 +233,7 @@ model Postulacion {
 model ConfiguracionCuota {
   id            Int      @id @default(autoincrement())
   importeBase   Decimal  @map("importe_base") @db.Decimal(10, 2)
-  vigenciaDesde DateTime @map("vigencia_desde") @db.Date
+  vigenciaDesde DateTime @unique @map("vigencia_desde") @db.Date
   fechaCreacion DateTime @default(now()) @map("fecha_creacion") @db.Timestamp(6)
 
   @@map("configuracion_cuota")
@@ -278,6 +272,7 @@ model Cuota {
   socio Socio              @relation(fields: [socioId], references: [id], onDelete: NoAction)
   pagos PagoCuotaDetalle[]
 
+  @@unique([socioId, periodoDesde])
   @@map("cuota")
 }
 
@@ -286,9 +281,12 @@ model PagoCuota {
   socioId         Int @map("socio_id")
   registradoPorId Int @map("registrado_por_id")
 
-  importe   Decimal         @db.Decimal(10, 2)
-  fechaPago DateTime        @map("fecha_pago") @db.Timestamp(6)
-  estado    EstadoPagoCuota @default(ACTIVO)
+  importe   Decimal  @db.Decimal(10, 2)
+  fechaPago DateTime @map("fecha_pago") @db.Timestamp(6)
+
+  medioPago     String  @map("medio_pago") @db.VarChar(50)
+  numeroRecibo  String? @map("numero_recibo") @db.VarChar(100)
+  observaciones String? @db.VarChar(500)
 
   fechaCreacion DateTime @default(now()) @map("fecha_creacion") @db.Timestamp(6)
 
@@ -300,9 +298,10 @@ model PagoCuota {
 }
 
 model PagoCuotaDetalle {
-  id      Int @id @default(autoincrement())
-  pagoId  Int @map("pago_id")
-  cuotaId Int @map("cuota_id")
+  id              Int     @id @default(autoincrement())
+  pagoId          Int     @map("pago_id")
+  cuotaId         Int     @map("cuota_id")
+  importeAplicado Decimal @map("importe_aplicado") @db.Decimal(10, 2)
 
   pago  PagoCuota @relation(fields: [pagoId], references: [id], onDelete: Cascade)
   cuota Cuota     @relation(fields: [cuotaId], references: [id], onDelete: NoAction)
