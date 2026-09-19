@@ -185,3 +185,45 @@ export function requireAdmin(
 
   next();
 }
+
+export function requireMemberAccess(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  const user = req.user;
+
+  if (!user) {
+    return res.status(401).json({
+      message: 'No autenticado',
+    });
+  }
+
+  const socioId = Number(req.params.socioId);
+
+  if (!Number.isInteger(socioId) || socioId <= 0) {
+    return res.status(400).json({
+      message: 'El socio no es válido',
+    });
+  }
+
+  if (user.tipo === 'ADMIN') {
+    return next();
+  }
+
+  const isDirectivo = user.tipo === 'SOCIO' && user.memberType === 'DIRECTIVO';
+
+  if (isDirectivo) {
+    return next();
+  }
+
+  const isOwnMember = user.tipo === 'SOCIO' && user.socioId === socioId;
+
+  if (isOwnMember) {
+    return next();
+  }
+
+  return res.status(403).json({
+    message: FORBIDDEN_MESSAGE,
+  });
+}
