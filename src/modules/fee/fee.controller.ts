@@ -13,6 +13,7 @@ import {
   getMemberFeePayments,
   getMemberFeeStatus,
   getMemberFees,
+  getRecentFeePayments,
   registerFeePayment,
   removeFeePayment,
 } from './fee.service';
@@ -295,6 +296,21 @@ export async function getFeesDashboard(_req: Request, res: Response) {
       error instanceof Error
         ? error.message
         : 'Error al obtener el resumen de cuotas';
+
+    return res.status(500).json({ message });
+  }
+}
+
+export async function getRecentPayments(req: Request, res: Response) {
+  try {
+    const payments = await getRecentFeePayments();
+
+    res.json(payments);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error al obtener los pagos recientes';
 
     return res.status(500).json({ message });
   }

@@ -19,6 +19,7 @@ import {
   getFeesByMember,
   getFeesDashboard,
   getPaymentsByMember,
+  getRecentPayments,
 } from './fee.controller';
 
 const router = Router();
@@ -30,6 +31,8 @@ router.get('/configuracion', requireAuth, getCurrentConfiguration);
 router.get('/configuracion/historial', requireAuth, getConfigurationHistory);
 
 router.post('/configuracion', requireAuth, requireAdmin, createConfiguration);
+
+router.get('/pagos/recientes', requireAuth, requireAdmin, getRecentPayments);
 
 router.get(
   '/socio/:socioId',

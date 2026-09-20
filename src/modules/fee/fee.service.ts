@@ -18,6 +18,7 @@ import {
   findMemberFees,
   findMemberFeesWithPayments,
   findPaymentsByDateRange,
+  getRecentPayments,
 } from './fee.repository';
 
 export async function getCurrentFeeConfiguration() {
@@ -422,10 +423,25 @@ export async function getFeesDashboardSummary(today = new Date()) {
     findActive(),
   ]);
 
-  const collectedThisMonth = payments.reduce(
+  const cobradoMes = payments.reduce(
     (total, payment) => total + Number(payment.importe),
     0,
   );
+
+  const pendiente = fees.reduce((total, fee) => {
+    if (!fee.socio.usuario.activo || fee.estado === 'ANULADA') {
+      return total;
+    }
+
+    const totalPaid = fee.pagos.reduce(
+      (paid, detail) => paid + Number(detail.importeAplicado),
+      0,
+    );
+
+    const balance = Number(fee.importeTotal) - totalPaid;
+
+    return total + Math.max(balance, 0);
+  }, 0);
 
   const memberDebts = new Map<
     number,
@@ -493,10 +509,23 @@ export async function getFeesDashboardSummary(today = new Date()) {
   );
 
   return {
-    cobradoMes: collectedThisMonth,
+    cobradoMes,
+    pendiente,
     deudaTotal,
     sociosAlDia,
     sociosPendientes,
     sociosDeudores,
   };
+}
+
+export async function getRecentFeePayments(limit: number = 5) {
+  const payments = await getRecentPayments(limit);
+
+  return payments.map((payment) => ({
+    id: payment.id,
+    socioId: payment.socioId,
+    razonSocial: payment.socio.razonSocial,
+    importe: Number(payment.importe),
+    fechaPago: payment.fechaPago,
+  }));
 }
