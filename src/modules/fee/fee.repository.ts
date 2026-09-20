@@ -313,3 +313,19 @@ export async function findPaymentsByDateRange(
     },
   });
 }
+
+export async function getRecentPayments(limit: number = 5) {
+  return prisma.pagoCuota.findMany({
+    orderBy: {
+      fechaPago: 'desc',
+    },
+    take: limit,
+    include: {
+      socio: {
+        select: {
+          razonSocial: true,
+        },
+      },
+    },
+  });
+}
