@@ -5,6 +5,7 @@ import { AuthRequest } from '@/middlewares/auth.middleware';
 import {
   addFeeAdjustment,
   addFeeConfiguration,
+  editFeeConfiguration,
   generateMonthlyFee,
   getCurrentFeeConfiguration,
   getFeeConfigurationHistory,
@@ -311,6 +312,32 @@ export async function getRecentPayments(req: Request, res: Response) {
       error instanceof Error
         ? error.message
         : 'Error al obtener los pagos recientes';
+
+    return res.status(500).json({ message });
+  }
+}
+
+export async function updateConfiguration(req: Request, res: Response) {
+  try {
+    const id = Number(req.params.id);
+    const importeBase = Number(req.body.importeBase);
+
+    const configuration = await editFeeConfiguration(id, importeBase);
+
+    const today = new Date();
+
+    if (configuration.vigenciaDesde <= today) {
+      throw new Error(
+        'Solo se pueden modificar configuraciones de cuota futuras',
+      );
+    }
+
+    res.json(configuration);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error al actualizar la configuración de cuota';
 
     return res.status(500).json({ message });
   }

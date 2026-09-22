@@ -50,6 +50,12 @@ export async function findFeeByMemberAndPeriod(
   });
 }
 
+export async function findFeeConfigurationById(id: number) {
+  return prisma.configuracionCuota.findUnique({
+    where: { id },
+  });
+}
+
 export async function findMemberFees(socioId: number) {
   return prisma.cuota.findMany({
     where: {
@@ -327,5 +333,18 @@ export async function getRecentPayments(limit: number = 5) {
         },
       },
     },
+  });
+}
+
+export async function findConfigurationByEffectiveDate(vigenciaDesde: Date) {
+  return prisma.configuracionCuota.findUnique({
+    where: { vigenciaDesde },
+  });
+}
+
+export async function updateFeeConfiguration(id: number, importeBase: number) {
+  return prisma.configuracionCuota.update({
+    where: { id },
+    data: { importeBase },
   });
 }

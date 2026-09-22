@@ -20,6 +20,7 @@ import {
   getFeesDashboard,
   getPaymentsByMember,
   getRecentPayments,
+  updateConfiguration,
 } from './fee.controller';
 
 const router = Router();
@@ -31,6 +32,13 @@ router.get('/configuracion', requireAuth, getCurrentConfiguration);
 router.get('/configuracion/historial', requireAuth, getConfigurationHistory);
 
 router.post('/configuracion', requireAuth, requireAdmin, createConfiguration);
+
+router.patch(
+  '/configuracion/:id',
+  requireAuth,
+  requireAdmin,
+  updateConfiguration,
+);
 
 router.get('/pagos/recientes', requireAuth, requireAdmin, getRecentPayments);
 
