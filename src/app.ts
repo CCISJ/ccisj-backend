@@ -12,7 +12,7 @@ import applicantRoutes from './modules/applicants/applicant.routes';
 import applicationRoutes from './modules/applications/application.routes';
 import authRoutes from './modules/auth/auth.routes';
 import categoryRoutes from './modules/categories/category.routes';
-import feeRoutes from './modules/fee/fee.routes';
+import feeRoutes from './modules/fees/fee.routes';
 import memberRoutes from './modules/members/member.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
 import offerRoutes from './modules/offers/offer.routes';

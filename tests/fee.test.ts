@@ -9,8 +9,9 @@ import {
   getFeesDashboardSummary,
   getMemberFeeStatus,
   registerFeePayment,
+  removeFeeAdjustment,
   removeFeePayment,
-} from '../src/modules/fee/fee.service';
+} from '../src/modules/fees/fee.service';
 import {
   createAdmin,
   createApplicant,
@@ -1234,6 +1235,94 @@ it('impide a un socio común consultar el historial de pagos de otro socio', asy
     });
 
     await deleteUsers([member.userId, otherMember.userId]);
+  }
+});
+
+it('al eliminar un ajuste conserva las cuotas pagadas y recalcula las pendientes', async () => {
+  const member = await createMember();
+
+  try {
+    const adjustment = await prisma.ajusteCuotaSocio.create({
+      data: {
+        socioId: member.socioId,
+        tipo: 'ADICIONAL',
+        importe: 100,
+        fechaDesde: new Date('2026-09-01'),
+        fechaHasta: new Date('2026-10-31'),
+        motivo: 'Ajuste de prueba',
+      },
+    });
+
+    const septemberFee = await generateMonthlyFee(member.socioId, 2026, 9);
+
+    const octoberFee = await generateMonthlyFee(member.socioId, 2026, 10);
+
+    expect(Number(septemberFee.importeAjustes)).toBe(100);
+    expect(Number(septemberFee.importeTotal)).toBe(860);
+
+    expect(Number(octoberFee.importeAjustes)).toBe(100);
+    expect(Number(octoberFee.importeTotal)).toBe(860);
+
+    await registerFeePayment({
+      socioId: member.socioId,
+      registradoPorId: member.userId,
+      importe: 860,
+      fechaPago: new Date('2026-09-20'),
+      medioPago: 'EFECTIVO',
+    });
+
+    const result = await removeFeeAdjustment(adjustment.id);
+
+    expect(result.activo).toBe(false);
+    expect(result.cuotasPagadasNoModificadas).toBe(1);
+
+    const updatedSeptemberFee = await prisma.cuota.findUnique({
+      where: {
+        id: septemberFee.id,
+      },
+    });
+
+    const updatedOctoberFee = await prisma.cuota.findUnique({
+      where: {
+        id: octoberFee.id,
+      },
+    });
+
+    expect(updatedSeptemberFee?.estado).toBe('PAGADA');
+    expect(Number(updatedSeptemberFee?.importeAjustes)).toBe(100);
+    expect(Number(updatedSeptemberFee?.importeTotal)).toBe(860);
+
+    expect(updatedOctoberFee?.estado).toBe('PENDIENTE');
+    expect(Number(updatedOctoberFee?.importeAjustes)).toBe(0);
+    expect(Number(updatedOctoberFee?.importeTotal)).toBe(760);
+
+    const deletedAdjustment = await prisma.ajusteCuotaSocio.findUnique({
+      where: {
+        id: adjustment.id,
+      },
+    });
+
+    expect(deletedAdjustment?.activo).toBe(false);
+  } finally {
+    await prisma.pagoCuota.deleteMany({
+      where: {
+        socioId: member.socioId,
+      },
+    });
+
+    await prisma.cuota.deleteMany({
+      where: {
+        socioId: member.socioId,
+      },
+    });
+
+    await prisma.ajusteCuotaSocio.deleteMany({
+      where: {
+        socioId: member.socioId,
+      },
+    });
+
+    await deleteUsers([member.userId]);
   }
 });
 

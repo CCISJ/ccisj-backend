@@ -4,15 +4,15 @@
  * IMPORTANTE: la base puede ser compartida con el equipo. Todo dato creado por
  * los tests lleva un sufijo único y los helpers de limpieza SIEMPRE borran por ID.
  */
-import crypto from 'node:crypto';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
+import crypto from 'node:crypto';
 import request from 'supertest';
 
 import app from '../src/app';
-import { prisma } from '@/config/prisma';
-import type { MemberType } from '@/types/member.type';
-import type { TipoUsuario } from '@/types/user.type';
+import { prisma } from '../src/config/prisma';
+import type { MemberType } from '../src/types/member.type';
+import type { TipoUsuario } from '../src/types/user.type';
 
 export const TEST_PASSWORD = 'Test123456';
 const UNUSABLE_PASSWORD = 'test-sin-login';
@@ -79,7 +79,9 @@ export async function createUser({
 }
 
 /** Crea un usuario y devuelve un agent autenticado pasando por /auth/login. */
-export async function createLoggedUser(options: Omit<CreateUserOptions, 'loginEnabled'>) {
+export async function createLoggedUser(
+  options: Omit<CreateUserOptions, 'loginEnabled'>,
+) {
   const user = await createUser({ ...options, loginEnabled: true });
   const agent = request.agent(app);
 
@@ -211,6 +213,79 @@ export async function deleteUsers(userIds: number[]) {
 
   await deleteNotificationsCreatedBy(ids);
 
-  await prisma.socio.deleteMany({ where: { usuarioId: { in: ids } } });
-  await prisma.usuario.deleteMany({ where: { id: { in: ids } } });
+  const socios = await prisma.socio.findMany({
+    where: {
+      usuarioId: { in: ids },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  const socioIds = socios.map((socio) => socio.id);
+
+  if (socioIds.length) {
+    const cuotas = await prisma.cuota.findMany({
+      where: {
+        socioId: { in: socioIds },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const cuotaIds = cuotas.map((cuota) => cuota.id);
+
+    const pagos = await prisma.pagoCuota.findMany({
+      where: {
+        socioId: { in: socioIds },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    const pagoIds = pagos.map((pago) => pago.id);
+
+    if (pagoIds.length || cuotaIds.length) {
+      await prisma.pagoCuotaDetalle.deleteMany({
+        where: {
+          OR: [
+            ...(pagoIds.length ? [{ pagoId: { in: pagoIds } }] : []),
+            ...(cuotaIds.length ? [{ cuotaId: { in: cuotaIds } }] : []),
+          ],
+        },
+      });
+    }
+
+    await prisma.pagoCuota.deleteMany({
+      where: {
+        socioId: { in: socioIds },
+      },
+    });
+
+    await prisma.cuota.deleteMany({
+      where: {
+        socioId: { in: socioIds },
+      },
+    });
+
+    await prisma.ajusteCuotaSocio.deleteMany({
+      where: {
+        socioId: { in: socioIds },
+      },
+    });
+  }
+
+  await prisma.socio.deleteMany({
+    where: {
+      usuarioId: { in: ids },
+    },
+  });
+
+  await prisma.usuario.deleteMany({
+    where: {
+      id: { in: ids },
+    },
+  });
 }

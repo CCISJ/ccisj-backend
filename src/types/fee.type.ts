@@ -45,3 +45,12 @@ export type CreateFeePaymentData = {
   observaciones?: string;
   detalles: PaymentDetailData[];
 };
+
+export type AddFeeAdjustmentData = {
+  socioId: number;
+  tipo: TipoAjusteCuota;
+  importe: number;
+  fechaDesde: Date;
+  fechaHasta?: Date;
+  motivo?: string;
+};

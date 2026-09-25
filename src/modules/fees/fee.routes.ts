@@ -11,6 +11,7 @@ import {
   createConfiguration,
   createMonthlyFee,
   createPayment,
+  deleteAdjustment,
   deletePayment,
   getAdjustmentsByMember,
   getConfigurationHistory,
@@ -82,5 +83,12 @@ router.get(
 );
 
 router.delete('/pagos/:pagoId', requireAuth, requireAdmin, deletePayment);
+
+router.delete(
+  '/ajustes/:adjustmentId',
+  requireAuth,
+  requireAdmin,
+  deleteAdjustment,
+);
 
 export default router;

@@ -16,6 +16,7 @@ import {
   getMemberFees,
   getRecentFeePayments,
   registerFeePayment,
+  removeFeeAdjustment,
   removeFeePayment,
 } from './fee.service';
 
@@ -340,5 +341,26 @@ export async function updateConfiguration(req: Request, res: Response) {
         : 'Error al actualizar la configuración de cuota';
 
     return res.status(500).json({ message });
+  }
+}
+
+export async function deleteAdjustment(req: Request, res: Response) {
+  try {
+    const adjustmentId = Number(req.params.adjustmentId);
+
+    if (!Number.isInteger(adjustmentId) || adjustmentId <= 0) {
+      return res.status(400).json({
+        message: 'El ajuste no es válido',
+      });
+    }
+
+    const result = await removeFeeAdjustment(adjustmentId);
+
+    return res.json(result);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Error al eliminar el ajuste';
+
+    return res.status(400).json({ message });
   }
 }

@@ -118,10 +118,27 @@ export async function createFeeAdjustment(data: CreateFeeAdjustmentData) {
   });
 }
 
+export async function updateFeeAmounts(
+  cuotaId: number,
+  importeAjustes: number,
+  importeTotal: number,
+) {
+  return prisma.cuota.update({
+    where: {
+      id: cuotaId,
+    },
+    data: {
+      importeAjustes,
+      importeTotal,
+    },
+  });
+}
+
 export async function findMemberFeeAdjustments(socioId: number) {
   return prisma.ajusteCuotaSocio.findMany({
     where: {
       socioId,
+      activo: true,
     },
     orderBy: {
       fechaDesde: 'desc',
@@ -346,5 +363,20 @@ export async function updateFeeConfiguration(id: number, importeBase: number) {
   return prisma.configuracionCuota.update({
     where: { id },
     data: { importeBase },
+  });
+}
+
+export async function findFeeAdjustmentById(id: number) {
+  return prisma.ajusteCuotaSocio.findUnique({
+    where: { id },
+  });
+}
+
+export async function deactivateFeeAdjustment(id: number) {
+  return prisma.ajusteCuotaSocio.update({
+    where: { id },
+    data: {
+      activo: false,
+    },
   });
 }
