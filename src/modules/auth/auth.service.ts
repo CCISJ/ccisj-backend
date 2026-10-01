@@ -1,6 +1,7 @@
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
 
+import * as applicantService from '@/modules/applicants/applicant.service';
 import * as usuarioRepository from '@/modules/users/user.repository';
 import { HttpError } from '@/utils/http-error';
 import { PASSWORD_MAX, assertPasswordPolicy } from '@/utils/password';
@@ -82,6 +83,19 @@ export async function login(data: LoginData) {
       email: user.email,
       tipo: user.tipo,
     },
+  };
+}
+
+/**
+ * Registro público de postulantes. Crea la cuenta y deja la sesión iniciada,
+ * para que no tenga que volver a escribir sus datos en el login.
+ */
+export async function register(body: unknown) {
+  const { usuario } = await applicantService.register(body);
+
+  return {
+    token: signSession(usuario.id),
+    user: usuario,
   };
 }
 
