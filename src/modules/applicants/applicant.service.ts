@@ -1,6 +1,10 @@
+import argon2 from 'argon2';
+
 import * as usuarioRepository from '@/modules/users/user.repository';
 import { UpdateApplicantData } from '@/types/user.type';
+import { EMAIL_MAX, EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
+import { assertPasswordPolicy } from '@/utils/password';
 
 import * as applicantRepository from './applicant.repository';
 
@@ -97,6 +101,56 @@ export async function create(body: unknown) {
 
   return applicantRepository.create({
     usuarioId: usuarioId as number,
+    nombre,
+    apellido,
+    telefono,
+  });
+}
+
+/**
+ * Registro público de un postulante: crea su cuenta y su perfil. Valida todo
+ * antes de tocar la base y nunca acepta el tipo de usuario desde el body:
+ * por esta vía solo se crean postulantes.
+ */
+export async function register(body: unknown) {
+  assertObject(body);
+
+  const { email: rawEmail, password } = body;
+
+  if (!rawEmail || !password || !body.nombre || !body.apellido) {
+    throw new HttpError(400, 'Faltan datos obligatorios');
+  }
+
+  if (typeof rawEmail !== 'string' || typeof password !== 'string') {
+    throw new HttpError(400, 'Datos inválidos');
+  }
+
+  const email = normalizeEmail(rawEmail);
+
+  if (email.length > EMAIL_MAX || !EMAIL_PATTERN.test(email)) {
+    throw new HttpError(400, 'El email no es válido');
+  }
+
+  assertPasswordPolicy(password, 'La contraseña');
+
+  const nombre = parseField('nombre', body.nombre);
+  const apellido = parseField('apellido', body.apellido);
+  const telefono =
+    body.telefono === undefined || body.telefono === null
+      ? undefined
+      : parseField('telefono', body.telefono) || undefined;
+
+  if (!nombre || !apellido) {
+    throw new HttpError(400, 'Faltan datos obligatorios');
+  }
+
+  if (await usuarioRepository.findByEmail(email)) {
+    throw new HttpError(409, 'Ya existe una cuenta con ese email');
+  }
+
+  return applicantRepository.createWithAccount({
+    email,
+    passwordHash: await argon2.hash(password),
     nombre,
     apellido,
     telefono,

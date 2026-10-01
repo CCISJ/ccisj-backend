@@ -62,6 +62,47 @@ export function create(data: {
   });
 }
 
+/**
+ * Registro público: crea la cuenta (tipo POSTULANTE) y su perfil juntos. Si
+ * falla el perfil no queda una cuenta suelta sin postulante.
+ */
+export function createWithAccount(data: {
+  email: string;
+  passwordHash: string;
+  nombre: string;
+  apellido: string;
+  telefono?: string;
+}) {
+  return prisma.$transaction(async (tx) => {
+    const usuario = await tx.usuario.create({
+      data: {
+        email: data.email,
+        password: data.passwordHash,
+        tipo: 'POSTULANTE',
+      },
+      select: {
+        id: true,
+        email: true,
+        tipo: true,
+      },
+    });
+
+    const postulante = await tx.postulante.create({
+      data: {
+        usuarioId: usuario.id,
+        nombre: data.nombre,
+        apellido: data.apellido,
+        telefono: data.telefono,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    return { usuario, postulanteId: postulante.id };
+  });
+}
+
 export function update(
   id: number,
   data: {

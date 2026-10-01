@@ -39,7 +39,24 @@ const changePasswordLimiter = rateLimit({
   },
 });
 
+// Frena la creación de cuentas en masa: 5 cuentas creadas por hora por IP.
+// Los intentos con errores (email repetido, contraseña débil) no cuentan, para
+// que corregir el formulario no deje a nadie bloqueado.
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  skipFailedRequests: true,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
+  message: {
+    message:
+      'Demasiados registros desde esta conexión. Intente nuevamente más tarde.',
+  },
+});
+
 router.post('/login', loginLimiter, authController.login);
+router.post('/registro', registerLimiter, authController.register);
 router.get('/me', requireAuth, authController.me);
 router.post(
   '/cambiar-contrasena',

@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import { AuthRequest } from '@/middlewares/auth.middleware';
 import { HttpError } from '@/utils/http-error';
+import { sendError } from '@/utils/send-error';
 
 import * as authService from './auth.service';
 import { clearSessionCookie, setSessionCookie } from './session-cookie';
@@ -43,6 +44,23 @@ export async function login(req: Request, res: Response) {
 
     return res.status(500).json({
       message: 'Error al iniciar sesión',
+    });
+  }
+}
+
+export async function register(req: Request, res: Response) {
+  try {
+    const result = await authService.register(req.body);
+
+    setSessionCookie(res, result.token);
+
+    return res.status(201).json({
+      user: result.user,
+    });
+  } catch (error) {
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al registrar la cuenta',
     });
   }
 }
