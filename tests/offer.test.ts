@@ -592,10 +592,20 @@ describe('Offers', () => {
     it('se muestra cerrada al consultarla', async () => {
       const response = await request(app)
         .get(`/ofertas/${expiredId}`)
-        .set('Cookie', postulante.cookie);
+        .set('Cookie', socio.cookie);
 
       expect(response.status).toBe(200);
       expect(response.body.estado).toBe('CERRADA');
+    });
+
+    // El postulante solo ve ofertas abiertas: una vencida deja de existir
+    // para él (ver tests/offer-applicant.test.ts).
+    it('el postulante ya no la ve al consultarla', async () => {
+      const response = await request(app)
+        .get(`/ofertas/${expiredId}`)
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(404);
     });
 
     it('no se reabre sin mover la fecha de cierre', async () => {

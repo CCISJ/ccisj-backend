@@ -36,18 +36,28 @@ async function closeExpired() {
   await offerRepository.closeExpired(new Date());
 }
 
-export async function getAll() {
+/**
+ * El postulante ve solo las ofertas abiertas, que son a las que se puede
+ * postular. Las cerradas a las que se postuló le llegan por sus
+ * postulaciones, no por acá.
+ */
+export async function getAll(actor: SessionUser) {
   await closeExpired();
+
+  if (actor.tipo === 'POSTULANTE') {
+    return offerRepository.findActive();
+  }
 
   return offerRepository.findAll();
 }
 
-export async function getById(id: number) {
+export async function getById(id: number, actor: SessionUser) {
   await closeExpired();
 
   const offer = await offerRepository.findById(id);
 
-  if (!offer) {
+  // Para el postulante una oferta cerrada es como si no existiera.
+  if (!offer || (actor.tipo === 'POSTULANTE' && offer.estado !== 'ACTIVA')) {
     throw new HttpError(404, 'Oferta no encontrada');
   }
 
