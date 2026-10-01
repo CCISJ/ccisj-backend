@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { HttpError, statusFor } from '@/utils/http-error';
@@ -21,9 +21,9 @@ function invalidId(res: Response) {
   });
 }
 
-export async function getAll(_req: Request, res: Response) {
+export async function getAll(req: AuthRequest, res: Response) {
   try {
-    const offers = await offerService.getAll();
+    const offers = await offerService.getAll(req.user!);
 
     res.json(offers);
   } catch (error) {
@@ -31,13 +31,13 @@ export async function getAll(_req: Request, res: Response) {
   }
 }
 
-export async function getById(req: Request, res: Response) {
+export async function getById(req: AuthRequest, res: Response) {
   try {
     const id = parseId(req.params.id);
 
     if (!id) return invalidId(res);
 
-    const offer = await offerService.getById(id);
+    const offer = await offerService.getById(id, req.user!);
 
     res.json(offer);
   } catch (error) {

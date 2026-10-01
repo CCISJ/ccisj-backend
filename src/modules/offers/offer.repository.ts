@@ -88,6 +88,18 @@ export function findAll() {
   });
 }
 
+/** Solo las ofertas abiertas: es lo que ve un postulante en la bolsa de trabajo. */
+export function findActive() {
+  return prisma.oferta.findMany({
+    where: { estado: 'ACTIVA' },
+    include: offerInclude,
+    omit: offerOmit,
+    orderBy: {
+      fechaPublicacion: 'desc',
+    },
+  });
+}
+
 export function findById(id: number) {
   return prisma.oferta.findUnique({
     where: { id },
