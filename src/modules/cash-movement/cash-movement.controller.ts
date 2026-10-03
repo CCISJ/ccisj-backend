@@ -5,11 +5,20 @@ import type { AuthRequest } from '@/middlewares/auth.middleware';
 import {
   addManualCashMovement,
   getCashMovements,
+  getCurrentMonthCashSummary,
 } from './cash-movement.service';
 
-export async function getMovements(_req: AuthRequest, res: Response) {
+export async function getMovements(req: AuthRequest, res: Response) {
   try {
-    const movements = await getCashMovements();
+    const { desde, hasta, tipo, categoriaId, buscar } = req.query;
+
+    const movements = await getCashMovements({
+      desde: desde ? new Date(String(desde)) : undefined,
+      hasta: hasta ? new Date(String(hasta)) : undefined,
+      tipo: tipo ? (String(tipo) as 'INGRESO' | 'EGRESO') : undefined,
+      categoriaId: categoriaId ? Number(categoriaId) : undefined,
+      buscar: buscar ? String(buscar) : undefined,
+    });
 
     return res.json(movements);
   } catch (error) {
@@ -49,6 +58,21 @@ export async function createMovement(req: AuthRequest, res: Response) {
       error instanceof Error
         ? error.message
         : 'Error al registrar el movimiento de caja';
+
+    return res.status(400).json({ message });
+  }
+}
+
+export async function getCashSummary(_req: AuthRequest, res: Response) {
+  try {
+    const summary = await getCurrentMonthCashSummary();
+
+    return res.json(summary);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error al obtener el resumen de caja';
 
     return res.status(400).json({ message });
   }

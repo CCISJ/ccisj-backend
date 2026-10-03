@@ -20,3 +20,11 @@ type CreateCashMovementData = {
   registradoPorId: number;
   pagoCuotaId?: number;
 };
+
+export type CashMovementFilters = {
+  desde?: Date;
+  hasta?: Date;
+  tipo?: 'INGRESO' | 'EGRESO';
+  categoriaId?: number;
+  buscar?: string;
+};
