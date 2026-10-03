@@ -238,6 +238,7 @@ export type UsuarioWhereInput = {
   notificacionesCreadas?: Prisma.NotificacionListRelationFilter
   notificacionesRecibidas?: Prisma.NotificacionUsuarioListRelationFilter
   pagoCuotas?: Prisma.PagoCuotaListRelationFilter
+  movimientosCaja?: Prisma.MovimientoCajaListRelationFilter
 }
 
 export type UsuarioOrderByWithRelationInput = {
@@ -254,6 +255,7 @@ export type UsuarioOrderByWithRelationInput = {
   notificacionesCreadas?: Prisma.NotificacionOrderByRelationAggregateInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioOrderByRelationAggregateInput
   pagoCuotas?: Prisma.PagoCuotaOrderByRelationAggregateInput
+  movimientosCaja?: Prisma.MovimientoCajaOrderByRelationAggregateInput
 }
 
 export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
@@ -273,6 +275,7 @@ export type UsuarioWhereUniqueInput = Prisma.AtLeast<{
   notificacionesCreadas?: Prisma.NotificacionListRelationFilter
   notificacionesRecibidas?: Prisma.NotificacionUsuarioListRelationFilter
   pagoCuotas?: Prisma.PagoCuotaListRelationFilter
+  movimientosCaja?: Prisma.MovimientoCajaListRelationFilter
 }, "id" | "email">
 
 export type UsuarioOrderByWithAggregationInput = {
@@ -316,6 +319,7 @@ export type UsuarioCreateInput = {
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateInput = {
@@ -332,6 +336,7 @@ export type UsuarioUncheckedCreateInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUpdateInput = {
@@ -347,6 +352,7 @@ export type UsuarioUpdateInput = {
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateInput = {
@@ -363,6 +369,7 @@ export type UsuarioUncheckedUpdateInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioCreateManyInput = {
@@ -549,6 +556,20 @@ export type UsuarioUpdateOneRequiredWithoutPagoCuotasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutPagoCuotasInput, Prisma.UsuarioUpdateWithoutPagoCuotasInput>, Prisma.UsuarioUncheckedUpdateWithoutPagoCuotasInput>
 }
 
+export type UsuarioCreateNestedOneWithoutMovimientosCajaInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutMovimientosCajaInput, Prisma.UsuarioUncheckedCreateWithoutMovimientosCajaInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutMovimientosCajaInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+}
+
+export type UsuarioUpdateOneRequiredWithoutMovimientosCajaNestedInput = {
+  create?: Prisma.XOR<Prisma.UsuarioCreateWithoutMovimientosCajaInput, Prisma.UsuarioUncheckedCreateWithoutMovimientosCajaInput>
+  connectOrCreate?: Prisma.UsuarioCreateOrConnectWithoutMovimientosCajaInput
+  upsert?: Prisma.UsuarioUpsertWithoutMovimientosCajaInput
+  connect?: Prisma.UsuarioWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UsuarioUpdateToOneWithWhereWithoutMovimientosCajaInput, Prisma.UsuarioUpdateWithoutMovimientosCajaInput>, Prisma.UsuarioUncheckedUpdateWithoutMovimientosCajaInput>
+}
+
 export type UsuarioCreateWithoutNotificacionesCreadasInput = {
   email: string
   password: string
@@ -561,6 +582,7 @@ export type UsuarioCreateWithoutNotificacionesCreadasInput = {
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutNotificacionesCreadasInput = {
@@ -576,6 +598,7 @@ export type UsuarioUncheckedCreateWithoutNotificacionesCreadasInput = {
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutNotificacionesCreadasInput = {
@@ -606,6 +629,7 @@ export type UsuarioUpdateWithoutNotificacionesCreadasInput = {
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput = {
@@ -621,6 +645,7 @@ export type UsuarioUncheckedUpdateWithoutNotificacionesCreadasInput = {
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioCreateWithoutNotificacionesRecibidasInput = {
@@ -635,6 +660,7 @@ export type UsuarioCreateWithoutNotificacionesRecibidasInput = {
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
   pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput = {
@@ -650,6 +676,7 @@ export type UsuarioUncheckedCreateWithoutNotificacionesRecibidasInput = {
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutNotificacionesRecibidasInput = {
@@ -680,6 +707,7 @@ export type UsuarioUpdateWithoutNotificacionesRecibidasInput = {
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
   pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput = {
@@ -695,6 +723,7 @@ export type UsuarioUncheckedUpdateWithoutNotificacionesRecibidasInput = {
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioCreateWithoutSocioInput = {
@@ -709,6 +738,7 @@ export type UsuarioCreateWithoutSocioInput = {
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutSocioInput = {
@@ -724,6 +754,7 @@ export type UsuarioUncheckedCreateWithoutSocioInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutSocioInput = {
@@ -754,6 +785,7 @@ export type UsuarioUpdateWithoutSocioInput = {
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutSocioInput = {
@@ -769,6 +801,7 @@ export type UsuarioUncheckedUpdateWithoutSocioInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioCreateWithoutPostulanteInput = {
@@ -783,6 +816,7 @@ export type UsuarioCreateWithoutPostulanteInput = {
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutPostulanteInput = {
@@ -798,6 +832,7 @@ export type UsuarioUncheckedCreateWithoutPostulanteInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutPostulanteInput = {
@@ -828,6 +863,7 @@ export type UsuarioUpdateWithoutPostulanteInput = {
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPostulanteInput = {
@@ -843,6 +879,7 @@ export type UsuarioUncheckedUpdateWithoutPostulanteInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioCreateWithoutOfertasInput = {
@@ -857,6 +894,7 @@ export type UsuarioCreateWithoutOfertasInput = {
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutOfertasInput = {
@@ -872,6 +910,7 @@ export type UsuarioUncheckedCreateWithoutOfertasInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutOfertasInput = {
@@ -902,6 +941,7 @@ export type UsuarioUpdateWithoutOfertasInput = {
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutOfertasInput = {
@@ -917,6 +957,7 @@ export type UsuarioUncheckedUpdateWithoutOfertasInput = {
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
   pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioCreateWithoutPagoCuotasInput = {
@@ -931,6 +972,7 @@ export type UsuarioCreateWithoutPagoCuotasInput = {
   socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
+  movimientosCaja?: Prisma.MovimientoCajaCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioUncheckedCreateWithoutPagoCuotasInput = {
@@ -946,6 +988,7 @@ export type UsuarioUncheckedCreateWithoutPagoCuotasInput = {
   socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedCreateNestedManyWithoutRegistradoPorInput
 }
 
 export type UsuarioCreateOrConnectWithoutPagoCuotasInput = {
@@ -976,6 +1019,7 @@ export type UsuarioUpdateWithoutPagoCuotasInput = {
   socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUpdateManyWithoutRegistradoPorNestedInput
 }
 
 export type UsuarioUncheckedUpdateWithoutPagoCuotasInput = {
@@ -991,6 +1035,85 @@ export type UsuarioUncheckedUpdateWithoutPagoCuotasInput = {
   socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
   notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
   notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
+  movimientosCaja?: Prisma.MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorNestedInput
+}
+
+export type UsuarioCreateWithoutMovimientosCajaInput = {
+  email: string
+  password: string
+  tipo: $Enums.TipoUsuario
+  activo?: boolean
+  fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
+  ofertas?: Prisma.OfertaCreateNestedManyWithoutCreadorInput
+  postulante?: Prisma.PostulanteCreateNestedOneWithoutUsuarioInput
+  socio?: Prisma.SocioCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioCreateNestedManyWithoutUsuarioInput
+  pagoCuotas?: Prisma.PagoCuotaCreateNestedManyWithoutRegistradoPorInput
+}
+
+export type UsuarioUncheckedCreateWithoutMovimientosCajaInput = {
+  id?: number
+  email: string
+  password: string
+  tipo: $Enums.TipoUsuario
+  activo?: boolean
+  fechaCreacion?: Date | string
+  passwordActualizada?: Date | string | null
+  ofertas?: Prisma.OfertaUncheckedCreateNestedManyWithoutCreadorInput
+  postulante?: Prisma.PostulanteUncheckedCreateNestedOneWithoutUsuarioInput
+  socio?: Prisma.SocioUncheckedCreateNestedOneWithoutUsuarioInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedCreateNestedManyWithoutCreadoPorInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutUsuarioInput
+  pagoCuotas?: Prisma.PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput
+}
+
+export type UsuarioCreateOrConnectWithoutMovimientosCajaInput = {
+  where: Prisma.UsuarioWhereUniqueInput
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutMovimientosCajaInput, Prisma.UsuarioUncheckedCreateWithoutMovimientosCajaInput>
+}
+
+export type UsuarioUpsertWithoutMovimientosCajaInput = {
+  update: Prisma.XOR<Prisma.UsuarioUpdateWithoutMovimientosCajaInput, Prisma.UsuarioUncheckedUpdateWithoutMovimientosCajaInput>
+  create: Prisma.XOR<Prisma.UsuarioCreateWithoutMovimientosCajaInput, Prisma.UsuarioUncheckedCreateWithoutMovimientosCajaInput>
+  where?: Prisma.UsuarioWhereInput
+}
+
+export type UsuarioUpdateToOneWithWhereWithoutMovimientosCajaInput = {
+  where?: Prisma.UsuarioWhereInput
+  data: Prisma.XOR<Prisma.UsuarioUpdateWithoutMovimientosCajaInput, Prisma.UsuarioUncheckedUpdateWithoutMovimientosCajaInput>
+}
+
+export type UsuarioUpdateWithoutMovimientosCajaInput = {
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ofertas?: Prisma.OfertaUpdateManyWithoutCreadorNestedInput
+  postulante?: Prisma.PostulanteUpdateOneWithoutUsuarioNestedInput
+  socio?: Prisma.SocioUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUpdateManyWithoutUsuarioNestedInput
+  pagoCuotas?: Prisma.PagoCuotaUpdateManyWithoutRegistradoPorNestedInput
+}
+
+export type UsuarioUncheckedUpdateWithoutMovimientosCajaInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoUsuarioFieldUpdateOperationsInput | $Enums.TipoUsuario
+  activo?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  passwordActualizada?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  ofertas?: Prisma.OfertaUncheckedUpdateManyWithoutCreadorNestedInput
+  postulante?: Prisma.PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput
+  socio?: Prisma.SocioUncheckedUpdateOneWithoutUsuarioNestedInput
+  notificacionesCreadas?: Prisma.NotificacionUncheckedUpdateManyWithoutCreadoPorNestedInput
+  notificacionesRecibidas?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutUsuarioNestedInput
+  pagoCuotas?: Prisma.PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput
 }
 
 
@@ -1003,6 +1126,7 @@ export type UsuarioCountOutputType = {
   notificacionesCreadas: number
   notificacionesRecibidas: number
   pagoCuotas: number
+  movimientosCaja: number
 }
 
 export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1010,6 +1134,7 @@ export type UsuarioCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   notificacionesCreadas?: boolean | UsuarioCountOutputTypeCountNotificacionesCreadasArgs
   notificacionesRecibidas?: boolean | UsuarioCountOutputTypeCountNotificacionesRecibidasArgs
   pagoCuotas?: boolean | UsuarioCountOutputTypeCountPagoCuotasArgs
+  movimientosCaja?: boolean | UsuarioCountOutputTypeCountMovimientosCajaArgs
 }
 
 /**
@@ -1050,6 +1175,13 @@ export type UsuarioCountOutputTypeCountPagoCuotasArgs<ExtArgs extends runtime.Ty
   where?: Prisma.PagoCuotaWhereInput
 }
 
+/**
+ * UsuarioCountOutputType without action
+ */
+export type UsuarioCountOutputTypeCountMovimientosCajaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MovimientoCajaWhereInput
+}
+
 
 export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1065,6 +1197,7 @@ export type UsuarioSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   notificacionesCreadas?: boolean | Prisma.Usuario$notificacionesCreadasArgs<ExtArgs>
   notificacionesRecibidas?: boolean | Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs>
   pagoCuotas?: boolean | Prisma.Usuario$pagoCuotasArgs<ExtArgs>
+  movimientosCaja?: boolean | Prisma.Usuario$movimientosCajaArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["usuario"]>
 
@@ -1106,6 +1239,7 @@ export type UsuarioInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   notificacionesCreadas?: boolean | Prisma.Usuario$notificacionesCreadasArgs<ExtArgs>
   notificacionesRecibidas?: boolean | Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs>
   pagoCuotas?: boolean | Prisma.Usuario$pagoCuotasArgs<ExtArgs>
+  movimientosCaja?: boolean | Prisma.Usuario$movimientosCajaArgs<ExtArgs>
   _count?: boolean | Prisma.UsuarioCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UsuarioIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1120,6 +1254,7 @@ export type $UsuarioPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     notificacionesCreadas: Prisma.$NotificacionPayload<ExtArgs>[]
     notificacionesRecibidas: Prisma.$NotificacionUsuarioPayload<ExtArgs>[]
     pagoCuotas: Prisma.$PagoCuotaPayload<ExtArgs>[]
+    movimientosCaja: Prisma.$MovimientoCajaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1529,6 +1664,7 @@ export interface Prisma__UsuarioClient<T, Null = never, ExtArgs extends runtime.
   notificacionesCreadas<T extends Prisma.Usuario$notificacionesCreadasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$notificacionesCreadasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notificacionesRecibidas<T extends Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$notificacionesRecibidasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificacionUsuarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   pagoCuotas<T extends Prisma.Usuario$pagoCuotasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$pagoCuotasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PagoCuotaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  movimientosCaja<T extends Prisma.Usuario$movimientosCajaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Usuario$movimientosCajaArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MovimientoCajaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2089,6 +2225,30 @@ export type Usuario$pagoCuotasArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.PagoCuotaScalarFieldEnum | Prisma.PagoCuotaScalarFieldEnum[]
+}
+
+/**
+ * Usuario.movimientosCaja
+ */
+export type Usuario$movimientosCajaArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MovimientoCaja
+   */
+  select?: Prisma.MovimientoCajaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MovimientoCaja
+   */
+  omit?: Prisma.MovimientoCajaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MovimientoCajaInclude<ExtArgs> | null
+  where?: Prisma.MovimientoCajaWhereInput
+  orderBy?: Prisma.MovimientoCajaOrderByWithRelationInput | Prisma.MovimientoCajaOrderByWithRelationInput[]
+  cursor?: Prisma.MovimientoCajaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MovimientoCajaScalarFieldEnum | Prisma.MovimientoCajaScalarFieldEnum[]
 }
 
 /**

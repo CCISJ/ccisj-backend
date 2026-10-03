@@ -411,7 +411,9 @@ export const ModelName = {
   AjusteCuotaSocio: 'AjusteCuotaSocio',
   Cuota: 'Cuota',
   PagoCuota: 'PagoCuota',
-  PagoCuotaDetalle: 'PagoCuotaDetalle'
+  PagoCuotaDetalle: 'PagoCuotaDetalle',
+  CategoriaCaja: 'CategoriaCaja',
+  MovimientoCaja: 'MovimientoCaja'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -427,7 +429,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "usuario" | "notificacion" | "notificacionUsuario" | "socio" | "postulante" | "cv" | "categoria" | "oferta" | "ofertaCategoria" | "postulacion" | "configuracionCuota" | "ajusteCuotaSocio" | "cuota" | "pagoCuota" | "pagoCuotaDetalle"
+    modelProps: "usuario" | "notificacion" | "notificacionUsuario" | "socio" | "postulante" | "cv" | "categoria" | "oferta" | "ofertaCategoria" | "postulacion" | "configuracionCuota" | "ajusteCuotaSocio" | "cuota" | "pagoCuota" | "pagoCuotaDetalle" | "categoriaCaja" | "movimientoCaja"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1541,6 +1543,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    CategoriaCaja: {
+      payload: Prisma.$CategoriaCajaPayload<ExtArgs>
+      fields: Prisma.CategoriaCajaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CategoriaCajaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CategoriaCajaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>
+        }
+        findFirst: {
+          args: Prisma.CategoriaCajaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CategoriaCajaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>
+        }
+        findMany: {
+          args: Prisma.CategoriaCajaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>[]
+        }
+        create: {
+          args: Prisma.CategoriaCajaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>
+        }
+        createMany: {
+          args: Prisma.CategoriaCajaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CategoriaCajaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>[]
+        }
+        delete: {
+          args: Prisma.CategoriaCajaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>
+        }
+        update: {
+          args: Prisma.CategoriaCajaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>
+        }
+        deleteMany: {
+          args: Prisma.CategoriaCajaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CategoriaCajaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CategoriaCajaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>[]
+        }
+        upsert: {
+          args: Prisma.CategoriaCajaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CategoriaCajaPayload>
+        }
+        aggregate: {
+          args: Prisma.CategoriaCajaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCategoriaCaja>
+        }
+        groupBy: {
+          args: Prisma.CategoriaCajaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CategoriaCajaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CategoriaCajaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CategoriaCajaCountAggregateOutputType> | number
+        }
+      }
+    }
+    MovimientoCaja: {
+      payload: Prisma.$MovimientoCajaPayload<ExtArgs>
+      fields: Prisma.MovimientoCajaFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MovimientoCajaFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MovimientoCajaFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>
+        }
+        findFirst: {
+          args: Prisma.MovimientoCajaFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MovimientoCajaFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>
+        }
+        findMany: {
+          args: Prisma.MovimientoCajaFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>[]
+        }
+        create: {
+          args: Prisma.MovimientoCajaCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>
+        }
+        createMany: {
+          args: Prisma.MovimientoCajaCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.MovimientoCajaCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>[]
+        }
+        delete: {
+          args: Prisma.MovimientoCajaDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>
+        }
+        update: {
+          args: Prisma.MovimientoCajaUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>
+        }
+        deleteMany: {
+          args: Prisma.MovimientoCajaDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MovimientoCajaUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.MovimientoCajaUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>[]
+        }
+        upsert: {
+          args: Prisma.MovimientoCajaUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MovimientoCajaPayload>
+        }
+        aggregate: {
+          args: Prisma.MovimientoCajaAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMovimientoCaja>
+        }
+        groupBy: {
+          args: Prisma.MovimientoCajaGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MovimientoCajaGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MovimientoCajaCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MovimientoCajaCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1758,7 +1908,7 @@ export const PagoCuotaScalarFieldEnum = {
   importe: 'importe',
   fechaPago: 'fechaPago',
   medioPago: 'medioPago',
-  numeroRecibo: 'numeroRecibo',
+  comprobanteUrl: 'comprobanteUrl',
   observaciones: 'observaciones',
   fechaCreacion: 'fechaCreacion'
 } as const
@@ -1774,6 +1924,32 @@ export const PagoCuotaDetalleScalarFieldEnum = {
 } as const
 
 export type PagoCuotaDetalleScalarFieldEnum = (typeof PagoCuotaDetalleScalarFieldEnum)[keyof typeof PagoCuotaDetalleScalarFieldEnum]
+
+
+export const CategoriaCajaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  activa: 'activa'
+} as const
+
+export type CategoriaCajaScalarFieldEnum = (typeof CategoriaCajaScalarFieldEnum)[keyof typeof CategoriaCajaScalarFieldEnum]
+
+
+export const MovimientoCajaScalarFieldEnum = {
+  id: 'id',
+  tipo: 'tipo',
+  concepto: 'concepto',
+  importe: 'importe',
+  fecha: 'fecha',
+  observaciones: 'observaciones',
+  fechaCreacion: 'fechaCreacion',
+  categoriaId: 'categoriaId',
+  registradoPorId: 'registradoPorId',
+  pagoCuotaId: 'pagoCuotaId'
+} as const
+
+export type MovimientoCajaScalarFieldEnum = (typeof MovimientoCajaScalarFieldEnum)[keyof typeof MovimientoCajaScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1968,6 +2144,20 @@ export type ListEnumEstadoCuotaFieldRefInput<$PrismaModel> = FieldRefInputType<$
 
 
 /**
+ * Reference to a field of type 'TipoMovimientoCaja'
+ */
+export type EnumTipoMovimientoCajaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoMovimientoCaja'>
+    
+
+
+/**
+ * Reference to a field of type 'TipoMovimientoCaja[]'
+ */
+export type ListEnumTipoMovimientoCajaFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoMovimientoCaja[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -2146,6 +2336,8 @@ export type GlobalOmitConfig = {
   cuota?: Prisma.CuotaOmit
   pagoCuota?: Prisma.PagoCuotaOmit
   pagoCuotaDetalle?: Prisma.PagoCuotaDetalleOmit
+  categoriaCaja?: Prisma.CategoriaCajaOmit
+  movimientoCaja?: Prisma.MovimientoCajaOmit
 }
 
 /* Types for Logging */

@@ -193,7 +193,7 @@ export async function createPayment(req: AuthRequest, res: Response) {
       });
     }
 
-    const { importe, fechaPago, medioPago, numeroRecibo, observaciones } =
+    const { importe, fechaPago, medioPago, comprobanteUrl, observaciones } =
       req.body;
 
     if (importe === undefined || !fechaPago || !medioPago) {
@@ -208,7 +208,7 @@ export async function createPayment(req: AuthRequest, res: Response) {
       importe: Number(importe),
       fechaPago: new Date(fechaPago),
       medioPago,
-      numeroRecibo,
+      comprobanteUrl,
       observaciones,
     });
 

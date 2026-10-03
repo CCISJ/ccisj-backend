@@ -25,7 +25,7 @@ export type RegisterFeePaymentData = {
   importe: number;
   fechaPago: Date;
   medioPago: string;
-  numeroRecibo?: string;
+  comprobanteUrl?: string;
   observaciones?: string;
 };
 
@@ -41,7 +41,7 @@ export type CreateFeePaymentData = {
   importe: number;
   fechaPago: Date;
   medioPago: string;
-  numeroRecibo?: string;
+  comprobanteUrl?: string;
   observaciones?: string;
   detalles: PaymentDetailData[];
 };
