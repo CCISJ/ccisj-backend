@@ -167,7 +167,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
     importe,
     fechaPago,
     medioPago,
-    numeroRecibo,
+    comprobanteUrl,
     observaciones,
     detalles,
   } = data;
@@ -180,10 +180,23 @@ export async function createFeePayment(data: CreateFeePaymentData) {
         importe,
         fechaPago,
         medioPago,
-        numeroRecibo,
+        comprobanteUrl,
         observaciones,
       },
     });
+
+    const cashCategory = await tx.categoriaCaja.findUnique({
+      where: {
+        nombre_tipo: {
+          nombre: 'Cuotas de socios',
+          tipo: 'INGRESO',
+        },
+      },
+    });
+
+    if (!cashCategory) {
+      throw new Error('No existe la categoría de caja para cuotas de socios');
+    }
 
     await tx.pagoCuotaDetalle.createMany({
       data: detalles.map((detail) => ({
@@ -203,6 +216,19 @@ export async function createFeePayment(data: CreateFeePaymentData) {
         },
       });
     }
+
+    await tx.movimientoCaja.create({
+      data: {
+        tipo: 'INGRESO',
+        categoriaId: cashCategory.id,
+        concepto: `Pago de cuotas - Socio #${socioId}`,
+        importe,
+        fecha: fechaPago,
+        observaciones,
+        registradoPorId,
+        pagoCuotaId: payment.id,
+      },
+    });
 
     return tx.pagoCuota.findUnique({
       where: {

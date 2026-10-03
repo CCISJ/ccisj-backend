@@ -62,6 +62,13 @@ enum EstadoCuota {
   @@map("estado_cuota")
 }
 
+enum TipoMovimientoCaja {
+  INGRESO
+  EGRESO
+
+  @@map("tipo_movimiento_caja")
+}
+
 model Usuario {
   id                  Int         @id @default(autoincrement())
   email               String      @unique @db.VarChar(255)
@@ -78,6 +85,7 @@ model Usuario {
   notificacionesCreadas   Notificacion[]        @relation("NotificacionCreadaPor")
   notificacionesRecibidas NotificacionUsuario[]
   pagoCuotas              PagoCuota[]
+  movimientosCaja         MovimientoCaja[]      @relation("MovimientoCajaRegistradoPor")
 
   @@map("usuario")
 }
@@ -284,15 +292,16 @@ model PagoCuota {
   importe   Decimal  @db.Decimal(10, 2)
   fechaPago DateTime @map("fecha_pago") @db.Timestamp(6)
 
-  medioPago     String  @map("medio_pago") @db.VarChar(50)
-  numeroRecibo  String? @map("numero_recibo") @db.VarChar(100)
-  observaciones String? @db.VarChar(500)
+  medioPago      String  @map("medio_pago") @db.VarChar(50)
+  comprobanteUrl String? @map("comprobante_url") @db.VarChar(500)
+  observaciones  String? @db.VarChar(500)
 
-  fechaCreacion DateTime @default(now()) @map("fecha_creacion") @db.Timestamp(6)
+  fechaCreacion DateTime @default(now()) @map("fecha_creacion")
 
   socio         Socio              @relation(fields: [socioId], references: [id], onDelete: NoAction)
   registradoPor Usuario            @relation(fields: [registradoPorId], references: [id], onDelete: NoAction)
   detalles      PagoCuotaDetalle[]
+  movimientoCaja MovimientoCaja?
 
   @@map("pago_cuota")
 }
@@ -308,4 +317,36 @@ model PagoCuotaDetalle {
 
   @@unique([pagoId, cuotaId])
   @@map("pago_cuota_detalle")
+}
+
+model CategoriaCaja {
+  id     Int                @id @default(autoincrement())
+  nombre String             @db.VarChar(100)
+  tipo   TipoMovimientoCaja
+  activa Boolean            @default(true)
+
+  movimientos MovimientoCaja[]
+
+  @@unique([nombre, tipo])
+  @@map("categoria_caja")
+}
+
+model MovimientoCaja {
+  id            Int                @id @default(autoincrement())
+  tipo          TipoMovimientoCaja
+  concepto      String             @db.VarChar(255)
+  importe       Decimal            @db.Decimal(10, 2)
+  fecha         DateTime           @db.Date
+  observaciones String?            @db.VarChar(500)
+  fechaCreacion DateTime           @default(now()) @map("fecha_creacion")
+
+  categoriaId     Int  @map("categoria_id")
+  registradoPorId Int  @map("registrado_por_id")
+  pagoCuotaId     Int? @unique @map("pago_cuota_id")
+
+  categoria     CategoriaCaja @relation(fields: [categoriaId], references: [id], onDelete: NoAction)
+  registradoPor Usuario       @relation("MovimientoCajaRegistradoPor", fields: [registradoPorId], references: [id], onDelete: NoAction)
+  pagoCuota     PagoCuota?    @relation(fields: [pagoCuotaId], references: [id], onDelete: NoAction)
+
+  @@map("movimiento_caja")
 }

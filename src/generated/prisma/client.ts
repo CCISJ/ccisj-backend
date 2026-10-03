@@ -114,3 +114,13 @@ export type PagoCuota = Prisma.PagoCuotaModel
  * 
  */
 export type PagoCuotaDetalle = Prisma.PagoCuotaDetalleModel
+/**
+ * Model CategoriaCaja
+ * 
+ */
+export type CategoriaCaja = Prisma.CategoriaCajaModel
+/**
+ * Model MovimientoCaja
+ * 
+ */
+export type MovimientoCaja = Prisma.MovimientoCajaModel

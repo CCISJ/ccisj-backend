@@ -11,6 +11,8 @@ import morgan from 'morgan';
 import applicantRoutes from './modules/applicants/applicant.routes';
 import applicationRoutes from './modules/applications/application.routes';
 import authRoutes from './modules/auth/auth.routes';
+import cashCategoryRoutes from './modules/cash-categories/cash-category.routes';
+import cashMovementRoutes from './modules/cash-movement/cash-movement.routes';
 import categoryRoutes from './modules/categories/category.routes';
 import feeRoutes from './modules/fees/fee.routes';
 import memberRoutes from './modules/members/member.routes';
@@ -54,6 +56,8 @@ app.use('/postulaciones', applicationRoutes);
 app.use('/notificaciones', notificationRoutes);
 app.use('/auth', authRoutes);
 app.use('/cuotas', feeRoutes);
+app.use('/caja/categorias', cashCategoryRoutes);
+app.use('/caja/movimientos', cashMovementRoutes);
 
 app.get('/', (_req, res) => {
   res.send('API de CCISJ');

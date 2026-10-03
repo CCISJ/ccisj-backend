@@ -65,7 +65,9 @@ export const ModelName = {
   AjusteCuotaSocio: 'AjusteCuotaSocio',
   Cuota: 'Cuota',
   PagoCuota: 'PagoCuota',
-  PagoCuotaDetalle: 'PagoCuotaDetalle'
+  PagoCuotaDetalle: 'PagoCuotaDetalle',
+  CategoriaCaja: 'CategoriaCaja',
+  MovimientoCaja: 'MovimientoCaja'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -262,7 +264,7 @@ export const PagoCuotaScalarFieldEnum = {
   importe: 'importe',
   fechaPago: 'fechaPago',
   medioPago: 'medioPago',
-  numeroRecibo: 'numeroRecibo',
+  comprobanteUrl: 'comprobanteUrl',
   observaciones: 'observaciones',
   fechaCreacion: 'fechaCreacion'
 } as const
@@ -278,6 +280,32 @@ export const PagoCuotaDetalleScalarFieldEnum = {
 } as const
 
 export type PagoCuotaDetalleScalarFieldEnum = (typeof PagoCuotaDetalleScalarFieldEnum)[keyof typeof PagoCuotaDetalleScalarFieldEnum]
+
+
+export const CategoriaCajaScalarFieldEnum = {
+  id: 'id',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  activa: 'activa'
+} as const
+
+export type CategoriaCajaScalarFieldEnum = (typeof CategoriaCajaScalarFieldEnum)[keyof typeof CategoriaCajaScalarFieldEnum]
+
+
+export const MovimientoCajaScalarFieldEnum = {
+  id: 'id',
+  tipo: 'tipo',
+  concepto: 'concepto',
+  importe: 'importe',
+  fecha: 'fecha',
+  observaciones: 'observaciones',
+  fechaCreacion: 'fechaCreacion',
+  categoriaId: 'categoriaId',
+  registradoPorId: 'registradoPorId',
+  pagoCuotaId: 'pagoCuotaId'
+} as const
+
+export type MovimientoCajaScalarFieldEnum = (typeof MovimientoCajaScalarFieldEnum)[keyof typeof MovimientoCajaScalarFieldEnum]
 
 
 export const SortOrder = {

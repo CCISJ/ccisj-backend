@@ -468,7 +468,7 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     importe,
     fechaPago,
     medioPago,
-    numeroRecibo,
+    comprobanteUrl,
     observaciones,
   } = data;
 
@@ -490,6 +490,10 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
 
   if (!medioPago?.trim()) {
     throw new Error('El medio de pago es obligatorio');
+  }
+
+  if (medioPago.trim().toUpperCase() === 'TARJETA' && !comprobanteUrl?.trim()) {
+    throw new Error('El comprobante es obligatorio para pagos con tarjeta');
   }
 
   const fees = await findMemberFeesWithPayments(socioId);
@@ -555,7 +559,7 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     importe,
     fechaPago,
     medioPago: medioPago.trim(),
-    numeroRecibo: numeroRecibo?.trim() || undefined,
+    comprobanteUrl: comprobanteUrl?.trim() || undefined,
     observaciones: observaciones?.trim() || undefined,
     detalles: details,
   });

@@ -356,6 +356,23 @@ async function main() {
     },
   });
 
+  await prisma.categoriaCaja.upsert({
+    where: {
+      nombre_tipo: {
+        nombre: 'Cuotas de socios',
+        tipo: 'INGRESO',
+      },
+    },
+    update: {
+      activa: true,
+    },
+    create: {
+      nombre: 'Cuotas de socios',
+      tipo: 'INGRESO',
+      activa: true,
+    },
+  });
+
   console.log(`
 Seed ejecutado correctamente.
 
