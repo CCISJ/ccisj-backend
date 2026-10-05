@@ -258,6 +258,18 @@ export async function deleteFeePayment(pagoId: number) {
 
     const affectedFeeIds = payment.detalles.map((detail) => detail.cuotaId);
 
+    // El pago genera un movimiento de caja en la categoría "Cuotas de socios".
+    // Si el pago se anula, ese ingreso no existió, así que el movimiento se va
+    // con él. Además es obligatorio hacerlo primero: la clave foránea
+    // `movimiento_caja.pago_cuota_id` es `NoAction`, así que mientras el
+    // movimiento exista el pago no se puede borrar. Se usa `deleteMany` porque
+    // los pagos registrados antes del módulo de caja no tienen movimiento.
+    await tx.movimientoCaja.deleteMany({
+      where: {
+        pagoCuotaId: pagoId,
+      },
+    });
+
     await tx.pagoCuota.delete({
       where: {
         id: pagoId,
