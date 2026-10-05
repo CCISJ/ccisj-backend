@@ -1,0 +1,27 @@
+// Chequeo de tipos de TODO el repositorio, no solo de lo que se compila.
+//
+// El `tsconfig.json` de al lado existe para construir `dist/`: por eso tiene
+// `rootDir: "./src"` y solo incluye `src/`. La consecuencia es que los tests,
+// el seed y las configuraciones nunca pasaban por el compilador, y un cambio
+// de modelo podía dejarlos rotos sin que nadie se enterara hasta correrlos.
+//
+// Esta configuración no emite nada: solo mira. La corre `pnpm type-check`, y
+// `pnpm build` la ejecuta antes de compilar.
+{
+  "extends": "./tsconfig.json",
+
+  "compilerOptions": {
+    // El chequeo abarca todo el repo, así que la raíz ya no es `src/`.
+    "rootDir": ".",
+    "noEmit": true
+  },
+
+  "include": [
+    "src/**/*.ts",
+    "tests/**/*.ts",
+    "prisma/**/*.ts",
+    "*.config.*ts"
+  ],
+
+  "exclude": ["node_modules", "dist"]
+}
