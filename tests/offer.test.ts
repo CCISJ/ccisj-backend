@@ -1,5 +1,4 @@
 import request from 'supertest';
-
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import app from '../src/app';
@@ -213,8 +212,11 @@ describe('Offers', () => {
   });
 
   describe('permisos', () => {
-    it('GET /ofertas devuelve 401 sin sesión', async () => {
-      const response = await request(app).get('/ofertas');
+    // Leer la bolsa de trabajo es público desde que el cliente lo pidió; lo
+    // que escribe sigue necesitando sesión. El detalle de qué ve un visitante
+    // está en `offer-public.test.ts`.
+    it('POST /ofertas devuelve 401 sin sesión', async () => {
+      const response = await request(app).post('/ofertas').send(baseOffer());
 
       expect(response.status).toBe(401);
     });
