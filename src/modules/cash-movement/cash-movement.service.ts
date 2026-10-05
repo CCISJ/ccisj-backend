@@ -5,7 +5,9 @@ import {
 
 import { findCashCategoryById } from '../cash-categories/cash-category.repository';
 import {
+  cancelCashMovement,
   createCashMovement,
+  findCashMovementById,
   findCashMovements,
   getCashSummary,
 } from './cash-movement.repository';
@@ -144,4 +146,44 @@ export async function getCurrentMonthCashSummary() {
     balance: ingresos - egresos,
     cantidadMovimientos: (income?._count.id ?? 0) + (expense?._count.id ?? 0),
   };
+}
+
+export async function cancelManualCashMovement(
+  id: number,
+  userId: number,
+  reason: string,
+) {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('El movimiento no es válido');
+  }
+
+  const movement = await findCashMovementById(id);
+
+  if (!movement) {
+    throw new Error('El movimiento no existe');
+  }
+
+  if (movement.anulado) {
+    throw new Error('El movimiento ya está anulado');
+  }
+
+  if (movement.pagoCuotaId) {
+    throw new Error(
+      'Los movimientos asociados a cuotas no pueden anularse desde caja',
+    );
+  }
+
+  const cancellationReason = reason?.trim();
+
+  if (!cancellationReason) {
+    throw new Error('El motivo de anulación es obligatorio');
+  }
+
+  if (cancellationReason.length > 500) {
+    throw new Error(
+      'El motivo de anulación no puede superar los 500 caracteres',
+    );
+  }
+
+  return cancelCashMovement(id, userId, cancellationReason);
 }

@@ -86,6 +86,7 @@ model Usuario {
   notificacionesRecibidas NotificacionUsuario[]
   pagoCuotas              PagoCuota[]
   movimientosCaja         MovimientoCaja[]      @relation("MovimientoCajaRegistradoPor")
+    movimientosCajaAnulados MovimientoCaja[]      @relation("MovimientoCajaAnuladoPor")
 
   @@map("usuario")
 }
@@ -343,6 +344,13 @@ model MovimientoCaja {
   categoriaId     Int  @map("categoria_id")
   registradoPorId Int  @map("registrado_por_id")
   pagoCuotaId     Int? @unique @map("pago_cuota_id")
+
+  anulado          Boolean   @default(false)
+fechaAnulacion   DateTime? @map("fecha_anulacion")
+anuladoPorId     Int?      @map("anulado_por_id")
+motivoAnulacion  String?   @db.VarChar(500) @map("motivo_anulacion")
+
+anuladoPor Usuario? @relation("MovimientoCajaAnuladoPor",fields: [anuladoPorId],references: [id],onDelete: NoAction)
 
   categoria     CategoriaCaja @relation(fields: [categoriaId], references: [id], onDelete: NoAction)
   registradoPor Usuario       @relation("MovimientoCajaRegistradoPor", fields: [registradoPorId], references: [id], onDelete: NoAction)

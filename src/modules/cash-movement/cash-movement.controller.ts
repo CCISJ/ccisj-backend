@@ -4,6 +4,7 @@ import type { AuthRequest } from '@/middlewares/auth.middleware';
 
 import {
   addManualCashMovement,
+  cancelManualCashMovement,
   getCashMovements,
   getCurrentMonthCashSummary,
 } from './cash-movement.service';
@@ -73,6 +74,30 @@ export async function getCashSummary(_req: AuthRequest, res: Response) {
       error instanceof Error
         ? error.message
         : 'Error al obtener el resumen de caja';
+
+    return res.status(400).json({ message });
+  }
+}
+
+export async function cancelMovement(req: AuthRequest, res: Response) {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'No autenticado',
+      });
+    }
+
+    const id = Number(req.params.id);
+    const { motivo } = req.body;
+
+    const movement = await cancelManualCashMovement(id, req.user.id, motivo);
+
+    return res.json(movement);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error al anular el movimiento de caja';
 
     return res.status(400).json({ message });
   }
