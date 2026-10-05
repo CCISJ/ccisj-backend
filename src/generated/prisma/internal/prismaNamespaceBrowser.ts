@@ -302,7 +302,11 @@ export const MovimientoCajaScalarFieldEnum = {
   fechaCreacion: 'fechaCreacion',
   categoriaId: 'categoriaId',
   registradoPorId: 'registradoPorId',
-  pagoCuotaId: 'pagoCuotaId'
+  pagoCuotaId: 'pagoCuotaId',
+  anulado: 'anulado',
+  fechaAnulacion: 'fechaAnulacion',
+  anuladoPorId: 'anuladoPorId',
+  motivoAnulacion: 'motivoAnulacion'
 } as const
 
 export type MovimientoCajaScalarFieldEnum = (typeof MovimientoCajaScalarFieldEnum)[keyof typeof MovimientoCajaScalarFieldEnum]

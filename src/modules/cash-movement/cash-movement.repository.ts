@@ -90,6 +90,7 @@ export async function getCashSummary(startDate: Date, endDate: Date) {
   return prisma.movimientoCaja.groupBy({
     by: ['tipo'],
     where: {
+      anulado: false,
       fecha: {
         gte: startDate,
         lt: endDate,
@@ -100,6 +101,39 @@ export async function getCashSummary(startDate: Date, endDate: Date) {
     },
     _count: {
       id: true,
+    },
+  });
+}
+
+export async function cancelCashMovement(
+  id: number,
+  userId: number,
+  reason: string,
+) {
+  return prisma.movimientoCaja.update({
+    where: { id },
+    data: {
+      anulado: true,
+      fechaAnulacion: new Date(),
+      anuladoPorId: userId,
+      motivoAnulacion: reason,
+    },
+    include: {
+      categoria: true,
+      registradoPor: {
+        select: {
+          id: true,
+          email: true,
+          tipo: true,
+        },
+      },
+      anuladoPor: {
+        select: {
+          id: true,
+          email: true,
+          tipo: true,
+        },
+      },
     },
   });
 }
