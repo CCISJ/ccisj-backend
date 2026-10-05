@@ -16,6 +16,7 @@ import {
   createAdmin,
   createApplicant,
   createMember,
+  deleteMemberPayments,
   deleteUsers,
 } from './session';
 
@@ -57,17 +58,11 @@ describe('Cuotas', () => {
   });
 
   afterAll(async () => {
-    await prisma.pagoCuota.deleteMany({
-      where: {
-        socioId: {
-          in: [
-            firstMember.socioId,
-            secondMember.socioId,
-            inactiveMember.socioId,
-          ],
-        },
-      },
-    });
+    await deleteMemberPayments([
+      firstMember.socioId,
+      secondMember.socioId,
+      inactiveMember.socioId,
+    ]);
 
     await prisma.cuota.deleteMany({
       where: {
@@ -206,11 +201,7 @@ describe('Cuotas', () => {
       expect(Number(fee.importeAjustes)).toBe(50);
       expect(Number(fee.importeTotal)).toBe(810);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -249,11 +240,7 @@ describe('Cuotas', () => {
       expect(Number(fee.importeAjustes)).toBe(0);
       expect(Number(fee.importeTotal)).toBe(760);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -292,11 +279,7 @@ describe('Cuotas', () => {
       expect(Number(fee.importeAjustes)).toBe(-60);
       expect(Number(fee.importeTotal)).toBe(700);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -343,11 +326,7 @@ describe('Cuotas', () => {
 
       expect(fee).toBeNull();
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -377,7 +356,7 @@ describe('Cuotas', () => {
         importe: 760,
         fechaPago: new Date('2026-07-15'),
         medioPago: 'EFECTIVO',
-        numeroRecibo: 'TEST-001',
+        comprobanteUrl: 'https://comprobantes.test/TEST-001.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -394,11 +373,7 @@ describe('Cuotas', () => {
 
       expect(updatedFee?.estado).toBe('PAGADA');
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -437,11 +412,7 @@ describe('Cuotas', () => {
 
       expect(updatedFee?.estado).toBe('PARCIAL');
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -469,7 +440,7 @@ describe('Cuotas', () => {
         importe: 1000,
         fechaPago: new Date('2026-09-18'),
         medioPago: 'TRANSFERENCIA',
-        numeroRecibo: 'TEST-002',
+        comprobanteUrl: 'https://comprobantes.test/TEST-002.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -498,11 +469,7 @@ describe('Cuotas', () => {
       expect(fees[1].estado).toBe('PARCIAL');
       expect(fees[2].estado).toBe('PENDIENTE');
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -556,11 +523,7 @@ describe('Cuotas', () => {
 
       expect(totalPaid).toBe(760);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -598,11 +561,7 @@ describe('Cuotas', () => {
 
       expect(payments).toBe(0);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -626,7 +585,7 @@ describe('Cuotas', () => {
         importe: 760,
         fechaPago: new Date('2026-07-15'),
         medioPago: 'EFECTIVO',
-        numeroRecibo: 'TEST-DELETE-001',
+        comprobanteUrl: 'https://comprobantes.test/TEST-DELETE-001.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -639,7 +598,24 @@ describe('Cuotas', () => {
 
       expect(paidFee?.estado).toBe('PAGADA');
 
+      // El pago genera un movimiento de caja; anularlo tiene que llevárselo.
+      const movement = await prisma.movimientoCaja.findUnique({
+        where: {
+          pagoCuotaId: payment!.id,
+        },
+      });
+
+      expect(movement).not.toBeNull();
+
       await removeFeePayment(payment!.id);
+
+      const deletedMovement = await prisma.movimientoCaja.findUnique({
+        where: {
+          pagoCuotaId: payment!.id,
+        },
+      });
+
+      expect(deletedMovement).toBeNull();
 
       const deletedPayment = await prisma.pagoCuota.findUnique({
         where: {
@@ -661,11 +637,7 @@ describe('Cuotas', () => {
       expect(recalculatedFee?.estado).toBe('PENDIENTE');
       expect(recalculatedFee?.pagos).toHaveLength(0);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -689,7 +661,7 @@ describe('Cuotas', () => {
         importe: 300,
         fechaPago: new Date('2026-07-10'),
         medioPago: 'EFECTIVO',
-        numeroRecibo: 'TEST-DELETE-002',
+        comprobanteUrl: 'https://comprobantes.test/TEST-DELETE-002.pdf',
       });
 
       const secondPayment = await registerFeePayment({
@@ -698,7 +670,7 @@ describe('Cuotas', () => {
         importe: 460,
         fechaPago: new Date('2026-07-20'),
         medioPago: 'EFECTIVO',
-        numeroRecibo: 'TEST-DELETE-003',
+        comprobanteUrl: 'https://comprobantes.test/TEST-DELETE-003.pdf',
       });
 
       expect(firstPayment).not.toBeNull();
@@ -749,11 +721,7 @@ describe('Cuotas', () => {
       expect(firstPaymentStillExists).not.toBeNull();
       expect(secondPaymentDeleted).toBeNull();
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -781,9 +749,7 @@ it('mantiene al socio al día hasta el día de vencimiento inclusive', async () 
     expect(status.cuotasVencidas).toBe(0);
     expect(status.deudaVencida).toBe(0);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: { socioId: member.socioId },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: { socioId: member.socioId },
@@ -808,9 +774,7 @@ it('considera pendiente una cuota desde el día siguiente a su vencimiento', asy
     expect(status.cuotasVencidas).toBe(1);
     expect(status.deudaVencida).toBe(760);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: { socioId: member.socioId },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: { socioId: member.socioId },
@@ -836,9 +800,7 @@ it('mantiene estado pendiente con dos cuotas vencidas', async () => {
     expect(status.cuotasVencidas).toBe(2);
     expect(status.deudaVencida).toBe(1520);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: { socioId: member.socioId },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: { socioId: member.socioId },
@@ -865,9 +827,7 @@ it('considera deudor al socio con tres cuotas vencidas', async () => {
     expect(status.cuotasVencidas).toBe(3);
     expect(status.deudaVencida).toBe(2280);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: { socioId: member.socioId },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: { socioId: member.socioId },
@@ -900,9 +860,7 @@ it('una cuota vencida parcialmente pagada sigue contando como pendiente', async 
     expect(status.cuotasVencidas).toBe(1);
     expect(status.deudaVencida).toBe(460);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: { socioId: member.socioId },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: { socioId: member.socioId },
@@ -935,9 +893,7 @@ it('una cuota vencida totalmente pagada no cuenta como deuda', async () => {
     expect(status.cuotasVencidas).toBe(0);
     expect(status.deudaVencida).toBe(0);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: { socioId: member.socioId },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: { socioId: member.socioId },
@@ -959,11 +915,7 @@ describe('Permisos de consulta de cuotas', () => {
 
       expect(response.status).toBe(200);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -986,13 +938,7 @@ describe('Permisos de consulta de cuotas', () => {
 
       expect(response.status).toBe(200);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: {
-            in: [directivo.socioId, member.socioId],
-          },
-        },
-      });
+      await deleteMemberPayments([directivo.socioId, member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -1016,11 +962,7 @@ describe('Permisos de consulta de cuotas', () => {
 
       expect(response.status).toBe(200);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -1043,13 +985,7 @@ describe('Permisos de consulta de cuotas', () => {
 
       expect(response.status).toBe(403);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: {
-            in: [member.socioId, otherMember.socioId],
-          },
-        },
-      });
+      await deleteMemberPayments([member.socioId, otherMember.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -1074,11 +1010,7 @@ describe('Permisos de consulta de cuotas', () => {
 
       expect(response.status).toBe(403);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -1100,11 +1032,7 @@ describe('Permisos de consulta de cuotas', () => {
 
       expect(response.status).toBe(401);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: member.socioId,
-        },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -1132,13 +1060,7 @@ describe('Permisos de consulta de cuotas', () => {
       expect(statusResponse.status).toBe(403);
       expect(adjustmentsResponse.status).toBe(403);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: {
-          socioId: {
-            in: [member.socioId, otherMember.socioId],
-          },
-        },
-      });
+      await deleteMemberPayments([member.socioId, otherMember.socioId]);
 
       await prisma.cuota.deleteMany({
         where: {
@@ -1166,7 +1088,7 @@ it('devuelve el historial de pagos del socio con el detalle de cuotas', async ()
       importe: 300,
       fechaPago: new Date('2026-09-20'),
       medioPago: 'EFECTIVO',
-      numeroRecibo: 'REC-TEST-001',
+      comprobanteUrl: 'https://comprobantes.test/REC-TEST-001.pdf',
       observaciones: 'Pago parcial de prueba',
     });
 
@@ -1180,7 +1102,7 @@ it('devuelve el historial de pagos del socio con el detalle de cuotas', async ()
     expect(response.body[0]).toMatchObject({
       socioId: member.socioId,
       medioPago: 'EFECTIVO',
-      numeroRecibo: 'REC-TEST-001',
+      comprobanteUrl: 'https://comprobantes.test/REC-TEST-001.pdf',
       observaciones: 'Pago parcial de prueba',
     });
 
@@ -1191,11 +1113,7 @@ it('devuelve el historial de pagos del socio con el detalle de cuotas', async ()
 
     expect(response.body[0].detalles[0].cuota).toBeDefined();
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: {
-        socioId: member.socioId,
-      },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: {
@@ -1218,13 +1136,7 @@ it('impide a un socio común consultar el historial de pagos de otro socio', asy
 
     expect(response.status).toBe(403);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: {
-        socioId: {
-          in: [member.socioId, otherMember.socioId],
-        },
-      },
-    });
+    await deleteMemberPayments([member.socioId, otherMember.socioId]);
 
     await prisma.cuota.deleteMany({
       where: {
@@ -1304,11 +1216,7 @@ it('al eliminar un ajuste conserva las cuotas pagadas y recalcula las pendientes
 
     expect(deletedAdjustment?.activo).toBe(false);
   } finally {
-    await prisma.pagoCuota.deleteMany({
-      where: {
-        socioId: member.socioId,
-      },
-    });
+    await deleteMemberPayments([member.socioId]);
 
     await prisma.cuota.deleteMany({
       where: {
@@ -1354,9 +1262,7 @@ describe('Resumen de cuotas', () => {
       expect(summary.sociosPendientes).toBeGreaterThanOrEqual(1);
       expect(summary.deudaTotal).toBeGreaterThanOrEqual(760);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: { socioId: member.socioId },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: { socioId: member.socioId },
@@ -1381,9 +1287,7 @@ describe('Resumen de cuotas', () => {
       expect(summary.sociosDeudores).toBeGreaterThanOrEqual(1);
       expect(summary.deudaTotal).toBeGreaterThanOrEqual(2280);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: { socioId: member.socioId },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: { socioId: member.socioId },
@@ -1423,9 +1327,7 @@ describe('Resumen de cuotas', () => {
 
       expect(summary.cobradoMes).toBeGreaterThanOrEqual(300);
     } finally {
-      await prisma.pagoCuota.deleteMany({
-        where: { socioId: member.socioId },
-      });
+      await deleteMemberPayments([member.socioId]);
 
       await prisma.cuota.deleteMany({
         where: { socioId: member.socioId },

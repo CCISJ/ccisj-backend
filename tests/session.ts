@@ -195,6 +195,37 @@ export async function deleteNotificationsCreatedBy(userIds: number[]) {
 }
 
 /**
+ * Borra los pagos de cuota de estos socios.
+ *
+ * El movimiento de caja que genera cada pago va primero: la clave foránea
+ * `movimiento_caja.pago_cuota_id` es `NoAction`, así que mientras el
+ * movimiento exista el pago no se puede borrar. Los detalles del pago salen
+ * solos, porque esa relación sí es `Cascade`.
+ */
+export async function deleteMemberPayments(socioIds: number[]) {
+  const ids = [...new Set(socioIds)].filter(
+    (id) => Number.isInteger(id) && id > 0,
+  );
+  if (!ids.length) return;
+
+  const pagos = await prisma.pagoCuota.findMany({
+    where: { socioId: { in: ids } },
+    select: { id: true },
+  });
+
+  const pagoIds = pagos.map((pago) => pago.id);
+  if (!pagoIds.length) return;
+
+  await prisma.movimientoCaja.deleteMany({
+    where: { pagoCuotaId: { in: pagoIds } },
+  });
+
+  await prisma.pagoCuota.deleteMany({
+    where: { id: { in: pagoIds } },
+  });
+}
+
+/**
  * Borra usuarios de prueba y dependencias conocidas. Nunca borra datos globales.
  * Las relaciones que tengan cascade se benefician de él; las que bloquean el
  * borrado se limpian antes y siempre filtradas por los IDs recibidos.
@@ -258,11 +289,7 @@ export async function deleteUsers(userIds: number[]) {
       });
     }
 
-    await prisma.pagoCuota.deleteMany({
-      where: {
-        socioId: { in: socioIds },
-      },
-    });
+    await deleteMemberPayments(socioIds);
 
     await prisma.cuota.deleteMany({
       where: {
