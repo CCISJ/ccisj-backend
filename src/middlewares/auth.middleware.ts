@@ -51,25 +51,35 @@ function issuedBeforePasswordChange(
   return issuedAt === null || issuedAt * 1000 < passwordChangedAt.getTime();
 }
 
-export async function requireAuth(
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction,
-) {
+/**
+ * Resultado de resolver la sesión de un request, sin decidir todavía qué
+ * hacer con él: eso lo define cada middleware.
+ */
+type ResolvedSession =
+  | { estado: 'anonimo' }
+  | { estado: 'invalida' }
+  | { estado: 'sin-secreto' }
+  | { estado: 'error' }
+  | { estado: 'ok'; user: SessionUser };
+
+/**
+ * La verificación completa de una sesión: firma del token, cuenta existente y
+ * activa, y contraseña sin cambiar desde que se emitió. Está en un solo lugar
+ * porque la usan dos middlewares con políticas distintas (`requireAuth` corta
+ * el request, `optionalAuth` sigue como anónimo) y duplicar código de
+ * seguridad es la forma más fácil de que las dos copias se vayan separando.
+ */
+async function resolveSession(req: AuthRequest): Promise<ResolvedSession> {
   const token = req.cookies?.token;
 
   if (!token) {
-    return res.status(401).json({
-      message: 'No autenticado',
-    });
+    return { estado: 'anonimo' };
   }
 
   const secret = process.env.JWT_SECRET;
 
   if (!secret) {
-    return res.status(500).json({
-      message: 'JWT_SECRET no configurado',
-    });
+    return { estado: 'sin-secreto' };
   }
 
   let session: ReturnType<typeof readSession>;
@@ -82,11 +92,7 @@ export async function requireAuth(
   }
 
   if (!session) {
-    clearSessionCookie(res);
-
-    return res.status(401).json({
-      message: 'Sesión inválida o expirada',
-    });
+    return { estado: 'invalida' };
   }
 
   try {
@@ -97,26 +103,102 @@ export async function requireAuth(
       !user.activo ||
       issuedBeforePasswordChange(session.issuedAt, user.passwordActualizada)
     ) {
+      return { estado: 'invalida' };
+    }
+
+    return {
+      estado: 'ok',
+      user: {
+        id: user.id,
+        tipo: user.tipo,
+        socioId: user.socio?.id ?? null,
+        memberType: user.socio?.tipo ?? null,
+        postulanteId: user.postulante?.id ?? null,
+      },
+    };
+  } catch {
+    return { estado: 'error' };
+  }
+}
+
+export async function requireAuth(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  const session = await resolveSession(req);
+
+  switch (session.estado) {
+    case 'anonimo':
+      return res.status(401).json({
+        message: 'No autenticado',
+      });
+
+    case 'invalida':
       clearSessionCookie(res);
 
       return res.status(401).json({
         message: 'Sesión inválida o expirada',
       });
-    }
 
-    req.user = {
-      id: user.id,
-      tipo: user.tipo,
-      socioId: user.socio?.id ?? null,
-      memberType: user.socio?.tipo ?? null,
-      postulanteId: user.postulante?.id ?? null,
-    };
+    case 'sin-secreto':
+      return res.status(500).json({
+        message: 'JWT_SECRET no configurado',
+      });
 
-    next();
-  } catch {
-    return res.status(500).json({
-      message: 'No se pudo verificar la sesión',
-    });
+    case 'error':
+      return res.status(500).json({
+        message: 'No se pudo verificar la sesión',
+      });
+
+    default:
+      req.user = session.user;
+
+      return next();
+  }
+}
+
+/**
+ * Para los endpoints que contestan con sesión y sin ella: hoy, la bolsa de
+ * trabajo pública. Si hay una sesión válida la deja en `req.user` para que el
+ * service pueda decidir según el rol; si no hay, el request sigue como
+ * anónimo en vez de recibir un 401.
+ *
+ * Una cookie que ya no sirve (vencida, cuenta desactivada, contraseña
+ * cambiada) se borra y el request sigue igual: al visitante solo le interesa
+ * ver las ofertas, no enterarse de que su sesión caducó, y si no se borrara el
+ * navegador la seguiría mandando en cada pedido.
+ */
+export async function optionalAuth(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  const session = await resolveSession(req);
+
+  switch (session.estado) {
+    case 'invalida':
+      clearSessionCookie(res);
+
+      return next();
+
+    case 'sin-secreto':
+      return res.status(500).json({
+        message: 'JWT_SECRET no configurado',
+      });
+
+    case 'error':
+      return res.status(500).json({
+        message: 'No se pudo verificar la sesión',
+      });
+
+    case 'ok':
+      req.user = session.user;
+
+      return next();
+
+    default:
+      return next();
   }
 }
 

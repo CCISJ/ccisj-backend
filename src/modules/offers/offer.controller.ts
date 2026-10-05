@@ -23,7 +23,8 @@ function invalidId(res: Response) {
 
 export async function getAll(req: AuthRequest, res: Response) {
   try {
-    const offers = await offerService.getAll(req.user!);
+    // Sin sesión `req.user` no existe: la bolsa de trabajo es pública.
+    const offers = await offerService.getAll(req.user ?? null);
 
     res.json(offers);
   } catch (error) {
@@ -37,7 +38,7 @@ export async function getById(req: AuthRequest, res: Response) {
 
     if (!id) return invalidId(res);
 
-    const offer = await offerService.getById(id, req.user!);
+    const offer = await offerService.getById(id, req.user ?? null);
 
     res.json(offer);
   } catch (error) {

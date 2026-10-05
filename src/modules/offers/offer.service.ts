@@ -37,27 +37,39 @@ async function closeExpired() {
 }
 
 /**
- * El postulante ve solo las ofertas abiertas, que son a las que se puede
- * postular. Las cerradas a las que se postuló le llegan por sus
+ * Quién ve una oferta cerrada: solo la administración y los socios, que las
+ * necesitan para su propio trabajo. El visitante sin cuenta y el postulante
+ * ven únicamente las abiertas, que son a las que se puede postular. Las
+ * cerradas a las que un postulante ya se postuló le llegan por sus
  * postulaciones, no por acá.
  */
-export async function getAll(actor: SessionUser) {
+function seesClosedOffers(actor: SessionUser | null) {
+  return actor !== null && actor.tipo !== 'POSTULANTE';
+}
+
+/**
+ * La bolsa de trabajo. `actor` es `null` cuando no hay sesión: el cliente
+ * definió que cualquiera puede ver las ofertas sin cuenta, así que un
+ * visitante anónimo recibe lo mismo que un postulante.
+ */
+export async function getAll(actor: SessionUser | null) {
   await closeExpired();
 
-  if (actor.tipo === 'POSTULANTE') {
+  if (!seesClosedOffers(actor)) {
     return offerRepository.findActive();
   }
 
   return offerRepository.findAll();
 }
 
-export async function getById(id: number, actor: SessionUser) {
+export async function getById(id: number, actor: SessionUser | null) {
   await closeExpired();
 
   const offer = await offerRepository.findById(id);
 
-  // Para el postulante una oferta cerrada es como si no existiera.
-  if (!offer || (actor.tipo === 'POSTULANTE' && offer.estado !== 'ACTIVA')) {
+  // Para quien solo ve las abiertas, una oferta cerrada es como si no
+  // existiera: responder 404 y no 403 evita confirmar que el ID existe.
+  if (!offer || (!seesClosedOffers(actor) && offer.estado !== 'ACTIVA')) {
     throw new HttpError(404, 'Oferta no encontrada');
   }
 
