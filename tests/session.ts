@@ -25,10 +25,26 @@ export function uniqueEmail(prefix = 'test') {
   return `${prefix}-${uniqueSuffix()}@ccisj.uy`;
 }
 
-/** Número de BPS válido (12 dígitos) y prácticamente único. */
+/**
+ * Número de BPS válido: 12 dígitos al azar (`/^\d{7,12}$/` los acepta).
+ *
+ * No lleva el reloj, a propósito. La versión anterior era 9 dígitos de
+ * `Date.now()` + 3 al azar, o sea **mil valores posibles por milisegundo**, y
+ * `socio.numero_bps` es único en la base. Medido: creando 10 socios dentro del
+ * mismo milisegundo —lo que pasa en cada `Promise.all` de un `beforeAll`—
+ * chocaban el 4,5% de las veces; con 67, el 89%.
+ *
+ * Mientras los tests corrían con 2 workers el choque era raro y parecía mala
+ * suerte; al subir a 4 apareció como un test que falla una corrida de cada
+ * seis, sin relación con lo que ese test prueba. Un test inestable es peor que
+ * un test que falta: enseña al equipo a volver a correr la suite hasta que
+ * pase.
+ *
+ * Con 12 dígitos al azar el espacio es de un billón: creando 67 socios la
+ * probabilidad de choque es de ~2 en mil millones.
+ */
 export function uniqueBps() {
-  const random = crypto.randomInt(0, 1000).toString().padStart(3, '0');
-  return `${Date.now()}`.slice(-9) + random;
+  return crypto.randomInt(0, 1_000_000_000_000).toString().padStart(12, '0');
 }
 
 /** Cookie JWT equivalente a la que usa el middleware real. */
