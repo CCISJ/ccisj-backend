@@ -208,7 +208,7 @@ const FORBIDDEN_MESSAGE = 'No tiene permiso para realizar esta acción';
  * Deja pasar solo a los roles indicados. Va siempre después de `requireAuth`.
  */
 export function requireRole(...roles: TipoUsuario[]) {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  const middleware = (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({
         message: 'No autenticado',
@@ -223,6 +223,17 @@ export function requireRole(...roles: TipoUsuario[]) {
 
     next();
   };
+
+  // Una función devuelta por otra no tiene nombre, y Express usa `fn.name`
+  // para identificar cada capa. Sin esto, `requireRole('ADMIN')` aparece como
+  // "<anonymous>" en los stack traces y en el inventario de endpoints
+  // (`scripts/inventario-endpoints.mts`), que es justamente la herramienta que
+  // tiene que poder decir qué rol exige cada ruta.
+  Object.defineProperty(middleware, 'name', {
+    value: `requireRole(${roles.join('|')})`,
+  });
+
+  return middleware;
 }
 
 /**
