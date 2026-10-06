@@ -109,7 +109,7 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /auth/me': AUTENTICADOS,
   'POST /auth/cambiar-contrasena': AUTENTICADOS,
 
-  // Cuotas (módulo de otro integrante).
+  // Cuotas y pagos
   'GET /cuotas/resumen': SOLO_ADMIN,
   'POST /cuotas/configuracion': SOLO_ADMIN,
   'PATCH /cuotas/configuracion/:id': SOLO_ADMIN,
@@ -117,7 +117,7 @@ const ESPERADO: Record<string, Actor[]> = {
   'POST /cuotas/socio/:socioId': SOLO_ADMIN,
   'POST /cuotas/socio/:socioId/ajustes': SOLO_ADMIN,
   'POST /cuotas/socio/:socioId/pagos': SOLO_ADMIN,
-  'DELETE /cuotas/pagos/:pagoId': SOLO_ADMIN,
+  'PATCH /cuotas/:pagoId/anular': SOLO_ADMIN,
   'DELETE /cuotas/ajustes/:adjustmentId': SOLO_ADMIN,
 
   // HALLAZGO ABIERTO (H-01): el importe de la cuota y su historial completo los
@@ -213,7 +213,10 @@ describe('matriz de autorización', () => {
 
       const ruta = endpoint.ruta.replace(/:[A-Za-z]+/g, ID_FANTASMA);
       const metodo = endpoint.metodo.toLowerCase() as
-        'get' | 'post' | 'patch' | 'delete';
+        | 'get'
+        | 'post'
+        | 'patch'
+        | 'delete';
 
       for (const actor of TODOS) {
         let peticion = request(app)[metodo](ruta);

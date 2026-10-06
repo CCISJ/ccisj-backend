@@ -31,6 +31,7 @@ export type PagoCuotaAvgAggregateOutputType = {
   socioId: number | null
   registradoPorId: number | null
   importe: runtime.Decimal | null
+  anuladoPorId: number | null
 }
 
 export type PagoCuotaSumAggregateOutputType = {
@@ -38,6 +39,7 @@ export type PagoCuotaSumAggregateOutputType = {
   socioId: number | null
   registradoPorId: number | null
   importe: runtime.Decimal | null
+  anuladoPorId: number | null
 }
 
 export type PagoCuotaMinAggregateOutputType = {
@@ -50,6 +52,10 @@ export type PagoCuotaMinAggregateOutputType = {
   comprobanteUrl: string | null
   observaciones: string | null
   fechaCreacion: Date | null
+  anulado: boolean | null
+  fechaAnulacion: Date | null
+  anuladoPorId: number | null
+  motivoAnulacion: string | null
 }
 
 export type PagoCuotaMaxAggregateOutputType = {
@@ -62,6 +68,10 @@ export type PagoCuotaMaxAggregateOutputType = {
   comprobanteUrl: string | null
   observaciones: string | null
   fechaCreacion: Date | null
+  anulado: boolean | null
+  fechaAnulacion: Date | null
+  anuladoPorId: number | null
+  motivoAnulacion: string | null
 }
 
 export type PagoCuotaCountAggregateOutputType = {
@@ -74,6 +84,10 @@ export type PagoCuotaCountAggregateOutputType = {
   comprobanteUrl: number
   observaciones: number
   fechaCreacion: number
+  anulado: number
+  fechaAnulacion: number
+  anuladoPorId: number
+  motivoAnulacion: number
   _all: number
 }
 
@@ -83,6 +97,7 @@ export type PagoCuotaAvgAggregateInputType = {
   socioId?: true
   registradoPorId?: true
   importe?: true
+  anuladoPorId?: true
 }
 
 export type PagoCuotaSumAggregateInputType = {
@@ -90,6 +105,7 @@ export type PagoCuotaSumAggregateInputType = {
   socioId?: true
   registradoPorId?: true
   importe?: true
+  anuladoPorId?: true
 }
 
 export type PagoCuotaMinAggregateInputType = {
@@ -102,6 +118,10 @@ export type PagoCuotaMinAggregateInputType = {
   comprobanteUrl?: true
   observaciones?: true
   fechaCreacion?: true
+  anulado?: true
+  fechaAnulacion?: true
+  anuladoPorId?: true
+  motivoAnulacion?: true
 }
 
 export type PagoCuotaMaxAggregateInputType = {
@@ -114,6 +134,10 @@ export type PagoCuotaMaxAggregateInputType = {
   comprobanteUrl?: true
   observaciones?: true
   fechaCreacion?: true
+  anulado?: true
+  fechaAnulacion?: true
+  anuladoPorId?: true
+  motivoAnulacion?: true
 }
 
 export type PagoCuotaCountAggregateInputType = {
@@ -126,6 +150,10 @@ export type PagoCuotaCountAggregateInputType = {
   comprobanteUrl?: true
   observaciones?: true
   fechaCreacion?: true
+  anulado?: true
+  fechaAnulacion?: true
+  anuladoPorId?: true
+  motivoAnulacion?: true
   _all?: true
 }
 
@@ -225,6 +253,10 @@ export type PagoCuotaGroupByOutputType = {
   comprobanteUrl: string | null
   observaciones: string | null
   fechaCreacion: Date
+  anulado: boolean
+  fechaAnulacion: Date | null
+  anuladoPorId: number | null
+  motivoAnulacion: string | null
   _count: PagoCuotaCountAggregateOutputType | null
   _avg: PagoCuotaAvgAggregateOutputType | null
   _sum: PagoCuotaSumAggregateOutputType | null
@@ -260,8 +292,13 @@ export type PagoCuotaWhereInput = {
   comprobanteUrl?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
+  anulado?: Prisma.BoolFilter<"PagoCuota"> | boolean
+  fechaAnulacion?: Prisma.DateTimeNullableFilter<"PagoCuota"> | Date | string | null
+  anuladoPorId?: Prisma.IntNullableFilter<"PagoCuota"> | number | null
+  motivoAnulacion?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   socio?: Prisma.XOR<Prisma.SocioScalarRelationFilter, Prisma.SocioWhereInput>
   registradoPor?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
+  anuladoPor?: Prisma.XOR<Prisma.UsuarioNullableScalarRelationFilter, Prisma.UsuarioWhereInput> | null
   detalles?: Prisma.PagoCuotaDetalleListRelationFilter
   movimientoCaja?: Prisma.XOR<Prisma.MovimientoCajaNullableScalarRelationFilter, Prisma.MovimientoCajaWhereInput> | null
 }
@@ -276,8 +313,13 @@ export type PagoCuotaOrderByWithRelationInput = {
   comprobanteUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  anulado?: Prisma.SortOrder
+  fechaAnulacion?: Prisma.SortOrderInput | Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivoAnulacion?: Prisma.SortOrderInput | Prisma.SortOrder
   socio?: Prisma.SocioOrderByWithRelationInput
   registradoPor?: Prisma.UsuarioOrderByWithRelationInput
+  anuladoPor?: Prisma.UsuarioOrderByWithRelationInput
   detalles?: Prisma.PagoCuotaDetalleOrderByRelationAggregateInput
   movimientoCaja?: Prisma.MovimientoCajaOrderByWithRelationInput
 }
@@ -295,8 +337,13 @@ export type PagoCuotaWhereUniqueInput = Prisma.AtLeast<{
   comprobanteUrl?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
+  anulado?: Prisma.BoolFilter<"PagoCuota"> | boolean
+  fechaAnulacion?: Prisma.DateTimeNullableFilter<"PagoCuota"> | Date | string | null
+  anuladoPorId?: Prisma.IntNullableFilter<"PagoCuota"> | number | null
+  motivoAnulacion?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   socio?: Prisma.XOR<Prisma.SocioScalarRelationFilter, Prisma.SocioWhereInput>
   registradoPor?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
+  anuladoPor?: Prisma.XOR<Prisma.UsuarioNullableScalarRelationFilter, Prisma.UsuarioWhereInput> | null
   detalles?: Prisma.PagoCuotaDetalleListRelationFilter
   movimientoCaja?: Prisma.XOR<Prisma.MovimientoCajaNullableScalarRelationFilter, Prisma.MovimientoCajaWhereInput> | null
 }, "id">
@@ -311,6 +358,10 @@ export type PagoCuotaOrderByWithAggregationInput = {
   comprobanteUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  anulado?: Prisma.SortOrder
+  fechaAnulacion?: Prisma.SortOrderInput | Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrderInput | Prisma.SortOrder
+  motivoAnulacion?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PagoCuotaCountOrderByAggregateInput
   _avg?: Prisma.PagoCuotaAvgOrderByAggregateInput
   _max?: Prisma.PagoCuotaMaxOrderByAggregateInput
@@ -331,6 +382,10 @@ export type PagoCuotaScalarWhereWithAggregatesInput = {
   comprobanteUrl?: Prisma.StringNullableWithAggregatesFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableWithAggregatesFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeWithAggregatesFilter<"PagoCuota"> | Date | string
+  anulado?: Prisma.BoolWithAggregatesFilter<"PagoCuota"> | boolean
+  fechaAnulacion?: Prisma.DateTimeNullableWithAggregatesFilter<"PagoCuota"> | Date | string | null
+  anuladoPorId?: Prisma.IntNullableWithAggregatesFilter<"PagoCuota"> | number | null
+  motivoAnulacion?: Prisma.StringNullableWithAggregatesFilter<"PagoCuota"> | string | null
 }
 
 export type PagoCuotaCreateInput = {
@@ -340,8 +395,12 @@ export type PagoCuotaCreateInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
   socio: Prisma.SocioCreateNestedOneWithoutPagosCuotaInput
-  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagoCuotasInput
+  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaRegistradosInput
+  anuladoPor?: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaAnuladosInput
   detalles?: Prisma.PagoCuotaDetalleCreateNestedManyWithoutPagoInput
   movimientoCaja?: Prisma.MovimientoCajaCreateNestedOneWithoutPagoCuotaInput
 }
@@ -356,6 +415,10 @@ export type PagoCuotaUncheckedCreateInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedCreateNestedManyWithoutPagoInput
   movimientoCaja?: Prisma.MovimientoCajaUncheckedCreateNestedOneWithoutPagoCuotaInput
 }
@@ -367,8 +430,12 @@ export type PagoCuotaUpdateInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   socio?: Prisma.SocioUpdateOneRequiredWithoutPagosCuotaNestedInput
-  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagoCuotasNestedInput
+  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagosCuotaRegistradosNestedInput
+  anuladoPor?: Prisma.UsuarioUpdateOneWithoutPagosCuotaAnuladosNestedInput
   detalles?: Prisma.PagoCuotaDetalleUpdateManyWithoutPagoNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUpdateOneWithoutPagoCuotaNestedInput
 }
@@ -383,6 +450,10 @@ export type PagoCuotaUncheckedUpdateInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedUpdateManyWithoutPagoNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUncheckedUpdateOneWithoutPagoCuotaNestedInput
 }
@@ -397,6 +468,10 @@ export type PagoCuotaCreateManyInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
 }
 
 export type PagoCuotaUpdateManyMutationInput = {
@@ -406,6 +481,9 @@ export type PagoCuotaUpdateManyMutationInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PagoCuotaUncheckedUpdateManyInput = {
@@ -418,6 +496,10 @@ export type PagoCuotaUncheckedUpdateManyInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PagoCuotaListRelationFilter = {
@@ -440,6 +522,10 @@ export type PagoCuotaCountOrderByAggregateInput = {
   comprobanteUrl?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  anulado?: Prisma.SortOrder
+  fechaAnulacion?: Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrder
+  motivoAnulacion?: Prisma.SortOrder
 }
 
 export type PagoCuotaAvgOrderByAggregateInput = {
@@ -447,6 +533,7 @@ export type PagoCuotaAvgOrderByAggregateInput = {
   socioId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   importe?: Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrder
 }
 
 export type PagoCuotaMaxOrderByAggregateInput = {
@@ -459,6 +546,10 @@ export type PagoCuotaMaxOrderByAggregateInput = {
   comprobanteUrl?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  anulado?: Prisma.SortOrder
+  fechaAnulacion?: Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrder
+  motivoAnulacion?: Prisma.SortOrder
 }
 
 export type PagoCuotaMinOrderByAggregateInput = {
@@ -471,6 +562,10 @@ export type PagoCuotaMinOrderByAggregateInput = {
   comprobanteUrl?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
+  anulado?: Prisma.SortOrder
+  fechaAnulacion?: Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrder
+  motivoAnulacion?: Prisma.SortOrder
 }
 
 export type PagoCuotaSumOrderByAggregateInput = {
@@ -478,6 +573,7 @@ export type PagoCuotaSumOrderByAggregateInput = {
   socioId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   importe?: Prisma.SortOrder
+  anuladoPorId?: Prisma.SortOrder
 }
 
 export type PagoCuotaScalarRelationFilter = {
@@ -497,10 +593,24 @@ export type PagoCuotaCreateNestedManyWithoutRegistradoPorInput = {
   connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
 }
 
+export type PagoCuotaCreateNestedManyWithoutAnuladoPorInput = {
+  create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput> | Prisma.PagoCuotaCreateWithoutAnuladoPorInput[] | Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput[]
+  connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput | Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput[]
+  createMany?: Prisma.PagoCuotaCreateManyAnuladoPorInputEnvelope
+  connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+}
+
 export type PagoCuotaUncheckedCreateNestedManyWithoutRegistradoPorInput = {
   create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutRegistradoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutRegistradoPorInput> | Prisma.PagoCuotaCreateWithoutRegistradoPorInput[] | Prisma.PagoCuotaUncheckedCreateWithoutRegistradoPorInput[]
   connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutRegistradoPorInput | Prisma.PagoCuotaCreateOrConnectWithoutRegistradoPorInput[]
   createMany?: Prisma.PagoCuotaCreateManyRegistradoPorInputEnvelope
+  connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+}
+
+export type PagoCuotaUncheckedCreateNestedManyWithoutAnuladoPorInput = {
+  create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput> | Prisma.PagoCuotaCreateWithoutAnuladoPorInput[] | Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput[]
+  connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput | Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput[]
+  createMany?: Prisma.PagoCuotaCreateManyAnuladoPorInputEnvelope
   connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
 }
 
@@ -518,6 +628,20 @@ export type PagoCuotaUpdateManyWithoutRegistradoPorNestedInput = {
   deleteMany?: Prisma.PagoCuotaScalarWhereInput | Prisma.PagoCuotaScalarWhereInput[]
 }
 
+export type PagoCuotaUpdateManyWithoutAnuladoPorNestedInput = {
+  create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput> | Prisma.PagoCuotaCreateWithoutAnuladoPorInput[] | Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput[]
+  connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput | Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput[]
+  upsert?: Prisma.PagoCuotaUpsertWithWhereUniqueWithoutAnuladoPorInput | Prisma.PagoCuotaUpsertWithWhereUniqueWithoutAnuladoPorInput[]
+  createMany?: Prisma.PagoCuotaCreateManyAnuladoPorInputEnvelope
+  set?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  disconnect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  delete?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  update?: Prisma.PagoCuotaUpdateWithWhereUniqueWithoutAnuladoPorInput | Prisma.PagoCuotaUpdateWithWhereUniqueWithoutAnuladoPorInput[]
+  updateMany?: Prisma.PagoCuotaUpdateManyWithWhereWithoutAnuladoPorInput | Prisma.PagoCuotaUpdateManyWithWhereWithoutAnuladoPorInput[]
+  deleteMany?: Prisma.PagoCuotaScalarWhereInput | Prisma.PagoCuotaScalarWhereInput[]
+}
+
 export type PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput = {
   create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutRegistradoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutRegistradoPorInput> | Prisma.PagoCuotaCreateWithoutRegistradoPorInput[] | Prisma.PagoCuotaUncheckedCreateWithoutRegistradoPorInput[]
   connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutRegistradoPorInput | Prisma.PagoCuotaCreateOrConnectWithoutRegistradoPorInput[]
@@ -529,6 +653,20 @@ export type PagoCuotaUncheckedUpdateManyWithoutRegistradoPorNestedInput = {
   connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
   update?: Prisma.PagoCuotaUpdateWithWhereUniqueWithoutRegistradoPorInput | Prisma.PagoCuotaUpdateWithWhereUniqueWithoutRegistradoPorInput[]
   updateMany?: Prisma.PagoCuotaUpdateManyWithWhereWithoutRegistradoPorInput | Prisma.PagoCuotaUpdateManyWithWhereWithoutRegistradoPorInput[]
+  deleteMany?: Prisma.PagoCuotaScalarWhereInput | Prisma.PagoCuotaScalarWhereInput[]
+}
+
+export type PagoCuotaUncheckedUpdateManyWithoutAnuladoPorNestedInput = {
+  create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput> | Prisma.PagoCuotaCreateWithoutAnuladoPorInput[] | Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput[]
+  connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput | Prisma.PagoCuotaCreateOrConnectWithoutAnuladoPorInput[]
+  upsert?: Prisma.PagoCuotaUpsertWithWhereUniqueWithoutAnuladoPorInput | Prisma.PagoCuotaUpsertWithWhereUniqueWithoutAnuladoPorInput[]
+  createMany?: Prisma.PagoCuotaCreateManyAnuladoPorInputEnvelope
+  set?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  disconnect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  delete?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  connect?: Prisma.PagoCuotaWhereUniqueInput | Prisma.PagoCuotaWhereUniqueInput[]
+  update?: Prisma.PagoCuotaUpdateWithWhereUniqueWithoutAnuladoPorInput | Prisma.PagoCuotaUpdateWithWhereUniqueWithoutAnuladoPorInput[]
+  updateMany?: Prisma.PagoCuotaUpdateManyWithWhereWithoutAnuladoPorInput | Prisma.PagoCuotaUpdateManyWithWhereWithoutAnuladoPorInput[]
   deleteMany?: Prisma.PagoCuotaScalarWhereInput | Prisma.PagoCuotaScalarWhereInput[]
 }
 
@@ -574,6 +712,14 @@ export type PagoCuotaUncheckedUpdateManyWithoutSocioNestedInput = {
   deleteMany?: Prisma.PagoCuotaScalarWhereInput | Prisma.PagoCuotaScalarWhereInput[]
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type PagoCuotaCreateNestedOneWithoutDetallesInput = {
   create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutDetallesInput, Prisma.PagoCuotaUncheckedCreateWithoutDetallesInput>
   connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutDetallesInput
@@ -611,7 +757,11 @@ export type PagoCuotaCreateWithoutRegistradoPorInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
   socio: Prisma.SocioCreateNestedOneWithoutPagosCuotaInput
+  anuladoPor?: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaAnuladosInput
   detalles?: Prisma.PagoCuotaDetalleCreateNestedManyWithoutPagoInput
   movimientoCaja?: Prisma.MovimientoCajaCreateNestedOneWithoutPagoCuotaInput
 }
@@ -625,6 +775,10 @@ export type PagoCuotaUncheckedCreateWithoutRegistradoPorInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedCreateNestedManyWithoutPagoInput
   movimientoCaja?: Prisma.MovimientoCajaUncheckedCreateNestedOneWithoutPagoCuotaInput
 }
@@ -636,6 +790,49 @@ export type PagoCuotaCreateOrConnectWithoutRegistradoPorInput = {
 
 export type PagoCuotaCreateManyRegistradoPorInputEnvelope = {
   data: Prisma.PagoCuotaCreateManyRegistradoPorInput | Prisma.PagoCuotaCreateManyRegistradoPorInput[]
+  skipDuplicates?: boolean
+}
+
+export type PagoCuotaCreateWithoutAnuladoPorInput = {
+  importe: runtime.Decimal | runtime.DecimalJsLike | number | string
+  fechaPago: Date | string
+  medioPago: string
+  comprobanteUrl?: string | null
+  observaciones?: string | null
+  fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
+  socio: Prisma.SocioCreateNestedOneWithoutPagosCuotaInput
+  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaRegistradosInput
+  detalles?: Prisma.PagoCuotaDetalleCreateNestedManyWithoutPagoInput
+  movimientoCaja?: Prisma.MovimientoCajaCreateNestedOneWithoutPagoCuotaInput
+}
+
+export type PagoCuotaUncheckedCreateWithoutAnuladoPorInput = {
+  id?: number
+  socioId: number
+  registradoPorId: number
+  importe: runtime.Decimal | runtime.DecimalJsLike | number | string
+  fechaPago: Date | string
+  medioPago: string
+  comprobanteUrl?: string | null
+  observaciones?: string | null
+  fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
+  detalles?: Prisma.PagoCuotaDetalleUncheckedCreateNestedManyWithoutPagoInput
+  movimientoCaja?: Prisma.MovimientoCajaUncheckedCreateNestedOneWithoutPagoCuotaInput
+}
+
+export type PagoCuotaCreateOrConnectWithoutAnuladoPorInput = {
+  where: Prisma.PagoCuotaWhereUniqueInput
+  create: Prisma.XOR<Prisma.PagoCuotaCreateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput>
+}
+
+export type PagoCuotaCreateManyAnuladoPorInputEnvelope = {
+  data: Prisma.PagoCuotaCreateManyAnuladoPorInput | Prisma.PagoCuotaCreateManyAnuladoPorInput[]
   skipDuplicates?: boolean
 }
 
@@ -668,6 +865,26 @@ export type PagoCuotaScalarWhereInput = {
   comprobanteUrl?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
+  anulado?: Prisma.BoolFilter<"PagoCuota"> | boolean
+  fechaAnulacion?: Prisma.DateTimeNullableFilter<"PagoCuota"> | Date | string | null
+  anuladoPorId?: Prisma.IntNullableFilter<"PagoCuota"> | number | null
+  motivoAnulacion?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
+}
+
+export type PagoCuotaUpsertWithWhereUniqueWithoutAnuladoPorInput = {
+  where: Prisma.PagoCuotaWhereUniqueInput
+  update: Prisma.XOR<Prisma.PagoCuotaUpdateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedUpdateWithoutAnuladoPorInput>
+  create: Prisma.XOR<Prisma.PagoCuotaCreateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedCreateWithoutAnuladoPorInput>
+}
+
+export type PagoCuotaUpdateWithWhereUniqueWithoutAnuladoPorInput = {
+  where: Prisma.PagoCuotaWhereUniqueInput
+  data: Prisma.XOR<Prisma.PagoCuotaUpdateWithoutAnuladoPorInput, Prisma.PagoCuotaUncheckedUpdateWithoutAnuladoPorInput>
+}
+
+export type PagoCuotaUpdateManyWithWhereWithoutAnuladoPorInput = {
+  where: Prisma.PagoCuotaScalarWhereInput
+  data: Prisma.XOR<Prisma.PagoCuotaUpdateManyMutationInput, Prisma.PagoCuotaUncheckedUpdateManyWithoutAnuladoPorInput>
 }
 
 export type PagoCuotaCreateWithoutSocioInput = {
@@ -677,7 +894,11 @@ export type PagoCuotaCreateWithoutSocioInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
-  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagoCuotasInput
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
+  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaRegistradosInput
+  anuladoPor?: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaAnuladosInput
   detalles?: Prisma.PagoCuotaDetalleCreateNestedManyWithoutPagoInput
   movimientoCaja?: Prisma.MovimientoCajaCreateNestedOneWithoutPagoCuotaInput
 }
@@ -691,6 +912,10 @@ export type PagoCuotaUncheckedCreateWithoutSocioInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedCreateNestedManyWithoutPagoInput
   movimientoCaja?: Prisma.MovimientoCajaUncheckedCreateNestedOneWithoutPagoCuotaInput
 }
@@ -728,8 +953,12 @@ export type PagoCuotaCreateWithoutDetallesInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
   socio: Prisma.SocioCreateNestedOneWithoutPagosCuotaInput
-  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagoCuotasInput
+  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaRegistradosInput
+  anuladoPor?: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaAnuladosInput
   movimientoCaja?: Prisma.MovimientoCajaCreateNestedOneWithoutPagoCuotaInput
 }
 
@@ -743,6 +972,10 @@ export type PagoCuotaUncheckedCreateWithoutDetallesInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
   movimientoCaja?: Prisma.MovimientoCajaUncheckedCreateNestedOneWithoutPagoCuotaInput
 }
 
@@ -769,8 +1002,12 @@ export type PagoCuotaUpdateWithoutDetallesInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   socio?: Prisma.SocioUpdateOneRequiredWithoutPagosCuotaNestedInput
-  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagoCuotasNestedInput
+  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagosCuotaRegistradosNestedInput
+  anuladoPor?: Prisma.UsuarioUpdateOneWithoutPagosCuotaAnuladosNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUpdateOneWithoutPagoCuotaNestedInput
 }
 
@@ -784,6 +1021,10 @@ export type PagoCuotaUncheckedUpdateWithoutDetallesInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   movimientoCaja?: Prisma.MovimientoCajaUncheckedUpdateOneWithoutPagoCuotaNestedInput
 }
 
@@ -794,8 +1035,12 @@ export type PagoCuotaCreateWithoutMovimientoCajaInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
   socio: Prisma.SocioCreateNestedOneWithoutPagosCuotaInput
-  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagoCuotasInput
+  registradoPor: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaRegistradosInput
+  anuladoPor?: Prisma.UsuarioCreateNestedOneWithoutPagosCuotaAnuladosInput
   detalles?: Prisma.PagoCuotaDetalleCreateNestedManyWithoutPagoInput
 }
 
@@ -809,6 +1054,10 @@ export type PagoCuotaUncheckedCreateWithoutMovimientoCajaInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedCreateNestedManyWithoutPagoInput
 }
 
@@ -835,8 +1084,12 @@ export type PagoCuotaUpdateWithoutMovimientoCajaInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   socio?: Prisma.SocioUpdateOneRequiredWithoutPagosCuotaNestedInput
-  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagoCuotasNestedInput
+  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagosCuotaRegistradosNestedInput
+  anuladoPor?: Prisma.UsuarioUpdateOneWithoutPagosCuotaAnuladosNestedInput
   detalles?: Prisma.PagoCuotaDetalleUpdateManyWithoutPagoNestedInput
 }
 
@@ -850,6 +1103,10 @@ export type PagoCuotaUncheckedUpdateWithoutMovimientoCajaInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedUpdateManyWithoutPagoNestedInput
 }
 
@@ -862,6 +1119,25 @@ export type PagoCuotaCreateManyRegistradoPorInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
+}
+
+export type PagoCuotaCreateManyAnuladoPorInput = {
+  id?: number
+  socioId: number
+  registradoPorId: number
+  importe: runtime.Decimal | runtime.DecimalJsLike | number | string
+  fechaPago: Date | string
+  medioPago: string
+  comprobanteUrl?: string | null
+  observaciones?: string | null
+  fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  motivoAnulacion?: string | null
 }
 
 export type PagoCuotaUpdateWithoutRegistradoPorInput = {
@@ -871,7 +1147,11 @@ export type PagoCuotaUpdateWithoutRegistradoPorInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   socio?: Prisma.SocioUpdateOneRequiredWithoutPagosCuotaNestedInput
+  anuladoPor?: Prisma.UsuarioUpdateOneWithoutPagosCuotaAnuladosNestedInput
   detalles?: Prisma.PagoCuotaDetalleUpdateManyWithoutPagoNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUpdateOneWithoutPagoCuotaNestedInput
 }
@@ -885,6 +1165,10 @@ export type PagoCuotaUncheckedUpdateWithoutRegistradoPorInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedUpdateManyWithoutPagoNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUncheckedUpdateOneWithoutPagoCuotaNestedInput
 }
@@ -898,6 +1182,58 @@ export type PagoCuotaUncheckedUpdateManyWithoutRegistradoPorInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type PagoCuotaUpdateWithoutAnuladoPorInput = {
+  importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  medioPago?: Prisma.StringFieldUpdateOperationsInput | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  socio?: Prisma.SocioUpdateOneRequiredWithoutPagosCuotaNestedInput
+  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagosCuotaRegistradosNestedInput
+  detalles?: Prisma.PagoCuotaDetalleUpdateManyWithoutPagoNestedInput
+  movimientoCaja?: Prisma.MovimientoCajaUpdateOneWithoutPagoCuotaNestedInput
+}
+
+export type PagoCuotaUncheckedUpdateWithoutAnuladoPorInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  socioId?: Prisma.IntFieldUpdateOperationsInput | number
+  registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
+  importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  medioPago?: Prisma.StringFieldUpdateOperationsInput | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  detalles?: Prisma.PagoCuotaDetalleUncheckedUpdateManyWithoutPagoNestedInput
+  movimientoCaja?: Prisma.MovimientoCajaUncheckedUpdateOneWithoutPagoCuotaNestedInput
+}
+
+export type PagoCuotaUncheckedUpdateManyWithoutAnuladoPorInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  socioId?: Prisma.IntFieldUpdateOperationsInput | number
+  registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
+  importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  medioPago?: Prisma.StringFieldUpdateOperationsInput | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PagoCuotaCreateManySocioInput = {
@@ -909,6 +1245,10 @@ export type PagoCuotaCreateManySocioInput = {
   comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
+  anulado?: boolean
+  fechaAnulacion?: Date | string | null
+  anuladoPorId?: number | null
+  motivoAnulacion?: string | null
 }
 
 export type PagoCuotaUpdateWithoutSocioInput = {
@@ -918,7 +1258,11 @@ export type PagoCuotaUpdateWithoutSocioInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagoCuotasNestedInput
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  registradoPor?: Prisma.UsuarioUpdateOneRequiredWithoutPagosCuotaRegistradosNestedInput
+  anuladoPor?: Prisma.UsuarioUpdateOneWithoutPagosCuotaAnuladosNestedInput
   detalles?: Prisma.PagoCuotaDetalleUpdateManyWithoutPagoNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUpdateOneWithoutPagoCuotaNestedInput
 }
@@ -932,6 +1276,10 @@ export type PagoCuotaUncheckedUpdateWithoutSocioInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   detalles?: Prisma.PagoCuotaDetalleUncheckedUpdateManyWithoutPagoNestedInput
   movimientoCaja?: Prisma.MovimientoCajaUncheckedUpdateOneWithoutPagoCuotaNestedInput
 }
@@ -945,6 +1293,10 @@ export type PagoCuotaUncheckedUpdateManyWithoutSocioInput = {
   comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -988,8 +1340,13 @@ export type PagoCuotaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
+  anulado?: boolean
+  fechaAnulacion?: boolean
+  anuladoPorId?: boolean
+  motivoAnulacion?: boolean
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
+  anuladoPor?: boolean | Prisma.PagoCuota$anuladoPorArgs<ExtArgs>
   detalles?: boolean | Prisma.PagoCuota$detallesArgs<ExtArgs>
   movimientoCaja?: boolean | Prisma.PagoCuota$movimientoCajaArgs<ExtArgs>
   _count?: boolean | Prisma.PagoCuotaCountOutputTypeDefaultArgs<ExtArgs>
@@ -1005,8 +1362,13 @@ export type PagoCuotaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
+  anulado?: boolean
+  fechaAnulacion?: boolean
+  anuladoPorId?: boolean
+  motivoAnulacion?: boolean
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
+  anuladoPor?: boolean | Prisma.PagoCuota$anuladoPorArgs<ExtArgs>
 }, ExtArgs["result"]["pagoCuota"]>
 
 export type PagoCuotaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1019,8 +1381,13 @@ export type PagoCuotaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
+  anulado?: boolean
+  fechaAnulacion?: boolean
+  anuladoPorId?: boolean
+  motivoAnulacion?: boolean
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
+  anuladoPor?: boolean | Prisma.PagoCuota$anuladoPorArgs<ExtArgs>
 }, ExtArgs["result"]["pagoCuota"]>
 
 export type PagoCuotaSelectScalar = {
@@ -1033,12 +1400,17 @@ export type PagoCuotaSelectScalar = {
   comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
+  anulado?: boolean
+  fechaAnulacion?: boolean
+  anuladoPorId?: boolean
+  motivoAnulacion?: boolean
 }
 
-export type PagoCuotaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "socioId" | "registradoPorId" | "importe" | "fechaPago" | "medioPago" | "comprobanteUrl" | "observaciones" | "fechaCreacion", ExtArgs["result"]["pagoCuota"]>
+export type PagoCuotaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "socioId" | "registradoPorId" | "importe" | "fechaPago" | "medioPago" | "comprobanteUrl" | "observaciones" | "fechaCreacion" | "anulado" | "fechaAnulacion" | "anuladoPorId" | "motivoAnulacion", ExtArgs["result"]["pagoCuota"]>
 export type PagoCuotaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
+  anuladoPor?: boolean | Prisma.PagoCuota$anuladoPorArgs<ExtArgs>
   detalles?: boolean | Prisma.PagoCuota$detallesArgs<ExtArgs>
   movimientoCaja?: boolean | Prisma.PagoCuota$movimientoCajaArgs<ExtArgs>
   _count?: boolean | Prisma.PagoCuotaCountOutputTypeDefaultArgs<ExtArgs>
@@ -1046,10 +1418,12 @@ export type PagoCuotaInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type PagoCuotaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
+  anuladoPor?: boolean | Prisma.PagoCuota$anuladoPorArgs<ExtArgs>
 }
 export type PagoCuotaIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
+  anuladoPor?: boolean | Prisma.PagoCuota$anuladoPorArgs<ExtArgs>
 }
 
 export type $PagoCuotaPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1057,6 +1431,7 @@ export type $PagoCuotaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     socio: Prisma.$SocioPayload<ExtArgs>
     registradoPor: Prisma.$UsuarioPayload<ExtArgs>
+    anuladoPor: Prisma.$UsuarioPayload<ExtArgs> | null
     detalles: Prisma.$PagoCuotaDetallePayload<ExtArgs>[]
     movimientoCaja: Prisma.$MovimientoCajaPayload<ExtArgs> | null
   }
@@ -1070,6 +1445,10 @@ export type $PagoCuotaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     comprobanteUrl: string | null
     observaciones: string | null
     fechaCreacion: Date
+    anulado: boolean
+    fechaAnulacion: Date | null
+    anuladoPorId: number | null
+    motivoAnulacion: string | null
   }, ExtArgs["result"]["pagoCuota"]>
   composites: {}
 }
@@ -1466,6 +1845,7 @@ export interface Prisma__PagoCuotaClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   socio<T extends Prisma.SocioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SocioDefaultArgs<ExtArgs>>): Prisma.Prisma__SocioClient<runtime.Types.Result.GetResult<Prisma.$SocioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   registradoPor<T extends Prisma.UsuarioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UsuarioDefaultArgs<ExtArgs>>): Prisma.Prisma__UsuarioClient<runtime.Types.Result.GetResult<Prisma.$UsuarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  anuladoPor<T extends Prisma.PagoCuota$anuladoPorArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PagoCuota$anuladoPorArgs<ExtArgs>>): Prisma.Prisma__UsuarioClient<runtime.Types.Result.GetResult<Prisma.$UsuarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   detalles<T extends Prisma.PagoCuota$detallesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PagoCuota$detallesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PagoCuotaDetallePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   movimientoCaja<T extends Prisma.PagoCuota$movimientoCajaArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PagoCuota$movimientoCajaArgs<ExtArgs>>): Prisma.Prisma__MovimientoCajaClient<runtime.Types.Result.GetResult<Prisma.$MovimientoCajaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
@@ -1506,6 +1886,10 @@ export interface PagoCuotaFieldRefs {
   readonly comprobanteUrl: Prisma.FieldRef<"PagoCuota", 'String'>
   readonly observaciones: Prisma.FieldRef<"PagoCuota", 'String'>
   readonly fechaCreacion: Prisma.FieldRef<"PagoCuota", 'DateTime'>
+  readonly anulado: Prisma.FieldRef<"PagoCuota", 'Boolean'>
+  readonly fechaAnulacion: Prisma.FieldRef<"PagoCuota", 'DateTime'>
+  readonly anuladoPorId: Prisma.FieldRef<"PagoCuota", 'Int'>
+  readonly motivoAnulacion: Prisma.FieldRef<"PagoCuota", 'String'>
 }
     
 
@@ -1904,6 +2288,25 @@ export type PagoCuotaDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many PagoCuotas to delete.
    */
   limit?: number
+}
+
+/**
+ * PagoCuota.anuladoPor
+ */
+export type PagoCuota$anuladoPorArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Usuario
+   */
+  select?: Prisma.UsuarioSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Usuario
+   */
+  omit?: Prisma.UsuarioOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UsuarioInclude<ExtArgs> | null
+  where?: Prisma.UsuarioWhereInput
 }
 
 /**

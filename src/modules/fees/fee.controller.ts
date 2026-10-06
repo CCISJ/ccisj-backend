@@ -5,6 +5,7 @@ import { AuthRequest } from '@/middlewares/auth.middleware';
 import {
   addFeeAdjustment,
   addFeeConfiguration,
+  cancelMemberFeePayment,
   editFeeConfiguration,
   generateMonthlyFee,
   getCurrentFeeConfiguration,
@@ -17,7 +18,6 @@ import {
   getRecentFeePayments,
   registerFeePayment,
   removeFeeAdjustment,
-  removeFeePayment,
 } from './fee.service';
 
 export async function getCurrentConfiguration(_req: Request, res: Response) {
@@ -221,22 +221,23 @@ export async function createPayment(req: AuthRequest, res: Response) {
   }
 }
 
-export async function deletePayment(req: Request, res: Response) {
+export async function cancelPayment(req: AuthRequest, res: Response) {
   try {
-    const pagoId = Number(req.params.pagoId);
-
-    if (!Number.isInteger(pagoId) || pagoId <= 0) {
-      return res.status(400).json({
-        message: 'El pago no es válido',
+    if (!req.user) {
+      return res.status(401).json({
+        message: 'No autenticado',
       });
     }
 
-    await removeFeePayment(pagoId);
+    const pagoId = Number(req.params.pagoId);
+    const { motivo } = req.body;
 
-    return res.status(204).send();
+    const payment = await cancelMemberFeePayment(pagoId, req.user.id, motivo);
+
+    return res.json(payment);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Error al eliminar el pago';
+      error instanceof Error ? error.message : 'Error al anular el pago';
 
     return res.status(400).json({ message });
   }
