@@ -4,13 +4,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
 import {
+  cancelMemberFeePayment,
   generateMonthlyFee,
   generateMonthlyFees,
   getFeesDashboardSummary,
   getMemberFeeStatus,
   registerFeePayment,
   removeFeeAdjustment,
-  removeFeePayment,
 } from '../src/modules/fees/fee.service';
 import {
   createAdmin,
@@ -573,19 +573,20 @@ describe('Cuotas', () => {
     }
   });
 
-  it('elimina un pago y vuelve la cuota a pendiente', async () => {
+  it('anula un pago y vuelve la cuota a pendiente', async () => {
     const member = await createMember();
+    const admin = await createAdmin();
 
     try {
       const fee = await generateMonthlyFee(member.socioId, 2026, 7);
 
       const payment = await registerFeePayment({
         socioId: member.socioId,
-        registradoPorId: member.userId,
+        registradoPorId: admin.userId,
         importe: 760,
         fechaPago: new Date('2026-07-15'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-DELETE-001.pdf',
+        comprobanteUrl: 'https://comprobantes.test/TEST-CANCEL-001.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -598,7 +599,6 @@ describe('Cuotas', () => {
 
       expect(paidFee?.estado).toBe('PAGADA');
 
-      // El pago genera un movimiento de caja; anularlo tiene que llevárselo.
       const movement = await prisma.movimientoCaja.findUnique({
         where: {
           pagoCuotaId: payment!.id,
@@ -606,31 +606,54 @@ describe('Cuotas', () => {
       });
 
       expect(movement).not.toBeNull();
+      expect(movement?.anulado).toBe(false);
 
-      await removeFeePayment(payment!.id);
+      await cancelMemberFeePayment(
+        payment!.id,
+        admin.userId,
+        'Pago registrado por error',
+      );
 
-      const deletedMovement = await prisma.movimientoCaja.findUnique({
-        where: {
-          pagoCuotaId: payment!.id,
-        },
-      });
-
-      expect(deletedMovement).toBeNull();
-
-      const deletedPayment = await prisma.pagoCuota.findUnique({
+      const cancelledPayment = await prisma.pagoCuota.findUnique({
         where: {
           id: payment!.id,
         },
       });
 
-      expect(deletedPayment).toBeNull();
+      expect(cancelledPayment).not.toBeNull();
+      expect(cancelledPayment?.anulado).toBe(true);
+      expect(cancelledPayment?.anuladoPorId).toBe(admin.userId);
+      expect(cancelledPayment?.motivoAnulacion).toBe(
+        'Pago registrado por error',
+      );
+      expect(cancelledPayment?.fechaAnulacion).not.toBeNull();
+
+      const cancelledMovement = await prisma.movimientoCaja.findUnique({
+        where: {
+          pagoCuotaId: payment!.id,
+        },
+      });
+
+      expect(cancelledMovement).not.toBeNull();
+      expect(cancelledMovement?.anulado).toBe(true);
+      expect(cancelledMovement?.anuladoPorId).toBe(admin.userId);
+      expect(cancelledMovement?.motivoAnulacion).toBe(
+        'Pago registrado por error',
+      );
+      expect(cancelledMovement?.fechaAnulacion).not.toBeNull();
 
       const recalculatedFee = await prisma.cuota.findUnique({
         where: {
           id: fee.id,
         },
         include: {
-          pagos: true,
+          pagos: {
+            where: {
+              pago: {
+                anulado: false,
+              },
+            },
+          },
         },
       });
 
@@ -645,32 +668,33 @@ describe('Cuotas', () => {
         },
       });
 
-      await deleteUsers([member.userId]);
+      await deleteUsers([member.userId, admin.userId]);
     }
   });
 
-  it('al eliminar un pago recalcula la cuota teniendo en cuenta otros pagos existentes', async () => {
+  it('al anular un pago recalcula la cuota teniendo en cuenta otros pagos válidos', async () => {
     const member = await createMember();
+    const admin = await createAdmin();
 
     try {
       const fee = await generateMonthlyFee(member.socioId, 2026, 7);
 
       const firstPayment = await registerFeePayment({
         socioId: member.socioId,
-        registradoPorId: member.userId,
+        registradoPorId: admin.userId,
         importe: 300,
         fechaPago: new Date('2026-07-10'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-DELETE-002.pdf',
+        comprobanteUrl: 'https://comprobantes.test/TEST-CANCEL-002.pdf',
       });
 
       const secondPayment = await registerFeePayment({
         socioId: member.socioId,
-        registradoPorId: member.userId,
+        registradoPorId: admin.userId,
         importe: 460,
         fechaPago: new Date('2026-07-20'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-DELETE-003.pdf',
+        comprobanteUrl: 'https://comprobantes.test/TEST-CANCEL-003.pdf',
       });
 
       expect(firstPayment).not.toBeNull();
@@ -684,14 +708,24 @@ describe('Cuotas', () => {
 
       expect(paidFee?.estado).toBe('PAGADA');
 
-      await removeFeePayment(secondPayment!.id);
+      await cancelMemberFeePayment(
+        secondPayment!.id,
+        admin.userId,
+        'Segundo pago registrado por error',
+      );
 
       const recalculatedFee = await prisma.cuota.findUnique({
         where: {
           id: fee.id,
         },
         include: {
-          pagos: true,
+          pagos: {
+            where: {
+              pago: {
+                anulado: false,
+              },
+            },
+          },
         },
       });
 
@@ -706,20 +740,24 @@ describe('Cuotas', () => {
 
       expect(totalPaid).toBe(300);
 
-      const firstPaymentStillExists = await prisma.pagoCuota.findUnique({
+      const firstPaymentStored = await prisma.pagoCuota.findUnique({
         where: {
           id: firstPayment!.id,
         },
       });
 
-      const secondPaymentDeleted = await prisma.pagoCuota.findUnique({
+      const secondPaymentStored = await prisma.pagoCuota.findUnique({
         where: {
           id: secondPayment!.id,
         },
       });
 
-      expect(firstPaymentStillExists).not.toBeNull();
-      expect(secondPaymentDeleted).toBeNull();
+      expect(firstPaymentStored).not.toBeNull();
+      expect(firstPaymentStored?.anulado).toBe(false);
+
+      // El segundo pago también sigue existiendo, pero anulado.
+      expect(secondPaymentStored).not.toBeNull();
+      expect(secondPaymentStored?.anulado).toBe(true);
     } finally {
       await deleteMemberPayments([member.socioId]);
 
@@ -729,7 +767,91 @@ describe('Cuotas', () => {
         },
       });
 
-      await deleteUsers([member.userId]);
+      await deleteUsers([member.userId, admin.userId]);
+    }
+  });
+
+  it('no permite anular dos veces el mismo pago', async () => {
+    const member = await createMember();
+    const admin = await createAdmin();
+
+    try {
+      await generateMonthlyFee(member.socioId, 2026, 7);
+
+      const payment = await registerFeePayment({
+        socioId: member.socioId,
+        registradoPorId: admin.userId,
+        importe: 760,
+        fechaPago: new Date('2026-07-15'),
+        medioPago: 'EFECTIVO',
+      });
+
+      expect(payment).not.toBeNull();
+
+      await cancelMemberFeePayment(
+        payment!.id,
+        admin.userId,
+        'Pago registrado por error',
+      );
+
+      await expect(
+        cancelMemberFeePayment(
+          payment!.id,
+          admin.userId,
+          'Intento de segunda anulación',
+        ),
+      ).rejects.toThrow('El pago ya está anulado');
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: {
+          socioId: member.socioId,
+        },
+      });
+
+      await deleteUsers([member.userId, admin.userId]);
+    }
+  });
+
+  it('no permite anular un pago sin motivo', async () => {
+    const member = await createMember();
+    const admin = await createAdmin();
+
+    try {
+      await generateMonthlyFee(member.socioId, 2026, 7);
+
+      const payment = await registerFeePayment({
+        socioId: member.socioId,
+        registradoPorId: admin.userId,
+        importe: 760,
+        fechaPago: new Date('2026-07-15'),
+        medioPago: 'EFECTIVO',
+      });
+
+      expect(payment).not.toBeNull();
+
+      await expect(
+        cancelMemberFeePayment(payment!.id, admin.userId, '   '),
+      ).rejects.toThrow('El motivo de anulación es obligatorio');
+
+      const storedPayment = await prisma.pagoCuota.findUnique({
+        where: {
+          id: payment!.id,
+        },
+      });
+
+      expect(storedPayment?.anulado).toBe(false);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: {
+          socioId: member.socioId,
+        },
+      });
+
+      await deleteUsers([member.userId, admin.userId]);
     }
   });
 });

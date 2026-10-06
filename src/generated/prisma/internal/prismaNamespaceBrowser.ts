@@ -266,7 +266,11 @@ export const PagoCuotaScalarFieldEnum = {
   medioPago: 'medioPago',
   comprobanteUrl: 'comprobanteUrl',
   observaciones: 'observaciones',
-  fechaCreacion: 'fechaCreacion'
+  fechaCreacion: 'fechaCreacion',
+  anulado: 'anulado',
+  fechaAnulacion: 'fechaAnulacion',
+  anuladoPorId: 'anuladoPorId',
+  motivoAnulacion: 'motivoAnulacion'
 } as const
 
 export type PagoCuotaScalarFieldEnum = (typeof PagoCuotaScalarFieldEnum)[keyof typeof PagoCuotaScalarFieldEnum]

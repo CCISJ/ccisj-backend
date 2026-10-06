@@ -2,12 +2,12 @@ import { AddFeeAdjustmentData, RegisterFeePaymentData } from '@/types/fee.type';
 
 import { findActive } from '../members/member.repository';
 import {
+  cancelFeePayment,
   createFee,
   createFeeAdjustment,
   createFeeConfiguration,
   createFeePayment,
   deactivateFeeAdjustment,
-  deleteFeePayment,
   findActiveFeeAdjustments,
   findAllFeesWithPayments,
   findConfigurationByEffectiveDate,
@@ -567,12 +567,32 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
   return payment;
 }
 
-export async function removeFeePayment(pagoId: number) {
+export async function cancelMemberFeePayment(
+  pagoId: number,
+  anuladoPorId: number,
+  motivoAnulacion: string,
+) {
   if (!Number.isInteger(pagoId) || pagoId <= 0) {
     throw new Error('El pago no es válido');
   }
 
-  return deleteFeePayment(pagoId);
+  if (!Number.isInteger(anuladoPorId) || anuladoPorId <= 0) {
+    throw new Error('El usuario no es válido');
+  }
+
+  const motivo = motivoAnulacion?.trim();
+
+  if (!motivo) {
+    throw new Error('El motivo de anulación es obligatorio');
+  }
+
+  if (motivo.length > 500) {
+    throw new Error(
+      'El motivo de anulación no puede superar los 500 caracteres',
+    );
+  }
+
+  return cancelFeePayment(pagoId, anuladoPorId, motivo);
 }
 
 export async function getRecentFeePayments(limit: number = 5) {

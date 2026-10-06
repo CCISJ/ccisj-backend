@@ -7,12 +7,12 @@ import {
 } from '@/middlewares/auth.middleware';
 
 import {
+  cancelPayment,
   createAdjustment,
   createConfiguration,
   createMonthlyFee,
   createPayment,
   deleteAdjustment,
-  deletePayment,
   getAdjustmentsByMember,
   getConfigurationHistory,
   getCurrentConfiguration,
@@ -82,7 +82,7 @@ router.get(
   getFeeStatusByMember,
 );
 
-router.delete('/pagos/:pagoId', requireAuth, requireAdmin, deletePayment);
+router.patch('/:pagoId/anular', requireAuth, requireAdmin, cancelPayment);
 
 router.delete(
   '/ajustes/:adjustmentId',

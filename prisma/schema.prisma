@@ -84,9 +84,12 @@ model Usuario {
 
   notificacionesCreadas   Notificacion[]        @relation("NotificacionCreadaPor")
   notificacionesRecibidas NotificacionUsuario[]
-  pagoCuotas              PagoCuota[]
-  movimientosCaja         MovimientoCaja[]      @relation("MovimientoCajaRegistradoPor")
-    movimientosCajaAnulados MovimientoCaja[]      @relation("MovimientoCajaAnuladoPor")
+
+  pagosCuotaRegistrados PagoCuota[] @relation("PagoCuotaRegistradoPor")
+  pagosCuotaAnulados    PagoCuota[] @relation("PagoCuotaAnuladoPor")
+
+  movimientosCajaRegistrados MovimientoCaja[] @relation("MovimientoCajaRegistradoPor")
+  movimientosCajaAnulados    MovimientoCaja[] @relation("MovimientoCajaAnuladoPor")
 
   @@map("usuario")
 }
@@ -299,9 +302,18 @@ model PagoCuota {
 
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
 
-  socio         Socio              @relation(fields: [socioId], references: [id], onDelete: NoAction)
-  registradoPor Usuario            @relation(fields: [registradoPorId], references: [id], onDelete: NoAction)
-  detalles      PagoCuotaDetalle[]
+  anulado         Boolean   @default(false)
+  fechaAnulacion  DateTime? @map("fecha_anulacion")
+  anuladoPorId    Int?      @map("anulado_por_id")
+  motivoAnulacion String?   @map("motivo_anulacion") @db.VarChar(500)
+
+  socio Socio @relation(fields: [socioId], references: [id], onDelete: NoAction)
+
+  registradoPor Usuario @relation("PagoCuotaRegistradoPor", fields: [registradoPorId], references: [id], onDelete: NoAction)
+
+  anuladoPor Usuario? @relation("PagoCuotaAnuladoPor", fields: [anuladoPorId], references: [id], onDelete: NoAction)
+
+  detalles       PagoCuotaDetalle[]
   movimientoCaja MovimientoCaja?
 
   @@map("pago_cuota")
@@ -345,12 +357,12 @@ model MovimientoCaja {
   registradoPorId Int  @map("registrado_por_id")
   pagoCuotaId     Int? @unique @map("pago_cuota_id")
 
-  anulado          Boolean   @default(false)
-fechaAnulacion   DateTime? @map("fecha_anulacion")
-anuladoPorId     Int?      @map("anulado_por_id")
-motivoAnulacion  String?   @db.VarChar(500) @map("motivo_anulacion")
+  anulado         Boolean   @default(false)
+  fechaAnulacion  DateTime? @map("fecha_anulacion")
+  anuladoPorId    Int?      @map("anulado_por_id")
+  motivoAnulacion String?   @map("motivo_anulacion") @db.VarChar(500)
 
-anuladoPor Usuario? @relation("MovimientoCajaAnuladoPor",fields: [anuladoPorId],references: [id],onDelete: NoAction)
+  anuladoPor Usuario? @relation("MovimientoCajaAnuladoPor", fields: [anuladoPorId], references: [id], onDelete: NoAction)
 
   categoria     CategoriaCaja @relation(fields: [categoriaId], references: [id], onDelete: NoAction)
   registradoPor Usuario       @relation("MovimientoCajaRegistradoPor", fields: [registradoPorId], references: [id], onDelete: NoAction)

@@ -152,7 +152,13 @@ export async function findMemberFeesWithPayments(socioId: number) {
       socioId,
     },
     include: {
-      pagos: true,
+      pagos: {
+        where: {
+          pago: {
+            anulado: false,
+          },
+        },
+      },
     },
     orderBy: {
       periodoDesde: 'asc',
@@ -241,7 +247,11 @@ export async function createFeePayment(data: CreateFeePaymentData) {
   });
 }
 
-export async function deleteFeePayment(pagoId: number) {
+export async function cancelFeePayment(
+  pagoId: number,
+  anuladoPorId: number,
+  motivoAnulacion: string,
+) {
   return prisma.$transaction(async (tx) => {
     const payment = await tx.pagoCuota.findUnique({
       where: {
@@ -249,6 +259,7 @@ export async function deleteFeePayment(pagoId: number) {
       },
       include: {
         detalles: true,
+        movimientoCaja: true,
       },
     });
 
@@ -256,37 +267,63 @@ export async function deleteFeePayment(pagoId: number) {
       throw new Error('El pago no existe');
     }
 
+    if (payment.anulado) {
+      throw new Error('El pago ya está anulado');
+    }
+
     const affectedFeeIds = payment.detalles.map((detail) => detail.cuotaId);
 
-    // El pago genera un movimiento de caja en la categoría "Cuotas de socios".
-    // Si el pago se anula, ese ingreso no existió, así que el movimiento se va
-    // con él. Además es obligatorio hacerlo primero: la clave foránea
-    // `movimiento_caja.pago_cuota_id` es `NoAction`, así que mientras el
-    // movimiento exista el pago no se puede borrar. Se usa `deleteMany` porque
-    // los pagos registrados antes del módulo de caja no tienen movimiento.
-    await tx.movimientoCaja.deleteMany({
-      where: {
-        pagoCuotaId: pagoId,
-      },
-    });
+    const cancellationDate = new Date();
 
-    await tx.pagoCuota.delete({
+    // Anulamos el pago, pero conservamos todo su historial.
+    await tx.pagoCuota.update({
       where: {
         id: pagoId,
       },
+      data: {
+        anulado: true,
+        fechaAnulacion: cancellationDate,
+        anuladoPorId,
+        motivoAnulacion,
+      },
     });
 
+    // El ingreso de caja generado por este pago también deja de ser válido.
+    // No se elimina: queda registrado como anulado.
+    if (payment.movimientoCaja) {
+      await tx.movimientoCaja.update({
+        where: {
+          id: payment.movimientoCaja.id,
+        },
+        data: {
+          anulado: true,
+          fechaAnulacion: cancellationDate,
+          anuladoPorId,
+          motivoAnulacion,
+        },
+      });
+    }
+
+    // Recalculamos el estado de todas las cuotas afectadas.
     for (const cuotaId of affectedFeeIds) {
       const fee = await tx.cuota.findUnique({
         where: {
           id: cuotaId,
         },
         include: {
-          pagos: true,
+          pagos: {
+            where: {
+              pago: {
+                anulado: false,
+              },
+            },
+          },
         },
       });
 
-      if (!fee) continue;
+      if (!fee) {
+        continue;
+      }
 
       const totalPaid = fee.pagos.reduce(
         (total, detail) => total + Number(detail.importeAplicado),
@@ -315,7 +352,15 @@ export async function deleteFeePayment(pagoId: number) {
       });
     }
 
-    return payment;
+    return tx.pagoCuota.findUnique({
+      where: {
+        id: pagoId,
+      },
+      include: {
+        detalles: true,
+        movimientoCaja: true,
+      },
+    });
   });
 }
 
@@ -330,6 +375,12 @@ export async function findMemberFeePayments(socioId: number) {
           cuota: true,
         },
       },
+      anuladoPor: {
+        select: {
+          id: true,
+          email: true,
+        },
+      },
     },
     orderBy: {
       fechaPago: 'desc',
@@ -340,7 +391,13 @@ export async function findMemberFeePayments(socioId: number) {
 export async function findAllFeesWithPayments() {
   return prisma.cuota.findMany({
     include: {
-      pagos: true,
+      pagos: {
+        where: {
+          pago: {
+            anulado: false,
+          },
+        },
+      },
       socio: {
         select: {
           id: true,
@@ -364,6 +421,7 @@ export async function findPaymentsByDateRange(
 ) {
   return prisma.pagoCuota.findMany({
     where: {
+      anulado: false,
       fechaPago: {
         gte: fechaDesde,
         lt: fechaHasta,
@@ -377,6 +435,9 @@ export async function findPaymentsByDateRange(
 
 export async function getRecentPayments(limit: number = 5) {
   return prisma.pagoCuota.findMany({
+    where: {
+      anulado: false,
+    },
     orderBy: {
       fechaPago: 'desc',
     },
