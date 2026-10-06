@@ -20,6 +20,10 @@
     "src/**/*.ts",
     "tests/**/*.ts",
     "prisma/**/*.ts",
+    // `*.*ts` para que entren también los `.mts`, igual que las
+    // configuraciones de abajo. Un archivo nuevo acá no debe quedar fuera del
+    // chequeo solo por la extensión.
+    "scripts/**/*.*ts",
     "*.config.*ts"
   ],
 

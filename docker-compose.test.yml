@@ -1,0 +1,45 @@
+# Base de datos desechable para los tests.
+#
+# Por qué existe: los tests de integración escriben de verdad (crean socios,
+# ofertas, pagos y movimientos de caja). Corriéndolos contra la base compartida
+# del equipo cualquier test a medio terminar deja basura para todos, y un
+# análisis dinámico (DAST) directamente es inaceptable: manda miles de
+# requests que crean, modifican y borran.
+#
+# Esta base vive en RAM (`tmpfs`): arranca vacía, es rápida y desaparece al
+# parar el contenedor. La versión es la misma línea que usa Supabase
+# (PostgreSQL 17.6), para que una migración que funciona acá funcione allá.
+#
+#   pnpm test:db:up        levanta la base y espera a que esté lista
+#   pnpm test:db:prepare   aplica las migraciones y el seed
+#   pnpm test:db:down      la apaga y borra todo
+#
+# El puerto del host es 5433 y no 5432, para no chocar con un PostgreSQL
+# instalado en la máquina.
+
+services:
+  test-db:
+    image: postgres:17-alpine
+    container_name: ccisj-test-db
+
+    environment:
+      POSTGRES_USER: ccisj_test
+      POSTGRES_PASSWORD: ccisj_test
+      POSTGRES_DB: ccisj_test
+
+    ports:
+      - '5433:5432'
+
+    # Los datos en RAM: no se persisten entre reinicios, y no hay volumen que
+    # limpiar a mano. Son datos de prueba, no hay nada que conservar.
+    tmpfs:
+      - /var/lib/postgresql/data
+
+    # `pnpm test:db:up` usa `--wait`, que se apoya en este healthcheck: sin él
+    # las migraciones corren antes de que PostgreSQL acepte conexiones.
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ccisj_test -d ccisj_test']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s

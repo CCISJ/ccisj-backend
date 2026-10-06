@@ -253,8 +253,9 @@ src/generated/prisma/    cliente generado (se versiona, no se edita a mano)
 
 Prisma registra las migraciones aplicadas en la tabla `_prisma_migrations`.
 
-> ⚠️ **La base de Supabase es compartida por todo el equipo**, y los tests
-> corren contra ella.
+> ⚠️ **La base de Supabase es compartida por todo el equipo.** Los tests ya no
+> la tocan (corren contra la base desechable, ver **Tests**), pero sigue siendo
+> la base donde trabajan los demás.
 >
 > Nunca corras `prisma migrate dev` ni `prisma migrate reset` contra ella: ante
 > la menor diferencia de esquema, Prisma ofrece **resetear la base y borrar
@@ -464,7 +465,7 @@ router.post('/', requireRole('ADMIN', 'SOCIO'), create);
 
 ## Tests con sesión
 
-`src/test/session.ts` crea usuarios de cada rol directamente en la base y les
+`tests/session.ts` crea usuarios de cada rol directamente en la base y les
 arma la cookie (`createAdmin`, `createMember`, `createApplicant`). Todo lo
 que crean lleva un sufijo único y se borra con `deleteUsers` al terminar.
 
@@ -473,7 +474,77 @@ const socio = await createMember();
 await request(app).get('/ofertas').set('Cookie', socio.cookie);
 ```
 
-> La base es compartida: en los tests nunca usar `deleteMany()` sin filtro.
+> Aunque los tests ahora corren contra una base desechable (ver **Tests** más
+> abajo), la regla se mantiene: nunca un `deleteMany()` sin filtro, y la
+> limpieza siempre por ID. Un test que borra "todo" es un test que tapa los
+> errores de los demás.
+
+---
+
+# Tests
+
+Son **306 tests de integración** en 13 archivos: levantan la aplicación Express
+de verdad con Supertest y pegan contra una base PostgreSQL de verdad. No hay
+dobles ni mocks de la base, así que lo que prueban incluye las migraciones, las
+claves foráneas y los permisos.
+
+## La base de los tests NO es la del equipo
+
+Corren contra un PostgreSQL propio, desechable, que vive en RAM dentro de un
+contenedor (`docker-compose.test.yml`). Es la misma línea de versión que
+Supabase (PostgreSQL 17) para que una migración que anda acá ande allá.
+
+Por qué: los tests **escriben** (crean socios, ofertas, pagos, movimientos de
+caja). Contra la base compartida, un test cortado a la mitad deja basura para
+todo el equipo, y un análisis dinámico de seguridad —que manda miles de
+requests que crean, modifican y borran— directamente no se puede correr.
+
+De paso son **mucho** más rápidos, porque no hay que ir y volver hasta
+Supabase en cada consulta: **12 s** en vez de los 403 s que tardaban antes.
+
+## Cómo correrlos
+
+La primera vez, y cada vez que se reinicia la máquina o Docker (la base vive en
+RAM, así que arranca vacía):
+
+```bash
+pnpm test:db
+```
+
+Eso levanta el contenedor, espera a que PostgreSQL acepte conexiones, le aplica
+las migraciones y corre el seed. Después, las veces que quieras:
+
+```bash
+pnpm test        # modo watch, para desarrollar
+pnpm test:run    # una sola corrida
+```
+
+Para apagar la base y liberar la memoria:
+
+```bash
+pnpm test:db:down
+```
+
+No hay nada que configurar: la cadena de conexión y el secreto de los JWT de
+prueba están en `scripts/test-db-url.mts`, no en el `.env`. No son secretos
+—son una base local con datos inventados— y así los tests no dependen de la
+configuración personal de nadie, que es lo que los hace funcionar también en
+integración continua.
+
+## Si algo falla antes de empezar
+
+Hay un chequeo previo (`tests/global-setup.ts`) que corta con un mensaje claro
+en vez de dejar 306 tests fallando por conexión:
+
+| Mensaje                          | Qué hacer              |
+| -------------------------------- | ---------------------- |
+| "No se pudo conectar"            | `pnpm test:db`         |
+| "está levantada pero vacía"      | `pnpm test:db:prepare` |
+| "apuntando a la base COMPARTIDA" | No pisar `TEST_DB_URL` |
+
+Ese último está a propósito: si los tests no encuentran su base, la salida
+fácil es apuntar `DB_URL` a Supabase y volver al problema de antes. El chequeo
+no lo permite.
 
 ---
 
@@ -509,14 +580,20 @@ La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
 
 # Scripts disponibles
 
-| Comando        | Descripción                           |
-| -------------- | ------------------------------------- |
-| `pnpm dev`     | Inicia el backend en modo desarrollo  |
-| `pnpm build`   | Compila a `dist/`                     |
-| `pnpm start`   | Ejecuta la versión compilada          |
-| `pnpm test`    | Vitest — pega contra la base real     |
-| `pnpm migrate` | Aplica migraciones pendientes         |
-| `pnpm seed`    | Inserta datos de prueba (idempotente) |
+| Comando                | Descripción                                         |
+| ---------------------- | --------------------------------------------------- |
+| `pnpm dev`             | Inicia el backend en modo desarrollo                |
+| `pnpm build`           | Chequea tipos y compila a `dist/`                   |
+| `pnpm type-check`      | Solo el chequeo de tipos, de todo el repositorio    |
+| `pnpm start`           | Ejecuta la versión compilada                        |
+| `pnpm test`            | Vitest en modo watch, contra la base de pruebas     |
+| `pnpm test:run`        | Los 306 tests, una sola corrida                     |
+| `pnpm test:db`         | Levanta la base de pruebas y la deja lista          |
+| `pnpm test:db:up`      | Solo levanta el contenedor                          |
+| `pnpm test:db:prepare` | Solo aplica migraciones y seed a la base de pruebas |
+| `pnpm test:db:down`    | Apaga la base de pruebas                            |
+| `pnpm migrate`         | Aplica migraciones pendientes (base compartida)     |
+| `pnpm seed`            | Inserta datos de prueba (idempotente)               |
 
 ---
 
