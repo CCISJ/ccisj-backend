@@ -72,24 +72,24 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
     Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
   );
 
-  const overdueFees = fees.filter((fee) => {
-    if (fee.estado === 'ANULADA') {
-      return false;
-    }
+  const pendingFees = fees
+    .filter((fee) => fee.estado !== 'ANULADA')
+    .map((fee) => {
+      const totalPaid = fee.pagos.reduce(
+        (total, detail) => total + Number(detail.importeAplicado),
+        0,
+      );
 
-    if (fee.fechaVencimiento >= todayDate) {
-      return false;
-    }
+      return {
+        fechaVencimiento: fee.fechaVencimiento,
+        balance: Number(fee.importeTotal) - totalPaid,
+      };
+    })
+    .filter((fee) => fee.balance > 0);
 
-    const totalPaid = fee.pagos.reduce(
-      (total, detail) => total + Number(detail.importeAplicado),
-      0,
-    );
-
-    const balance = Number(fee.importeTotal) - totalPaid;
-
-    return balance > 0;
-  });
+  const overdueFees = pendingFees.filter(
+    (fee) => fee.fechaVencimiento < todayDate,
+  );
 
   let estado: 'AL_DIA' | 'PENDIENTE' | 'DEUDOR';
 
@@ -101,17 +101,17 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
     estado = 'DEUDOR';
   }
 
-  const deudaVencida = overdueFees.reduce((total, fee) => {
-    const totalPaid = fee.pagos.reduce(
-      (paid, detail) => paid + Number(detail.importeAplicado),
-      0,
-    );
+  const deudaTotal = pendingFees.reduce((total, fee) => total + fee.balance, 0);
 
-    return total + (Number(fee.importeTotal) - totalPaid);
-  }, 0);
+  const deudaVencida = overdueFees.reduce(
+    (total, fee) => total + fee.balance,
+    0,
+  );
 
   return {
     estado,
+    cuotasPendientes: pendingFees.length,
+    deudaTotal,
     cuotasVencidas: overdueFees.length,
     deudaVencida,
   };

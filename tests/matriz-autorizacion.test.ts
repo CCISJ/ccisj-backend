@@ -116,6 +116,7 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /cuotas/pagos/recientes': SOLO_ADMIN,
   'POST /cuotas/socio/:socioId': SOLO_ADMIN,
   'POST /cuotas/socio/:socioId/ajustes': SOLO_ADMIN,
+  'POST /cuotas/generar': SOLO_ADMIN,
   'POST /cuotas/socio/:socioId/pagos': SOLO_ADMIN,
   'PATCH /cuotas/:pagoId/anular': SOLO_ADMIN,
   'DELETE /cuotas/ajustes/:adjustmentId': SOLO_ADMIN,

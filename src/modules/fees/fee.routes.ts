@@ -11,6 +11,7 @@ import {
   createAdjustment,
   createConfiguration,
   createMonthlyFee,
+  createMonthlyFees,
   createPayment,
   deleteAdjustment,
   getAdjustmentsByMember,
@@ -42,6 +43,8 @@ router.patch(
 );
 
 router.get('/pagos/recientes', requireAuth, requireAdmin, getRecentPayments);
+
+router.post('/generar', requireAuth, requireAdmin, createMonthlyFees);
 
 router.get(
   '/socio/:socioId',
