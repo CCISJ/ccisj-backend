@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "import",
+    "promise",
+    "node",
+    "vitest"
+  ],
+
+  "categories": {
+    "correctness": "error"
+  },
+
+  "rules": {
+    "typescript/no-floating-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-misused-promises": "warn",
+
+    "eslint/no-eval": "error",
+    "eslint/no-implied-eval": "error",
+    "eslint/no-new-func": "error",
+    "eslint/no-script-url": "error",
+
+    "vitest/no-standalone-expect": "off"
+  },
+
+  "ignorePatterns": ["dist/**", "src/generated/**", "coverage/**"]
+}
