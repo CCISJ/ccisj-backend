@@ -8,6 +8,7 @@ import {
   cancelMemberFeePayment,
   editFeeConfiguration,
   generateMonthlyFee,
+  generateMonthlyFees,
   getCurrentFeeConfiguration,
   getFeeConfigurationHistory,
   getFeesDashboardSummary,
@@ -116,6 +117,21 @@ export async function createMonthlyFee(req: Request, res: Response) {
   } catch (error) {
     const message =
       error instanceof Error ? error.message : 'Error al generar la cuota';
+
+    return res.status(400).json({ message });
+  }
+}
+
+export async function createMonthlyFees(req: Request, res: Response) {
+  try {
+    const { year, month } = req.body;
+
+    const result = await generateMonthlyFees(Number(year), Number(month));
+
+    return res.status(201).json(result);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Error al generar las cuotas';
 
     return res.status(400).json({ message });
   }
