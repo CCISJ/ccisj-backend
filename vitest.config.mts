@@ -45,5 +45,26 @@ export default defineConfig({
     // adelante la ganancia es mínima y la concurrencia solo agrega riesgo de
     // tests que se pisan, así que 4.
     maxWorkers: 4,
+
+    // Cobertura. El reporte `lcov` existe para que lo lea SonarCloud: sin él
+    // el análisis estático ve el código pero no sabe qué parte está probada, y
+    // "0 % de cobertura" es lo primero que marca como problema. `text` es para
+    // leerla acá mismo.
+    //
+    // Lo excluido no es código nuestro o no se ejecuta en producción: el
+    // cliente que genera Prisma, el servidor (`server.ts`, que solo levanta el
+    // puerto), los propios tests y las herramientas.
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: './coverage',
+      include: ['src/**/*.ts'],
+      exclude: [
+        'src/generated/**',
+        'src/server.ts',
+        'src/types/**',
+        'src/**/*.routes.ts',
+      ],
+    },
   },
 });

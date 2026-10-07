@@ -216,7 +216,7 @@ describe('Applications', () => {
       ),
     );
 
-    const statuses = responses.map((r) => r.status).sort();
+    const statuses = responses.map((r) => r.status);
 
     expect(statuses.filter((s) => s === 201)).toHaveLength(1);
     expect(statuses.every((s) => s === 201 || s === 400)).toBe(true);
