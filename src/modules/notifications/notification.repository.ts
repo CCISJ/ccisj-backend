@@ -1,6 +1,5 @@
 import { prisma } from '@/config/prisma';
 import type { TipoNotificacion } from '@/types/notification.type';
-import type { TipoUsuario } from '@/types/user.type';
 
 type CreateNotificationData = {
   titulo: string;
