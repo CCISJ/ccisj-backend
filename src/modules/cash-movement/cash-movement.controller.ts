@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { singleQueryParam } from '@/utils/params';
 
 import {
   addManualCashMovement,
@@ -11,14 +12,26 @@ import {
 
 export async function getMovements(req: AuthRequest, res: Response) {
   try {
-    const { desde, hasta, tipo, categoriaId, buscar } = req.query;
+    const desde = singleQueryParam(req.query.desde, 'desde');
+    const hasta = singleQueryParam(req.query.hasta, 'hasta');
+    const tipo = singleQueryParam(req.query.tipo, 'tipo');
+    const categoriaId = singleQueryParam(req.query.categoriaId, 'categoriaId');
+    const buscar = singleQueryParam(req.query.buscar, 'buscar');
+
+    // El tipo se estrecha acá en lugar de castearlo: el `as 'INGRESO' |
+    // 'EGRESO'` que había antes le afirmaba al compilador algo que nadie
+    // había verificado. El service vuelve a validarlo igual, como segunda
+    // barrera, y el mensaje es el mismo para que la respuesta no cambie.
+    if (tipo !== undefined && tipo !== 'INGRESO' && tipo !== 'EGRESO') {
+      throw new Error('El tipo de movimiento no es válido');
+    }
 
     const movements = await getCashMovements({
-      desde: desde ? new Date(String(desde)) : undefined,
-      hasta: hasta ? new Date(String(hasta)) : undefined,
-      tipo: tipo ? (String(tipo) as 'INGRESO' | 'EGRESO') : undefined,
+      desde: desde ? new Date(desde) : undefined,
+      hasta: hasta ? new Date(hasta) : undefined,
+      tipo,
       categoriaId: categoriaId ? Number(categoriaId) : undefined,
-      buscar: buscar ? String(buscar) : undefined,
+      buscar,
     });
 
     return res.json(movements);
