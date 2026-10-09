@@ -1,12 +1,11 @@
-import request from 'supertest';
 import argon2 from 'argon2';
 import jwt from 'jsonwebtoken';
-
+import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
-import { createUser, deleteUsers, TEST_PASSWORD, uniqueEmail } from './session';
+import { TEST_PASSWORD, createUser, deleteUsers, uniqueEmail } from './session';
 
 describe('Auth', () => {
   let userId: number;

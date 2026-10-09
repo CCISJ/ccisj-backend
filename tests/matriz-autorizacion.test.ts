@@ -214,10 +214,7 @@ describe('matriz de autorización', () => {
 
       const ruta = endpoint.ruta.replace(/:[A-Za-z]+/g, ID_FANTASMA);
       const metodo = endpoint.metodo.toLowerCase() as
-        | 'get'
-        | 'post'
-        | 'patch'
-        | 'delete';
+        'get' | 'post' | 'patch' | 'delete';
 
       for (const actor of TODOS) {
         let peticion = request(app)[metodo](ruta);
