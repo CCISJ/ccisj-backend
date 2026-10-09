@@ -507,73 +507,52 @@ describe('Movimientos de caja', () => {
     // `req.query.tipo` no siempre es texto. Antes el controlador hacía
     // `String(tipo)`, que sobre un arreglo devuelve "A,B" sin fallar: el
     // filtro seguía camino con un valor que nadie había escrito.
-    it('acepta un filtro normal', async () => {
+    async function pedirMovimientos(query: string) {
       const admin = await createAdmin();
       createdUserIds.push(admin.userId);
 
-      const response = await request(app)
-        .get('/caja/movimientos?tipo=INGRESO')
+      return request(app)
+        .get(`/caja/movimientos${query}`)
         .set('Cookie', admin.cookie);
+    }
+
+    it('acepta un filtro normal', async () => {
+      const response = await pedirMovimientos('?tipo=INGRESO');
 
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
     });
 
     it('rechaza un parámetro repetido en vez de pegar los valores', async () => {
-      const admin = await createAdmin();
-      createdUserIds.push(admin.userId);
-
-      const response = await request(app)
-        .get('/caja/movimientos?tipo=INGRESO&tipo=EGRESO')
-        .set('Cookie', admin.cookie);
+      const response = await pedirMovimientos('?tipo=INGRESO&tipo=EGRESO');
 
       expect(response.status).toBe(400);
       expect(response.body.message).toMatch(/vino repetido/);
     });
 
     it('rechaza una búsqueda repetida, que antes buscaba el texto "a,b"', async () => {
-      const admin = await createAdmin();
-      createdUserIds.push(admin.userId);
-
-      const response = await request(app)
-        .get('/caja/movimientos?buscar=a&buscar=b')
-        .set('Cookie', admin.cookie);
+      const response = await pedirMovimientos('?buscar=a&buscar=b');
 
       expect(response.status).toBe(400);
       expect(response.body.message).toMatch(/vino repetido/);
     });
 
     it('rechaza un tipo que no existe', async () => {
-      const admin = await createAdmin();
-      createdUserIds.push(admin.userId);
-
-      const response = await request(app)
-        .get('/caja/movimientos?tipo=CUALQUIERA')
-        .set('Cookie', admin.cookie);
+      const response = await pedirMovimientos('?tipo=CUALQUIERA');
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('El tipo de movimiento no es válido');
     });
 
     it('rechaza una fecha que no es una fecha', async () => {
-      const admin = await createAdmin();
-      createdUserIds.push(admin.userId);
-
-      const response = await request(app)
-        .get('/caja/movimientos?desde=no-es-una-fecha')
-        .set('Cookie', admin.cookie);
+      const response = await pedirMovimientos('?desde=no-es-una-fecha');
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('La fecha desde no es válida');
     });
 
     it('ignora un parámetro vacío en lugar de tratarlo como un filtro', async () => {
-      const admin = await createAdmin();
-      createdUserIds.push(admin.userId);
-
-      const response = await request(app)
-        .get('/caja/movimientos?buscar=&tipo=')
-        .set('Cookie', admin.cookie);
+      const response = await pedirMovimientos('?buscar=&tipo=');
 
       expect(response.status).toBe(200);
     });
@@ -583,12 +562,7 @@ describe('Movimientos de caja', () => {
       // `extended` llegaría un objeto, pero con `simple` la clave entera es
       // "desde[x]", así que `desde` simplemente no viene y el filtro no se
       // aplica. El parser está fijado en app.ts justamente para que siga así.
-      const admin = await createAdmin();
-      createdUserIds.push(admin.userId);
-
-      const response = await request(app)
-        .get('/caja/movimientos?desde[x]=1')
-        .set('Cookie', admin.cookie);
+      const response = await pedirMovimientos('?desde[x]=1');
 
       expect(response.status).toBe(200);
     });
