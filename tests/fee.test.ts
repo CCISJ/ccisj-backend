@@ -1195,6 +1195,36 @@ describe('Permisos de consulta de cuotas', () => {
       await deleteUsers([member.userId, otherMember.userId]);
     }
   });
+
+  it('responde 404 para un socio que no existe en las cuatro consultas', async () => {
+    // Antes respondían 200: listas vacías y un estado "al día" con deuda 0,
+    // lo mismo que para un socio real sin cuotas.
+    const admin = await createAdmin();
+    // El mayor entero de la base: es un id válido que ningún socio tiene.
+    const missingId = 2147483647;
+
+    try {
+      const paths = ['', '/ajustes', '/pagos', '/estado'];
+      const results: Record<string, unknown> = {};
+
+      for (const path of paths) {
+        const response = await request(app)
+          .get(`/cuotas/socio/${missingId}${path}`)
+          .set('Cookie', admin.cookie);
+
+        results[path || '/'] = [response.status, response.body.message];
+      }
+
+      const expected = paths.map((path) => [
+        path || '/',
+        [404, 'Socio no encontrado'],
+      ]);
+
+      expect(results).toEqual(Object.fromEntries(expected));
+    } finally {
+      await deleteUsers([admin.userId]);
+    }
+  });
 });
 
 it('devuelve el historial de pagos del socio con el detalle de cuotas', async () => {
