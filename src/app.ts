@@ -47,6 +47,16 @@ app.use(helmet());
 // escribe para que sea una decisión visible y no un default heredado, y para
 // que cambiarlo requiera tocar la configuración y no el código.
 app.use(express.json({ limit: environment.bodyLimit }));
+
+// Express 5 deja `req.body` en `undefined` cuando el request no trae body
+// (Express 4 lo dejaba en `{}`). Los controllers que desestructuran el body
+// rompían con un TypeError en vez de llegar a su propia validación, y
+// respondían ese mensaje interno. Se restituye el `{}` acá, una vez, en vez de
+// defenderse en cada controller.
+app.use((req, _res, next) => {
+  req.body ??= {};
+  next();
+});
 app.use(cookieParser());
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));

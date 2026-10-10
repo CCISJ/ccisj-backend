@@ -10,6 +10,7 @@ import { describe, expect, it } from 'vitest';
 
 import app from '../src/app';
 import { loadEnvironment } from '../src/config/environment';
+import { createAdmin, deleteUsers } from './session';
 
 /** Lo mínimo que la aplicación necesita para arrancar. */
 const ENTORNO_VALIDO = {
@@ -176,6 +177,34 @@ describe('Controles de configuración aplicados a la aplicación', () => {
       expect(JSON.stringify(respuesta.body)).not.toMatch(
         /entity.too.large|at /i,
       );
+    });
+  });
+
+  describe('request sin body', () => {
+    // Express 5 deja `req.body` en `undefined` si no llega body, y los
+    // controllers que lo desestructuran rompían con un TypeError. Se prueba
+    // con dos rutas reales de módulos distintos: lo que importa es que el
+    // request llegue a la validación de cada una y responda su propio 400.
+    it('llega a la validación de la ruta en vez de romper', async () => {
+      const admin = await createAdmin();
+
+      try {
+        const cuotas = await request(app)
+          .post('/cuotas/configuracion')
+          .set('Cookie', admin.cookie);
+        const caja = await request(app)
+          .post('/caja/movimientos')
+          .set('Cookie', admin.cookie);
+
+        expect(cuotas.status).toBe(400);
+        expect(cuotas.body.message).toBe(
+          'Importe base y fecha de vigencia son obligatorios',
+        );
+        expect(caja.status).toBe(400);
+        expect(caja.body.message).toBe('El tipo de movimiento no es válido');
+      } finally {
+        await deleteUsers([admin.userId]);
+      }
     });
   });
 });
