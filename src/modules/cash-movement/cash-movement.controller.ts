@@ -2,6 +2,7 @@ import type { Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { singleQueryParam } from '@/utils/params';
+import { sendError } from '@/utils/send-error';
 
 import {
   addManualCashMovement,
@@ -36,12 +37,10 @@ export async function getMovements(req: AuthRequest, res: Response) {
 
     return res.json(movements);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener los movimientos de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al obtener los movimientos de caja',
+    });
   }
 }
 
@@ -68,12 +67,10 @@ export async function createMovement(req: AuthRequest, res: Response) {
 
     return res.status(201).json(movement);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al registrar el movimiento de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al registrar el movimiento de caja',
+    });
   }
 }
 
@@ -83,12 +80,10 @@ export async function getCashSummary(_req: AuthRequest, res: Response) {
 
     return res.json(summary);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener el resumen de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al obtener el resumen de caja',
+    });
   }
 }
 
@@ -107,11 +102,9 @@ export async function cancelMovement(req: AuthRequest, res: Response) {
 
     return res.json(movement);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al anular el movimiento de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al anular el movimiento de caja',
+    });
   }
 }
