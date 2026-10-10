@@ -9,7 +9,7 @@ import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 
 import app from '../src/app';
-import { loadEnvironment } from '../src/config/environment';
+import { environment, loadEnvironment } from '../src/config/environment';
 import { createAdmin, deleteUsers } from './session';
 
 /** Lo mínimo que la aplicación necesita para arrancar. */
@@ -177,6 +177,42 @@ describe('Controles de configuración aplicados a la aplicación', () => {
       expect(JSON.stringify(respuesta.body)).not.toMatch(
         /entity.too.large|at /i,
       );
+    });
+  });
+
+  describe('CORS', () => {
+    // CORS no protege al servidor: le dice al navegador qué páginas pueden
+    // leer las respuestas. Como la sesión viaja en una cookie, una página de
+    // otro sitio abierta por un usuario con sesión podría leer sus datos si el
+    // servidor la autorizara. Por eso la lista es cerrada.
+    const permitido = environment.allowedOrigins[0];
+    const ajeno = 'https://sitio-ajeno.example';
+
+    it('autoriza al frontend, con credenciales', async () => {
+      const respuesta = await request(app).get('/').set('Origin', permitido);
+
+      expect(respuesta.headers['access-control-allow-origin']).toBe(permitido);
+      expect(respuesta.headers['access-control-allow-credentials']).toBe(
+        'true',
+      );
+    });
+
+    it('no autoriza a un origen que no está en la lista', async () => {
+      const respuesta = await request(app).get('/').set('Origin', ajeno);
+
+      expect(respuesta.headers['access-control-allow-origin']).toBeUndefined();
+    });
+
+    it('tampoco en la consulta previa de un POST con credenciales', async () => {
+      // Es la consulta que hace el navegador antes de mandar, por ejemplo, un
+      // login desde otra página: sin la cabecera, el navegador no lo manda.
+      const respuesta = await request(app)
+        .options('/auth/login')
+        .set('Origin', ajeno)
+        .set('Access-Control-Request-Method', 'POST')
+        .set('Access-Control-Request-Headers', 'content-type');
+
+      expect(respuesta.headers['access-control-allow-origin']).toBeUndefined();
     });
   });
 

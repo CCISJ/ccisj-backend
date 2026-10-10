@@ -1,10 +1,12 @@
 import argon2 from 'argon2';
+import type { CookieOptions, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
+import { setSessionCookie } from '../src/modules/auth/session-cookie';
 import { TEST_PASSWORD, createUser, deleteUsers, uniqueEmail } from './session';
 
 describe('Auth', () => {
@@ -304,6 +306,144 @@ describe('Auth', () => {
       .set('Cookie', [`token=${unsigned}`]);
 
     expect(response.status).toBe(401);
+  });
+
+  /*
+   * Controles que ya estaban implementados pero que ningún test ejecutaba.
+   * Son la evidencia de la tabla de controles de seguridad: cada uno afirma
+   * algo que la documentación dice del sistema.
+   */
+  describe('controles de la sesión', () => {
+    const secret = process.env.JWT_SECRET!;
+
+    async function loginCookie() {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ email, password });
+
+      const cookies = response.headers['set-cookie'] as unknown as string[];
+
+      return cookies.find((cookie) => cookie.startsWith('token='))!;
+    }
+
+    it('la cookie de sesión es HttpOnly, SameSite=Lax y dura 8 horas', async () => {
+      // HttpOnly: el JavaScript de la página no la puede leer, así que un XSS
+      // no se la puede llevar. SameSite=Lax: otro sitio no la manda en un
+      // POST, que es la defensa contra CSRF.
+      const cookie = await loginCookie();
+
+      expect(cookie).toMatch(/;\s*HttpOnly/i);
+      expect(cookie).toMatch(/;\s*SameSite=Lax/i);
+      expect(cookie).toMatch(/;\s*Path=\//);
+      expect(cookie).toMatch(/;\s*Max-Age=28800/);
+    });
+
+    it('la cookie solo viaja por HTTPS en producción', () => {
+      // Fuera de producción no puede ser `Secure`: el desarrollo corre en
+      // http://localhost y el navegador no la guardaría. Se prueba la función
+      // directamente porque la app de los tests corre con NODE_ENV=test.
+      const options = (env: string) => {
+        vi.stubEnv('NODE_ENV', env);
+
+        const cookie =
+          vi.fn<
+            (name: string, value: string, options: CookieOptions) => void
+          >();
+        setSessionCookie({ cookie } as unknown as Response, 'token');
+
+        vi.unstubAllEnvs();
+
+        return cookie.mock.calls[0][2];
+      };
+
+      expect(options('production')).toMatchObject({
+        secure: true,
+        httpOnly: true,
+      });
+      expect(options('development')).toMatchObject({ secure: false });
+    });
+
+    it('al cerrar la sesión la cookie se borra con las mismas opciones', async () => {
+      // Si las opciones difieren, el navegador la trata como otra cookie y la
+      // sesión no se cierra.
+      const agent = request.agent(app);
+      await agent.post('/auth/login').send({ email, password }).expect(200);
+
+      const logout = await agent.post('/auth/logout');
+      const cleared = (logout.headers['set-cookie'] as unknown as string[])[0];
+
+      expect(cleared).toMatch(/^token=;/);
+      expect(cleared).toMatch(/;\s*HttpOnly/i);
+      expect(cleared).toMatch(/;\s*SameSite=Lax/i);
+      expect(cleared).toMatch(/Expires=Thu, 01 Jan 1970/);
+    });
+
+    it('el token solo lleva el id del usuario: está firmado, no cifrado', async () => {
+      // Cualquiera que tenga el token puede leer su contenido en base64. Por
+      // eso no lleva email, nombre ni nada sensible. Tampoco el rol: se lee de
+      // la base en cada request, así que un token no puede reclamar un rol y
+      // un cambio de rol rige en el acto, sin esperar a que el token venza.
+      const token = (await loginCookie()).split(';')[0].slice('token='.length);
+      const payload = jwt.decode(token) as Record<string, unknown>;
+
+      expect(Object.keys(payload).sort()).toEqual(['exp', 'iat', 'id']);
+      expect(payload.id).toBe(userId);
+      expect((payload.exp as number) - (payload.iat as number)).toBe(8 * 3600);
+    });
+
+    it('rechaza un token vencido aunque la firma sea correcta', async () => {
+      const expired = jwt.sign(
+        {
+          id: userId,
+          tipo: 'POSTULANTE',
+          exp: Math.floor(Date.now() / 1000) - 60,
+        },
+        secret,
+        { algorithm: 'HS256' },
+      );
+
+      const response = await request(app)
+        .get('/auth/me')
+        .set('Cookie', [`token=${expired}`]);
+
+      expect(response.status).toBe(401);
+    });
+
+    it('rechaza un token firmado con el secreto correcto pero con otro algoritmo', async () => {
+      // Es lo que prueba `algorithms: ['HS256']` en el middleware: el token es
+      // auténtico, pero el servidor solo acepta el algoritmo que eligió.
+      const otherAlgorithm = jwt.sign(
+        { id: userId, tipo: 'POSTULANTE' },
+        secret,
+        {
+          algorithm: 'HS512',
+        },
+      );
+
+      const response = await request(app)
+        .get('/auth/me')
+        .set('Cookie', [`token=${otherAlgorithm}`]);
+
+      expect(response.status).toBe(401);
+    });
+
+    it.each([
+      "' OR '1'='1",
+      "admin@ccisj.uy' --",
+      "x'; DROP TABLE usuario; --",
+    ])(
+      'trata como texto un intento de inyección SQL en el login: %s',
+      async (attack) => {
+        // Prisma manda los valores como parámetros, separados de la consulta:
+        // el texto se compara como email y no se ejecuta.
+        const response = await request(app)
+          .post('/auth/login')
+          .send({ email: attack, password: attack });
+
+        expect(response.status).toBe(401);
+        expect(response.body.message).toBe('Credenciales inválidas');
+      },
+    );
   });
 
   describe('cambiar contraseña', () => {
