@@ -1479,3 +1479,27 @@ it('permite a un administrador obtener el resumen del dashboard', async () => {
     await deleteUsers([admin.userId]);
   }
 });
+
+it('no muestra el error de la base cuando algo falla de forma inesperada', async () => {
+  // La fecha inválida llega a Prisma antes de que el service la valide. Antes
+  // la respuesta traía el mensaje de Prisma entero: la ruta del archivo en el
+  // servidor, las líneas del código y la consulta.
+  const admin = await createAdmin();
+
+  try {
+    const response = await request(app)
+      .post('/cuotas/configuracion')
+      .set('Cookie', admin.cookie)
+      .send({
+        importeBase: 100,
+        vigenciaDesde: 'no-es-una-fecha',
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe(
+      'Error al crear la configuración de cuota',
+    );
+  } finally {
+    await deleteUsers([admin.userId]);
+  }
+});

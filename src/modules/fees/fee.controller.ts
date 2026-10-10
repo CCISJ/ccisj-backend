@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
 
 import { AuthRequest } from '@/middlewares/auth.middleware';
+import { sendError } from '@/utils/send-error';
 
 import {
   addFeeAdjustment,
@@ -27,12 +28,10 @@ export async function getCurrentConfiguration(_req: Request, res: Response) {
 
     return res.json(configuration);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener la configuración de cuota';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener la configuración de cuota',
+    });
   }
 }
 
@@ -42,12 +41,10 @@ export async function getConfigurationHistory(_req: Request, res: Response) {
 
     return res.json(configurations);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener el historial de cuotas';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener el historial de cuotas',
+    });
   }
 }
 
@@ -68,12 +65,10 @@ export async function createConfiguration(req: Request, res: Response) {
 
     return res.status(201).json(configuration);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al crear la configuración de cuota';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al crear la configuración de cuota',
+    });
   }
 }
 
@@ -91,12 +86,10 @@ export async function getFeesByMember(req: Request, res: Response) {
 
     return res.json(fees);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener las cuotas del socio';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener las cuotas del socio',
+    });
   }
 }
 
@@ -115,10 +108,10 @@ export async function createMonthlyFee(req: Request, res: Response) {
 
     return res.status(201).json(fee);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al generar la cuota';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al generar la cuota',
+    });
   }
 }
 
@@ -130,10 +123,10 @@ export async function createMonthlyFees(req: Request, res: Response) {
 
     return res.status(201).json(result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al generar las cuotas';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al generar las cuotas',
+    });
   }
 }
 
@@ -151,10 +144,10 @@ export async function getAdjustmentsByMember(req: Request, res: Response) {
 
     return res.json(adjustments);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al obtener los ajustes';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener los ajustes',
+    });
   }
 }
 
@@ -186,10 +179,10 @@ export async function createAdjustment(req: Request, res: Response) {
 
     return res.status(201).json(adjustment);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al crear el ajuste';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al crear el ajuste',
+    });
   }
 }
 
@@ -230,10 +223,10 @@ export async function createPayment(req: AuthRequest, res: Response) {
 
     return res.status(201).json(payment);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al registrar el pago';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al registrar el pago',
+    });
   }
 }
 
@@ -252,10 +245,10 @@ export async function cancelPayment(req: AuthRequest, res: Response) {
 
     return res.json(payment);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al anular el pago';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al anular el pago',
+    });
   }
 }
 
@@ -273,12 +266,10 @@ export async function getFeeStatusByMember(req: Request, res: Response) {
 
     return res.json(status);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener el estado de cuotas del socio';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener el estado de cuotas del socio',
+    });
   }
 }
 
@@ -296,12 +287,10 @@ export async function getPaymentsByMember(req: Request, res: Response) {
 
     return res.json(payments);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener los pagos del socio';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener los pagos del socio',
+    });
   }
 }
 
@@ -311,12 +300,10 @@ export async function getFeesDashboard(_req: Request, res: Response) {
 
     return res.json(summary);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener el resumen de cuotas';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener el resumen de cuotas',
+    });
   }
 }
 
@@ -326,12 +313,10 @@ export async function getRecentPayments(req: Request, res: Response) {
 
     res.json(payments);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener los pagos recientes';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener los pagos recientes',
+    });
   }
 }
 
@@ -352,12 +337,10 @@ export async function updateConfiguration(req: Request, res: Response) {
 
     res.json(configuration);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al actualizar la configuración de cuota';
-
-    return res.status(500).json({ message });
+    return sendError(res, error, {
+      status: 500,
+      message: 'Error al actualizar la configuración de cuota',
+    });
   }
 }
 
@@ -375,9 +358,9 @@ export async function deleteAdjustment(req: Request, res: Response) {
 
     return res.json(result);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al eliminar el ajuste';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al eliminar el ajuste',
+    });
   }
 }

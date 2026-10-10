@@ -502,6 +502,31 @@ describe('Movimientos de caja', () => {
     }
   });
 
+  it('no muestra el error de la base cuando algo falla de forma inesperada', async () => {
+    // Un id de categoría que no entra en un entero de la base pasa la
+    // validación del service y lo rechaza Prisma. Antes la respuesta traía el
+    // mensaje de Prisma entero: la ruta del archivo en el servidor, las líneas
+    // del código y la consulta.
+    const admin = await createAdmin();
+    createdUserIds.push(admin.userId);
+
+    const response = await request(app)
+      .post('/caja/movimientos')
+      .set('Cookie', admin.cookie)
+      .send({
+        tipo: 'INGRESO',
+        categoriaId: 99999999999,
+        concepto: 'Movimiento test',
+        importe: 100,
+        fecha: '2026-10-01',
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe(
+      'Error al registrar el movimiento de caja',
+    );
+  });
+
   describe('Filtros que llegan por la query string', () => {
     // Express entrega un arreglo cuando un parámetro viene repetido, así que
     // `req.query.tipo` no siempre es texto. Antes el controlador hacía
