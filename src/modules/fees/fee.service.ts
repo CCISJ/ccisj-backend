@@ -1,6 +1,10 @@
 import { AddFeeAdjustmentData, RegisterFeePaymentData } from '@/types/fee.type';
+import { HttpError } from '@/utils/http-error';
 
-import { findActive } from '../members/member.repository';
+import {
+  findActive,
+  findById as findMemberById,
+} from '../members/member.repository';
 import {
   cancelFeePayment,
   createFee,
@@ -41,10 +45,23 @@ export async function getFeeConfigurationHistory() {
   return findFeeConfigurationHistory();
 }
 
+// Las consultas por socio devolvían 200 con una lista vacía (o "al día") para
+// un socio que no existe, igual que para uno sin cuotas: quien consulta no
+// puede distinguir los dos casos. El resto del sistema responde 404.
+async function assertMemberExists(socioId: number) {
+  const member = await findMemberById(socioId);
+
+  if (!member) {
+    throw new HttpError(404, 'Socio no encontrado');
+  }
+}
+
 export async function getMemberFees(socioId: number) {
   if (!Number.isInteger(socioId) || socioId <= 0) {
     throw new Error('El socio no es válido');
   }
+
+  await assertMemberExists(socioId);
 
   return findMemberFees(socioId);
 }
@@ -53,6 +70,8 @@ export async function getMemberFeeAdjustments(socioId: number) {
   if (!Number.isInteger(socioId) || socioId <= 0) {
     throw new Error('El socio no es válido');
   }
+
+  await assertMemberExists(socioId);
 
   return findMemberFeeAdjustments(socioId);
 }
@@ -65,6 +84,8 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
   if (Number.isNaN(today.getTime())) {
     throw new Error('La fecha no es válida');
   }
+
+  await assertMemberExists(socioId);
 
   const fees = await findMemberFeesWithPayments(socioId);
 
@@ -121,6 +142,8 @@ export async function getMemberFeePayments(socioId: number) {
   if (!Number.isInteger(socioId) || socioId <= 0) {
     throw new Error('El socio no es válido');
   }
+
+  await assertMemberExists(socioId);
 
   return findMemberFeePayments(socioId);
 }
