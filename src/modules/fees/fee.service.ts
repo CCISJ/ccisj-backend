@@ -622,6 +622,14 @@ export async function editFeeConfiguration(id: number, importeBase: number) {
     throw new Error('La configuración de cuota no existe');
   }
 
+  // Se controla antes de guardar: si se controlara después, el importe de una
+  // configuración ya vigente quedaría cambiado aunque la respuesta sea un error.
+  if (configuration.vigenciaDesde <= new Date()) {
+    throw new Error(
+      'Solo se pueden modificar configuraciones de cuota futuras',
+    );
+  }
+
   return updateFeeConfiguration(id, importeBase);
 }
 

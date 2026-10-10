@@ -327,18 +327,10 @@ export async function updateConfiguration(req: Request, res: Response) {
 
     const configuration = await editFeeConfiguration(id, importeBase);
 
-    const today = new Date();
-
-    if (configuration.vigenciaDesde <= today) {
-      throw new Error(
-        'Solo se pueden modificar configuraciones de cuota futuras',
-      );
-    }
-
     res.json(configuration);
   } catch (error) {
     return sendError(res, error, {
-      status: 500,
+      status: 400,
       message: 'Error al actualizar la configuración de cuota',
     });
   }
