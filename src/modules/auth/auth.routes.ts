@@ -2,6 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 
 import { type AuthRequest, requireAuth } from '@/middlewares/auth.middleware';
+import { rateLimitApagado } from '@/middlewares/rate-limit';
 
 import * as authController from './auth.controller';
 
@@ -9,14 +10,15 @@ const router = Router();
 
 // Frena la prueba de contraseñas por fuerza bruta: 10 intentos fallidos cada
 // 15 minutos por IP. Los logins correctos no cuentan. En los tests se
-// desactiva porque todos los requests salen de la misma IP.
+// desactiva porque todos los requests salen de la misma IP, salvo en
+// `tests/rate-limit.test.ts`, que prueba que corta.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 10,
   skipSuccessfulRequests: true,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: rateLimitApagado,
   message: {
     message:
       'Demasiados intentos de inicio de sesión. Intente nuevamente en unos minutos.',
@@ -32,7 +34,7 @@ const changePasswordLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   keyGenerator: (req) => `usuario-${(req as AuthRequest).user!.id}`,
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: rateLimitApagado,
   message: {
     message:
       'Demasiados intentos de cambio de contraseña. Intente nuevamente en unos minutos.',
@@ -48,7 +50,7 @@ const registerLimiter = rateLimit({
   skipFailedRequests: true,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  skip: () => process.env.NODE_ENV === 'test',
+  skip: rateLimitApagado,
   message: {
     message:
       'Demasiados registros desde esta conexión. Intente nuevamente más tarde.',

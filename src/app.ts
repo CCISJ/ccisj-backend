@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { environment } from './config/environment';
+import { globalLimiter } from './middlewares/rate-limit';
 import applicantRoutes from './modules/applicants/applicant.routes';
 import applicationRoutes from './modules/applications/application.routes';
 import authRoutes from './modules/auth/auth.routes';
@@ -71,6 +72,11 @@ app.use(
     credentials: true,
   }),
 );
+
+// Techo de pedidos por IP para toda la API. Va después de CORS para que la
+// respuesta 429 lleve sus cabeceras y el frontend pueda leer el mensaje; las
+// consultas previas (OPTIONS) las contesta CORS antes y no cuentan.
+app.use(globalLimiter);
 
 // ROUTES
 app.use('/usuarios', userRoutes);
