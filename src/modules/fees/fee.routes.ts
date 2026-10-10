@@ -29,9 +29,19 @@ const router = Router();
 
 router.get('/resumen', requireAuth, requireAdmin, getFeesDashboard);
 
-router.get('/configuracion', requireAuth, getCurrentConfiguration);
+router.get(
+  '/configuracion',
+  requireAuth,
+  requireAdmin,
+  getCurrentConfiguration,
+);
 
-router.get('/configuracion/historial', requireAuth, getConfigurationHistory);
+router.get(
+  '/configuracion/historial',
+  requireAuth,
+  requireAdmin,
+  getConfigurationHistory,
+);
 
 router.post('/configuracion', requireAuth, requireAdmin, createConfiguration);
 

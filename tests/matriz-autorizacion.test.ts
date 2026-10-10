@@ -111,6 +111,10 @@ const ESPERADO: Record<string, Actor[]> = {
 
   // Cuotas y pagos
   'GET /cuotas/resumen': SOLO_ADMIN,
+  // H-01, corregido: antes las dos lecturas de la configuración las hacía
+  // cualquiera con sesión, incluido un postulante.
+  'GET /cuotas/configuracion': SOLO_ADMIN,
+  'GET /cuotas/configuracion/historial': SOLO_ADMIN,
   'POST /cuotas/configuracion': SOLO_ADMIN,
   'PATCH /cuotas/configuracion/:id': SOLO_ADMIN,
   'GET /cuotas/pagos/recientes': SOLO_ADMIN,
@@ -121,16 +125,10 @@ const ESPERADO: Record<string, Actor[]> = {
   'PATCH /cuotas/:pagoId/anular': SOLO_ADMIN,
   'DELETE /cuotas/ajustes/:adjustmentId': SOLO_ADMIN,
 
-  // HALLAZGO ABIERTO (H-01): el importe de la cuota y su historial completo los
-  // lee cualquiera con sesión, incluido un postulante, que no tiene nada que
-  // ver con las cuotas. Se afirma el comportamiento de HOY, no el deseado, para
-  // que el test avise el día que el dueño del módulo lo corrija.
-  'GET /cuotas/configuracion': AUTENTICADOS,
-  'GET /cuotas/configuracion/historial': AUTENTICADOS,
-
   // HALLAZGO ABIERTO (H-02): `requireMemberAccess` deja pasar a CUALQUIER socio
-  // directivo a los datos de CUALQUIER socio, no solo a los suyos. Mismo
-  // criterio que H-01: se afirma lo que hace hoy.
+  // directivo a los datos de CUALQUIER socio, no solo a los suyos. Se afirma el
+  // comportamiento de HOY, no el deseado, para que el test avise el día que se
+  // corrija.
   'GET /cuotas/socio/:socioId': ['direc', 'admin'],
   'GET /cuotas/socio/:socioId/ajustes': ['direc', 'admin'],
   'GET /cuotas/socio/:socioId/pagos': ['direc', 'admin'],

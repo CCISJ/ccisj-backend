@@ -292,24 +292,26 @@ describe('HALLAZGO ABIERTO (H-02): un directivo entra a las cuotas de cualquier 
 });
 
 /**
- * HALLAZGO ABIERTO H-01, también en cuotas: el importe de la cuota y su
- * historial los lee cualquiera con sesión. Un postulante no tiene ninguna
- * relación con las cuotas de los socios.
+ * H-01, corregido: el importe de la cuota y su historial los leía cualquiera
+ * con sesión. Un postulante no tiene ninguna relación con las cuotas de los
+ * socios. Ahora son solo de la administración, y responden 403 como el resto de
+ * las rutas de administración (no es un recurso de otro dueño, es una
+ * restricción de rol).
  */
-describe('HALLAZGO ABIERTO (H-01): un postulante lee la configuración de cuotas', () => {
-  it('lee el importe vigente (hoy responde 200)', async () => {
+describe('H-01: un postulante ya no lee la configuración de cuotas', () => {
+  it('no lee el importe vigente', async () => {
     const res = await request(app)
       .get('/cuotas/configuracion')
       .set('Cookie', atacante.postulante);
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(403);
   });
 
-  it('lee el historial completo de importes (hoy responde 200)', async () => {
+  it('no lee el historial de importes', async () => {
     const res = await request(app)
       .get('/cuotas/configuracion/historial')
       .set('Cookie', atacante.postulante);
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(403);
   });
 });
