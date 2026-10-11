@@ -1,6 +1,8 @@
 import type { Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { singleQueryParam } from '@/utils/params';
+import { sendError } from '@/utils/send-error';
 
 import {
   addManualCashMovement,
@@ -13,24 +15,34 @@ import {
 
 export async function getMovements(req: AuthRequest, res: Response) {
   try {
-    const { desde, hasta, tipo, categoriaId, buscar } = req.query;
+    const desde = singleQueryParam(req.query.desde, 'desde');
+    const hasta = singleQueryParam(req.query.hasta, 'hasta');
+    const tipo = singleQueryParam(req.query.tipo, 'tipo');
+    const categoriaId = singleQueryParam(req.query.categoriaId, 'categoriaId');
+    const buscar = singleQueryParam(req.query.buscar, 'buscar');
+
+    // El tipo se estrecha acá en lugar de castearlo: el `as 'INGRESO' |
+    // 'EGRESO'` que había antes le afirmaba al compilador algo que nadie
+    // había verificado. El service vuelve a validarlo igual, como segunda
+    // barrera, y el mensaje es el mismo para que la respuesta no cambie.
+    if (tipo !== undefined && tipo !== 'INGRESO' && tipo !== 'EGRESO') {
+      throw new Error('El tipo de movimiento no es válido');
+    }
 
     const movements = await getCashMovements({
-      desde: desde ? new Date(String(desde)) : undefined,
-      hasta: hasta ? new Date(String(hasta)) : undefined,
-      tipo: tipo ? (String(tipo) as 'INGRESO' | 'EGRESO') : undefined,
+      desde: desde ? new Date(desde) : undefined,
+      hasta: hasta ? new Date(hasta) : undefined,
+      tipo,
       categoriaId: categoriaId ? Number(categoriaId) : undefined,
-      buscar: buscar ? String(buscar) : undefined,
+      buscar,
     });
 
     return res.json(movements);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener los movimientos de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al obtener los movimientos de caja',
+    });
   }
 }
 
@@ -57,12 +69,10 @@ export async function createMovement(req: AuthRequest, res: Response) {
 
     return res.status(201).json(movement);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al registrar el movimiento de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al registrar el movimiento de caja',
+    });
   }
 }
 
@@ -72,12 +82,10 @@ export async function getCashSummary(_req: AuthRequest, res: Response) {
 
     return res.json(summary);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener el resumen de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al obtener el resumen de caja',
+    });
   }
 }
 
@@ -96,12 +104,10 @@ export async function cancelMovement(req: AuthRequest, res: Response) {
 
     return res.json(movement);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al anular el movimiento de caja';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al anular el movimiento de caja',
+    });
   }
 }
 

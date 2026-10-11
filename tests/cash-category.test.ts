@@ -191,4 +191,20 @@ describe('Categorías de Caja', () => {
     expect(response.status).toBe(400);
     expect(response.body.message).toBe('El tipo de categoría no es válido');
   });
+
+  it('no muestra el error interno cuando algo falla de forma inesperada', async () => {
+    // Un nombre numérico rompe el `.trim()` del service con un TypeError.
+    // Antes la respuesta traía ese mensaje tal cual
+    // ("data.nombre?.trim is not a function").
+    const response = await request(app)
+      .post('/caja/categorias')
+      .set('Cookie', admin.cookie)
+      .send({
+        nombre: 123,
+        tipo: 'INGRESO',
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe('Error al crear la categoría');
+  });
 });

@@ -1,10 +1,6 @@
 import { Router } from 'express';
 
-import {
-  requireAdmin,
-  requireAuth,
-  requireRole,
-} from '@/middlewares/auth.middleware';
+import { requireAdmin, requireAuth } from '@/middlewares/auth.middleware';
 
 import {
   create,

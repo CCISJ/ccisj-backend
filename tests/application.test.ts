@@ -1,5 +1,4 @@
 import request from 'supertest';
-
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import app from '../src/app';
@@ -371,8 +370,14 @@ describe('Applications', () => {
     let receivedId: number;
     let otherReceivedId: number;
 
+    // Solo los avisos de la empresa, que los crea con su propia cuenta. Contar
+    // todas las notificaciones del postulante se mezclaba con
+    // `notification.test.ts`, que en paralelo manda comunicados "a todos" y
+    // los borra antes de cada test: la cuenta subía o bajaba sola.
     const countNotifications = (usuarioId: number) =>
-      prisma.notificacionUsuario.count({ where: { usuarioId } });
+      prisma.notificacionUsuario.count({
+        where: { usuarioId, notificacion: { creadoPorId: socio.userId } },
+      });
 
     beforeAll(async () => {
       const offer = await request(app)

@@ -1195,6 +1195,36 @@ describe('Permisos de consulta de cuotas', () => {
       await deleteUsers([member.userId, otherMember.userId]);
     }
   });
+
+  it('responde 404 para un socio que no existe en las cuatro consultas', async () => {
+    // Antes respondían 200: listas vacías y un estado "al día" con deuda 0,
+    // lo mismo que para un socio real sin cuotas.
+    const admin = await createAdmin();
+    // El mayor entero de la base: es un id válido que ningún socio tiene.
+    const missingId = 2147483647;
+
+    try {
+      const paths = ['', '/ajustes', '/pagos', '/estado'];
+      const results: Record<string, unknown> = {};
+
+      for (const path of paths) {
+        const response = await request(app)
+          .get(`/cuotas/socio/${missingId}${path}`)
+          .set('Cookie', admin.cookie);
+
+        results[path || '/'] = [response.status, response.body.message];
+      }
+
+      const expected = paths.map((path) => [
+        path || '/',
+        [404, 'Socio no encontrado'],
+      ]);
+
+      expect(results).toEqual(Object.fromEntries(expected));
+    } finally {
+      await deleteUsers([admin.userId]);
+    }
+  });
 });
 
 it('devuelve el historial de pagos del socio con el detalle de cuotas', async () => {
@@ -1478,4 +1508,104 @@ it('permite a un administrador obtener el resumen del dashboard', async () => {
   } finally {
     await deleteUsers([admin.userId]);
   }
+});
+
+it('no muestra el error de la base cuando algo falla de forma inesperada', async () => {
+  // La fecha inválida llega a Prisma antes de que el service la valide. Antes
+  // la respuesta traía el mensaje de Prisma entero: la ruta del archivo en el
+  // servidor, las líneas del código y la consulta.
+  const admin = await createAdmin();
+
+  try {
+    const response = await request(app)
+      .post('/cuotas/configuracion')
+      .set('Cookie', admin.cookie)
+      .send({
+        importeBase: 100,
+        vigenciaDesde: 'no-es-una-fecha',
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe(
+      'Error al crear la configuración de cuota',
+    );
+  } finally {
+    await deleteUsers([admin.userId]);
+  }
+});
+
+describe('Edición de la configuración de cuota', () => {
+  let admin: Awaited<ReturnType<typeof createAdmin>>;
+  let futureConfigurationId: number;
+
+  // Un año lejano a propósito: las cuotas buscan la configuración con
+  // `vigenciaDesde <= fecha`, así que esta no la toma ningún otro test.
+  const futureDate = new Date(Date.UTC(2099, 0, 1));
+
+  beforeAll(async () => {
+    admin = await createAdmin();
+
+    const configuration = await prisma.configuracionCuota.create({
+      data: {
+        importeBase: 1000,
+        vigenciaDesde: futureDate,
+      },
+    });
+
+    futureConfigurationId = configuration.id;
+  });
+
+  afterAll(async () => {
+    await prisma.configuracionCuota.delete({
+      where: { id: futureConfigurationId },
+    });
+
+    await deleteUsers([admin.userId]);
+  });
+
+  it('permite modificar una configuración futura', async () => {
+    const response = await request(app)
+      .patch(`/cuotas/configuracion/${futureConfigurationId}`)
+      .set('Cookie', admin.cookie)
+      .send({ importeBase: 1200 });
+
+    expect(response.status).toBe(200);
+    expect(Number(response.body.importeBase)).toBe(1200);
+  });
+
+  it('no modifica una configuración vigente aunque se lo pidan', async () => {
+    // Antes el importe se guardaba y recién después se controlaba la fecha:
+    // la respuesta era un error, pero el cambio ya estaba en la base.
+    const current = await prisma.configuracionCuota.findFirstOrThrow({
+      where: { vigenciaDesde: { lte: new Date() } },
+      orderBy: { vigenciaDesde: 'desc' },
+    });
+
+    const response = await request(app)
+      .patch(`/cuotas/configuracion/${current.id}`)
+      .set('Cookie', admin.cookie)
+      .send({ importeBase: Number(current.importeBase) + 1 });
+
+    const stored = await prisma.configuracionCuota.findUniqueOrThrow({
+      where: { id: current.id },
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'Solo se pueden modificar configuraciones de cuota futuras',
+    );
+    expect(Number(stored.importeBase)).toBe(Number(current.importeBase));
+  });
+
+  it('rechaza con 400 un pedido sin importe', async () => {
+    const response = await request(app)
+      .patch(`/cuotas/configuracion/${futureConfigurationId}`)
+      .set('Cookie', admin.cookie)
+      .send({});
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'El importe de la cuota debe ser mayor a 0',
+    );
+  });
 });

@@ -3,6 +3,7 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
+import * as notificationRepository from '../src/modules/notifications/notification.repository';
 import {
   createAdmin,
   createApplicant,
@@ -36,89 +37,90 @@ describe('Notificaciones', () => {
    * hay en la base, incluidos los que están creando y borrando los otros
    * archivos de test en paralelo.
    *
-   * Eso los hace fallar cada tanto con un 409, y el fallo es un ACIERTO: hay
-   * una carrera real en `notification.service.create` (hallazgo H-05). Lee la
-   * lista de destinatarios y después inserta; si alguno de esos usuarios se
-   * borra en el medio, la clave foránea revienta (P2003, que `send-error`
-   * mapea a 409) y la notificación entera no se crea. En producción pasa si
-   * la administración manda un comunicado a todos los socios justo cuando
-   * alguien da de baja una cuenta.
-   *
-   * El `retry: 1` es un parche mientras el dueño del módulo lo arregle: una
-   * carrera no se repite dos veces seguidas, pero una regresión de verdad
-   * falla las dos. Cuando se corrija, sacar el retry y este comentario.
+   * Por eso fallaban cada tanto con un 409, y el fallo era un acierto: había
+   * una carrera real en la creación (hallazgo H-05, corregido). Tuvieron un
+   * `retry: 1` mientras estuvo abierta; el caso que la provocaba ahora tiene
+   * su propio test, más abajo, que no depende de la suerte.
    */
-  it(
-    'debería crear una notificación para todos los usuarios',
-    { retry: 1 },
-    async () => {
-      const response = await request(app)
-        .post('/notificaciones')
-        .set('Cookie', admin.cookie)
-        .send({
-          titulo: 'Comunicado general',
-          mensaje: 'Mensaje para todos los usuarios',
-          tipo: 'NORMAL',
-          destinatarioTipo: 'TODOS',
-        });
-
-      expect(response.status).toBe(201);
-
-      expect(response.body).toMatchObject({
+  it('debería crear una notificación para todos los usuarios', async () => {
+    const response = await request(app)
+      .post('/notificaciones')
+      .set('Cookie', admin.cookie)
+      .send({
         titulo: 'Comunicado general',
         mensaje: 'Mensaje para todos los usuarios',
         tipo: 'NORMAL',
+        destinatarioTipo: 'TODOS',
       });
 
-      expect(response.body.destinatarios.length).toBeGreaterThan(0);
-    },
-  );
+    expect(response.status).toBe(201);
 
-  it(
-    'debería crear una notificación solamente para socios',
-    { retry: 1 },
-    async () => {
-      const response = await request(app)
-        .post('/notificaciones')
-        .set('Cookie', admin.cookie)
-        .send({
-          titulo: 'Aviso para socios',
-          mensaje: 'Este mensaje es solamente para socios',
-          tipo: 'NORMAL',
-          destinatarioTipo: 'SOCIOS',
-        });
+    expect(response.body).toMatchObject({
+      titulo: 'Comunicado general',
+      mensaje: 'Mensaje para todos los usuarios',
+      tipo: 'NORMAL',
+    });
 
-      expect(response.status).toBe(201);
-      expect(response.body.destinatarios.length).toBeGreaterThan(0);
+    expect(response.body.destinatarios.length).toBeGreaterThan(0);
+  });
 
-      for (const destinatario of response.body.destinatarios) {
-        expect(destinatario.usuario.tipo).toBe('SOCIO');
-      }
-    },
-  );
+  it('debería crear una notificación solamente para socios', async () => {
+    const response = await request(app)
+      .post('/notificaciones')
+      .set('Cookie', admin.cookie)
+      .send({
+        titulo: 'Aviso para socios',
+        mensaje: 'Este mensaje es solamente para socios',
+        tipo: 'NORMAL',
+        destinatarioTipo: 'SOCIOS',
+      });
 
-  it(
-    'debería crear una notificación solamente para postulantes',
-    { retry: 1 },
-    async () => {
-      const response = await request(app)
-        .post('/notificaciones')
-        .set('Cookie', admin.cookie)
-        .send({
-          titulo: 'Aviso para postulantes',
-          mensaje: 'Este mensaje es solamente para postulantes',
-          tipo: 'NORMAL',
-          destinatarioTipo: 'POSTULANTES',
-        });
+    expect(response.status).toBe(201);
+    expect(response.body.destinatarios.length).toBeGreaterThan(0);
 
-      expect(response.status).toBe(201);
-      expect(response.body.destinatarios.length).toBeGreaterThan(0);
+    for (const destinatario of response.body.destinatarios) {
+      expect(destinatario.usuario.tipo).toBe('SOCIO');
+    }
+  });
 
-      for (const destinatario of response.body.destinatarios) {
-        expect(destinatario.usuario.tipo).toBe('POSTULANTE');
-      }
-    },
-  );
+  it('debería crear una notificación solamente para postulantes', async () => {
+    const response = await request(app)
+      .post('/notificaciones')
+      .set('Cookie', admin.cookie)
+      .send({
+        titulo: 'Aviso para postulantes',
+        mensaje: 'Este mensaje es solamente para postulantes',
+        tipo: 'NORMAL',
+        destinatarioTipo: 'POSTULANTES',
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body.destinatarios.length).toBeGreaterThan(0);
+
+    for (const destinatario of response.body.destinatarios) {
+      expect(destinatario.usuario.tipo).toBe('POSTULANTE');
+    }
+  });
+
+  it('crea la notificación aunque un destinatario se haya borrado en el medio', async () => {
+    // Es el estado de la base cuando se pierde la carrera: el service ya
+    // eligió los destinatarios y, antes del insert, uno se borró. Antes la
+    // clave foránea fallaba (P2003) y la notificación no se creaba para nadie.
+    const borrado = await createMember();
+    await deleteUsers([borrado.userId]);
+
+    const notification = await notificationRepository.create({
+      titulo: 'Aviso con un destinatario borrado',
+      mensaje: 'Le tiene que llegar al resto',
+      tipo: 'NORMAL',
+      creadoPorId: admin.userId,
+      usuarioIds: [socio.userId, borrado.userId],
+    });
+
+    expect(
+      notification?.destinatarios.map((destinatario) => destinatario.usuarioId),
+    ).toEqual([socio.userId]);
+  });
 
   it('debería crear una notificación para usuarios específicos', async () => {
     const response = await request(app)

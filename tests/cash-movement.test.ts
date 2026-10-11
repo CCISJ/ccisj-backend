@@ -501,4 +501,95 @@ describe('Movimientos de caja', () => {
       await deleteUsers([member.userId]);
     }
   });
+
+  it('no muestra el error de la base cuando algo falla de forma inesperada', async () => {
+    // Un id de categoría que no entra en un entero de la base pasa la
+    // validación del service y lo rechaza Prisma. Antes la respuesta traía el
+    // mensaje de Prisma entero: la ruta del archivo en el servidor, las líneas
+    // del código y la consulta.
+    const admin = await createAdmin();
+    createdUserIds.push(admin.userId);
+
+    const response = await request(app)
+      .post('/caja/movimientos')
+      .set('Cookie', admin.cookie)
+      .send({
+        tipo: 'INGRESO',
+        categoriaId: 99999999999,
+        concepto: 'Movimiento test',
+        importe: 100,
+        fecha: '2026-10-01',
+      });
+
+    expect(response.status).toBe(500);
+    expect(response.body.message).toBe(
+      'Error al registrar el movimiento de caja',
+    );
+  });
+
+  describe('Filtros que llegan por la query string', () => {
+    // Express entrega un arreglo cuando un parámetro viene repetido, así que
+    // `req.query.tipo` no siempre es texto. Antes el controlador hacía
+    // `String(tipo)`, que sobre un arreglo devuelve "A,B" sin fallar: el
+    // filtro seguía camino con un valor que nadie había escrito.
+    async function pedirMovimientos(query: string) {
+      const admin = await createAdmin();
+      createdUserIds.push(admin.userId);
+
+      return request(app)
+        .get(`/caja/movimientos${query}`)
+        .set('Cookie', admin.cookie);
+    }
+
+    it('acepta un filtro normal', async () => {
+      const response = await pedirMovimientos('?tipo=INGRESO');
+
+      expect(response.status).toBe(200);
+      expect(Array.isArray(response.body)).toBe(true);
+    });
+
+    it('rechaza un parámetro repetido en vez de pegar los valores', async () => {
+      const response = await pedirMovimientos('?tipo=INGRESO&tipo=EGRESO');
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toMatch(/vino repetido/);
+    });
+
+    it('rechaza una búsqueda repetida, que antes buscaba el texto "a,b"', async () => {
+      const response = await pedirMovimientos('?buscar=a&buscar=b');
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toMatch(/vino repetido/);
+    });
+
+    it('rechaza un tipo que no existe', async () => {
+      const response = await pedirMovimientos('?tipo=CUALQUIERA');
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('El tipo de movimiento no es válido');
+    });
+
+    it('rechaza una fecha que no es una fecha', async () => {
+      const response = await pedirMovimientos('?desde=no-es-una-fecha');
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('La fecha desde no es válida');
+    });
+
+    it('ignora un parámetro vacío en lugar de tratarlo como un filtro', async () => {
+      const response = await pedirMovimientos('?buscar=&tipo=');
+
+      expect(response.status).toBe(200);
+    });
+
+    it('con el parser "simple" una clave con corchetes queda literal y no se interpreta', async () => {
+      // Esto es lo que vuelve inofensivo `?desde[x]=1`: con el parser
+      // `extended` llegaría un objeto, pero con `simple` la clave entera es
+      // "desde[x]", así que `desde` simplemente no viene y el filtro no se
+      // aplica. El parser está fijado en app.ts justamente para que siga así.
+      const response = await pedirMovimientos('?desde[x]=1');
+
+      expect(response.status).toBe(200);
+    });
+  });
 });

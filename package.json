@@ -8,6 +8,8 @@
     "type-check": "tsc -p tsconfig.check.json",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --type-aware --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build": "pnpm type-check && tsc && tsc-alias",
     "start": "node dist/server.js",
     "migrate": "prisma migrate deploy",

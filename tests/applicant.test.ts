@@ -243,8 +243,10 @@ describe('Applicants', () => {
       .post('/postulantes')
       .set('Cookie', admin.cookie);
 
+    // Sin body, `app.ts` deja `req.body` en `{}`: es el mismo caso que mandar
+    // un objeto vacío, y por eso responde que faltan los datos.
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe('Datos inválidos');
+    expect(response.body.message).toBe('Faltan datos obligatorios');
   });
 
   it('PATCH /postulantes/:id devuelve 400 si el ID es inválido', async () => {

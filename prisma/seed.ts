@@ -388,12 +388,26 @@ Configuración de cuota:
   `);
 }
 
-main()
-  .catch((error) => {
+/**
+ * Antes esto era `main().catch(...).finally(...)`, con un `process.exit(1)`
+ * dentro del catch. Dos problemas: `process.exit` corta el proceso en el acto,
+ * así que el `.finally` nunca llegaba a correr y la conexión quedaba sin
+ * cerrar cuando el seed fallaba; y el `.finally` recibía una función async,
+ * cuya promesa nadie esperaba.
+ *
+ * Con `process.exitCode` el proceso termina igual con código 1, pero recién
+ * después de que el `finally` desconecte.
+ */
+async function run() {
+  try {
+    await main();
+  } catch (error) {
     console.error('Error ejecutando seed:');
     console.error(error);
-    process.exit(1);
-  })
-  .finally(async () => {
+    process.exitCode = 1;
+  } finally {
     await prisma.$disconnect();
-  });
+  }
+}
+
+void run();
