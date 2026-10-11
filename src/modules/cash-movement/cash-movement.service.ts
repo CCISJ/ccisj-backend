@@ -10,7 +10,13 @@ import {
   findCashMovementById,
   findCashMovements,
   getCashSummary,
+  updateCashMovementReceipt,
 } from './cash-movement.repository';
+import {
+  deleteReceiptFromStorage,
+  getReceiptSignedUrl,
+  uploadReceiptToStorage,
+} from './receipt-storage.service';
 
 const RESERVED_FEE_CATEGORY = 'Cuotas de socios';
 
@@ -186,4 +192,71 @@ export async function cancelManualCashMovement(
   }
 
   return cancelCashMovement(id, userId, cancellationReason);
+}
+
+export async function uploadCashMovementReceipt(
+  id: number,
+  file: Express.Multer.File,
+) {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('El movimiento no es válido');
+  }
+
+  const movement = await findCashMovementById(id);
+
+  if (!movement) {
+    throw new Error('El movimiento no existe');
+  }
+
+  if (movement.anulado) {
+    throw new Error(
+      'No se puede adjuntar un comprobante a un movimiento anulado',
+    );
+  }
+
+  const previousPath = movement.comprobanteUrl;
+
+  const newPath = await uploadReceiptToStorage(id, file);
+
+  try {
+    await updateCashMovementReceipt(id, newPath);
+  } catch (error) {
+    try {
+      await deleteReceiptFromStorage(newPath);
+    } catch (cleanupError) {
+      console.error('No se pudo limpiar el comprobante subido:', cleanupError);
+    }
+
+    throw error;
+  }
+
+  if (previousPath) {
+    try {
+      await deleteReceiptFromStorage(previousPath);
+    } catch (error) {
+      console.error('No se pudo eliminar el comprobante anterior:', error);
+    }
+  }
+
+  return { comprobanteUrl: newPath };
+}
+
+export async function getCashMovementReceipt(id: number) {
+  if (!Number.isInteger(id) || id <= 0) {
+    throw new Error('El movimiento no es válido');
+  }
+
+  const movement = await findCashMovementById(id);
+
+  if (!movement) {
+    throw new Error('El movimiento no existe');
+  }
+
+  if (!movement.comprobanteUrl) {
+    throw new Error('El movimiento no tiene comprobante');
+  }
+
+  const url = await getReceiptSignedUrl(movement.comprobanteUrl);
+
+  return { url };
 }

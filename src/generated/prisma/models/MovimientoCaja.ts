@@ -55,6 +55,7 @@ export type MovimientoCajaMinAggregateOutputType = {
   categoriaId: number | null
   registradoPorId: number | null
   pagoCuotaId: number | null
+  comprobanteUrl: string | null
   anulado: boolean | null
   fechaAnulacion: Date | null
   anuladoPorId: number | null
@@ -72,6 +73,7 @@ export type MovimientoCajaMaxAggregateOutputType = {
   categoriaId: number | null
   registradoPorId: number | null
   pagoCuotaId: number | null
+  comprobanteUrl: string | null
   anulado: boolean | null
   fechaAnulacion: Date | null
   anuladoPorId: number | null
@@ -89,6 +91,7 @@ export type MovimientoCajaCountAggregateOutputType = {
   categoriaId: number
   registradoPorId: number
   pagoCuotaId: number
+  comprobanteUrl: number
   anulado: number
   fechaAnulacion: number
   anuladoPorId: number
@@ -126,6 +129,7 @@ export type MovimientoCajaMinAggregateInputType = {
   categoriaId?: true
   registradoPorId?: true
   pagoCuotaId?: true
+  comprobanteUrl?: true
   anulado?: true
   fechaAnulacion?: true
   anuladoPorId?: true
@@ -143,6 +147,7 @@ export type MovimientoCajaMaxAggregateInputType = {
   categoriaId?: true
   registradoPorId?: true
   pagoCuotaId?: true
+  comprobanteUrl?: true
   anulado?: true
   fechaAnulacion?: true
   anuladoPorId?: true
@@ -160,6 +165,7 @@ export type MovimientoCajaCountAggregateInputType = {
   categoriaId?: true
   registradoPorId?: true
   pagoCuotaId?: true
+  comprobanteUrl?: true
   anulado?: true
   fechaAnulacion?: true
   anuladoPorId?: true
@@ -264,6 +270,7 @@ export type MovimientoCajaGroupByOutputType = {
   categoriaId: number
   registradoPorId: number
   pagoCuotaId: number | null
+  comprobanteUrl: string | null
   anulado: boolean
   fechaAnulacion: Date | null
   anuladoPorId: number | null
@@ -304,6 +311,7 @@ export type MovimientoCajaWhereInput = {
   categoriaId?: Prisma.IntFilter<"MovimientoCaja"> | number
   registradoPorId?: Prisma.IntFilter<"MovimientoCaja"> | number
   pagoCuotaId?: Prisma.IntNullableFilter<"MovimientoCaja"> | number | null
+  comprobanteUrl?: Prisma.StringNullableFilter<"MovimientoCaja"> | string | null
   anulado?: Prisma.BoolFilter<"MovimientoCaja"> | boolean
   fechaAnulacion?: Prisma.DateTimeNullableFilter<"MovimientoCaja"> | Date | string | null
   anuladoPorId?: Prisma.IntNullableFilter<"MovimientoCaja"> | number | null
@@ -325,6 +333,7 @@ export type MovimientoCajaOrderByWithRelationInput = {
   categoriaId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   pagoCuotaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  comprobanteUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   anulado?: Prisma.SortOrder
   fechaAnulacion?: Prisma.SortOrderInput | Prisma.SortOrder
   anuladoPorId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -349,6 +358,7 @@ export type MovimientoCajaWhereUniqueInput = Prisma.AtLeast<{
   fechaCreacion?: Prisma.DateTimeFilter<"MovimientoCaja"> | Date | string
   categoriaId?: Prisma.IntFilter<"MovimientoCaja"> | number
   registradoPorId?: Prisma.IntFilter<"MovimientoCaja"> | number
+  comprobanteUrl?: Prisma.StringNullableFilter<"MovimientoCaja"> | string | null
   anulado?: Prisma.BoolFilter<"MovimientoCaja"> | boolean
   fechaAnulacion?: Prisma.DateTimeNullableFilter<"MovimientoCaja"> | Date | string | null
   anuladoPorId?: Prisma.IntNullableFilter<"MovimientoCaja"> | number | null
@@ -370,6 +380,7 @@ export type MovimientoCajaOrderByWithAggregationInput = {
   categoriaId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   pagoCuotaId?: Prisma.SortOrderInput | Prisma.SortOrder
+  comprobanteUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   anulado?: Prisma.SortOrder
   fechaAnulacion?: Prisma.SortOrderInput | Prisma.SortOrder
   anuladoPorId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -395,6 +406,7 @@ export type MovimientoCajaScalarWhereWithAggregatesInput = {
   categoriaId?: Prisma.IntWithAggregatesFilter<"MovimientoCaja"> | number
   registradoPorId?: Prisma.IntWithAggregatesFilter<"MovimientoCaja"> | number
   pagoCuotaId?: Prisma.IntNullableWithAggregatesFilter<"MovimientoCaja"> | number | null
+  comprobanteUrl?: Prisma.StringNullableWithAggregatesFilter<"MovimientoCaja"> | string | null
   anulado?: Prisma.BoolWithAggregatesFilter<"MovimientoCaja"> | boolean
   fechaAnulacion?: Prisma.DateTimeNullableWithAggregatesFilter<"MovimientoCaja"> | Date | string | null
   anuladoPorId?: Prisma.IntNullableWithAggregatesFilter<"MovimientoCaja"> | number | null
@@ -408,6 +420,7 @@ export type MovimientoCajaCreateInput = {
   fecha: Date | string
   observaciones?: string | null
   fechaCreacion?: Date | string
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -428,6 +441,7 @@ export type MovimientoCajaUncheckedCreateInput = {
   categoriaId: number
   registradoPorId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -441,6 +455,7 @@ export type MovimientoCajaUpdateInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -461,6 +476,7 @@ export type MovimientoCajaUncheckedUpdateInput = {
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -478,6 +494,7 @@ export type MovimientoCajaCreateManyInput = {
   categoriaId: number
   registradoPorId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -491,6 +508,7 @@ export type MovimientoCajaUpdateManyMutationInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -507,6 +525,7 @@ export type MovimientoCajaUncheckedUpdateManyInput = {
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -539,6 +558,7 @@ export type MovimientoCajaCountOrderByAggregateInput = {
   categoriaId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   pagoCuotaId?: Prisma.SortOrder
+  comprobanteUrl?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
   fechaAnulacion?: Prisma.SortOrder
   anuladoPorId?: Prisma.SortOrder
@@ -565,6 +585,7 @@ export type MovimientoCajaMaxOrderByAggregateInput = {
   categoriaId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   pagoCuotaId?: Prisma.SortOrder
+  comprobanteUrl?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
   fechaAnulacion?: Prisma.SortOrder
   anuladoPorId?: Prisma.SortOrder
@@ -582,6 +603,7 @@ export type MovimientoCajaMinOrderByAggregateInput = {
   categoriaId?: Prisma.SortOrder
   registradoPorId?: Prisma.SortOrder
   pagoCuotaId?: Prisma.SortOrder
+  comprobanteUrl?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
   fechaAnulacion?: Prisma.SortOrder
   anuladoPorId?: Prisma.SortOrder
@@ -762,6 +784,7 @@ export type MovimientoCajaCreateWithoutRegistradoPorInput = {
   fecha: Date | string
   observaciones?: string | null
   fechaCreacion?: Date | string
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -780,6 +803,7 @@ export type MovimientoCajaUncheckedCreateWithoutRegistradoPorInput = {
   fechaCreacion?: Date | string
   categoriaId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -803,6 +827,7 @@ export type MovimientoCajaCreateWithoutAnuladoPorInput = {
   fecha: Date | string
   observaciones?: string | null
   fechaCreacion?: Date | string
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -822,6 +847,7 @@ export type MovimientoCajaUncheckedCreateWithoutAnuladoPorInput = {
   categoriaId: number
   registradoPorId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -867,6 +893,7 @@ export type MovimientoCajaScalarWhereInput = {
   categoriaId?: Prisma.IntFilter<"MovimientoCaja"> | number
   registradoPorId?: Prisma.IntFilter<"MovimientoCaja"> | number
   pagoCuotaId?: Prisma.IntNullableFilter<"MovimientoCaja"> | number | null
+  comprobanteUrl?: Prisma.StringNullableFilter<"MovimientoCaja"> | string | null
   anulado?: Prisma.BoolFilter<"MovimientoCaja"> | boolean
   fechaAnulacion?: Prisma.DateTimeNullableFilter<"MovimientoCaja"> | Date | string | null
   anuladoPorId?: Prisma.IntNullableFilter<"MovimientoCaja"> | number | null
@@ -896,6 +923,7 @@ export type MovimientoCajaCreateWithoutPagoCuotaInput = {
   fecha: Date | string
   observaciones?: string | null
   fechaCreacion?: Date | string
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -914,6 +942,7 @@ export type MovimientoCajaUncheckedCreateWithoutPagoCuotaInput = {
   fechaCreacion?: Date | string
   categoriaId: number
   registradoPorId: number
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -943,6 +972,7 @@ export type MovimientoCajaUpdateWithoutPagoCuotaInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -961,6 +991,7 @@ export type MovimientoCajaUncheckedUpdateWithoutPagoCuotaInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -974,6 +1005,7 @@ export type MovimientoCajaCreateWithoutCategoriaInput = {
   fecha: Date | string
   observaciones?: string | null
   fechaCreacion?: Date | string
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -992,6 +1024,7 @@ export type MovimientoCajaUncheckedCreateWithoutCategoriaInput = {
   fechaCreacion?: Date | string
   registradoPorId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -1034,6 +1067,7 @@ export type MovimientoCajaCreateManyRegistradoPorInput = {
   fechaCreacion?: Date | string
   categoriaId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -1051,6 +1085,7 @@ export type MovimientoCajaCreateManyAnuladoPorInput = {
   categoriaId: number
   registradoPorId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   motivoAnulacion?: string | null
@@ -1063,6 +1098,7 @@ export type MovimientoCajaUpdateWithoutRegistradoPorInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1081,6 +1117,7 @@ export type MovimientoCajaUncheckedUpdateWithoutRegistradoPorInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1097,6 +1134,7 @@ export type MovimientoCajaUncheckedUpdateManyWithoutRegistradoPorInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1110,6 +1148,7 @@ export type MovimientoCajaUpdateWithoutAnuladoPorInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1129,6 +1168,7 @@ export type MovimientoCajaUncheckedUpdateWithoutAnuladoPorInput = {
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1145,6 +1185,7 @@ export type MovimientoCajaUncheckedUpdateManyWithoutAnuladoPorInput = {
   categoriaId?: Prisma.IntFieldUpdateOperationsInput | number
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1160,6 +1201,7 @@ export type MovimientoCajaCreateManyCategoriaInput = {
   fechaCreacion?: Date | string
   registradoPorId: number
   pagoCuotaId?: number | null
+  comprobanteUrl?: string | null
   anulado?: boolean
   fechaAnulacion?: Date | string | null
   anuladoPorId?: number | null
@@ -1173,6 +1215,7 @@ export type MovimientoCajaUpdateWithoutCategoriaInput = {
   fecha?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   motivoAnulacion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1191,6 +1234,7 @@ export type MovimientoCajaUncheckedUpdateWithoutCategoriaInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1207,6 +1251,7 @@ export type MovimientoCajaUncheckedUpdateManyWithoutCategoriaInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   registradoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   pagoCuotaId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
   fechaAnulacion?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   anuladoPorId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1226,6 +1271,7 @@ export type MovimientoCajaSelect<ExtArgs extends runtime.Types.Extensions.Intern
   categoriaId?: boolean
   registradoPorId?: boolean
   pagoCuotaId?: boolean
+  comprobanteUrl?: boolean
   anulado?: boolean
   fechaAnulacion?: boolean
   anuladoPorId?: boolean
@@ -1247,6 +1293,7 @@ export type MovimientoCajaSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   categoriaId?: boolean
   registradoPorId?: boolean
   pagoCuotaId?: boolean
+  comprobanteUrl?: boolean
   anulado?: boolean
   fechaAnulacion?: boolean
   anuladoPorId?: boolean
@@ -1268,6 +1315,7 @@ export type MovimientoCajaSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   categoriaId?: boolean
   registradoPorId?: boolean
   pagoCuotaId?: boolean
+  comprobanteUrl?: boolean
   anulado?: boolean
   fechaAnulacion?: boolean
   anuladoPorId?: boolean
@@ -1289,13 +1337,14 @@ export type MovimientoCajaSelectScalar = {
   categoriaId?: boolean
   registradoPorId?: boolean
   pagoCuotaId?: boolean
+  comprobanteUrl?: boolean
   anulado?: boolean
   fechaAnulacion?: boolean
   anuladoPorId?: boolean
   motivoAnulacion?: boolean
 }
 
-export type MovimientoCajaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tipo" | "concepto" | "importe" | "fecha" | "observaciones" | "fechaCreacion" | "categoriaId" | "registradoPorId" | "pagoCuotaId" | "anulado" | "fechaAnulacion" | "anuladoPorId" | "motivoAnulacion", ExtArgs["result"]["movimientoCaja"]>
+export type MovimientoCajaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tipo" | "concepto" | "importe" | "fecha" | "observaciones" | "fechaCreacion" | "categoriaId" | "registradoPorId" | "pagoCuotaId" | "comprobanteUrl" | "anulado" | "fechaAnulacion" | "anuladoPorId" | "motivoAnulacion", ExtArgs["result"]["movimientoCaja"]>
 export type MovimientoCajaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   anuladoPor?: boolean | Prisma.MovimientoCaja$anuladoPorArgs<ExtArgs>
   categoria?: boolean | Prisma.CategoriaCajaDefaultArgs<ExtArgs>
@@ -1334,6 +1383,7 @@ export type $MovimientoCajaPayload<ExtArgs extends runtime.Types.Extensions.Inte
     categoriaId: number
     registradoPorId: number
     pagoCuotaId: number | null
+    comprobanteUrl: string | null
     anulado: boolean
     fechaAnulacion: Date | null
     anuladoPorId: number | null
@@ -1775,6 +1825,7 @@ export interface MovimientoCajaFieldRefs {
   readonly categoriaId: Prisma.FieldRef<"MovimientoCaja", 'Int'>
   readonly registradoPorId: Prisma.FieldRef<"MovimientoCaja", 'Int'>
   readonly pagoCuotaId: Prisma.FieldRef<"MovimientoCaja", 'Int'>
+  readonly comprobanteUrl: Prisma.FieldRef<"MovimientoCaja", 'String'>
   readonly anulado: Prisma.FieldRef<"MovimientoCaja", 'Boolean'>
   readonly fechaAnulacion: Prisma.FieldRef<"MovimientoCaja", 'DateTime'>
   readonly anuladoPorId: Prisma.FieldRef<"MovimientoCaja", 'Int'>
