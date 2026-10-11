@@ -137,3 +137,13 @@ export async function cancelCashMovement(
     },
   });
 }
+
+export async function updateCashMovementReceipt(
+  id: number,
+  comprobanteUrl: string,
+) {
+  return prisma.movimientoCaja.update({
+    where: { id },
+    data: { comprobanteUrl },
+  });
+}

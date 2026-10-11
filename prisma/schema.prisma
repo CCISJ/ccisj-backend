@@ -297,7 +297,6 @@ model PagoCuota {
   fechaPago DateTime @map("fecha_pago") @db.Timestamp(6)
 
   medioPago      String  @map("medio_pago") @db.VarChar(50)
-  comprobanteUrl String? @map("comprobante_url") @db.VarChar(500)
   observaciones  String? @db.VarChar(500)
 
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
@@ -356,6 +355,8 @@ model MovimientoCaja {
   categoriaId     Int  @map("categoria_id")
   registradoPorId Int  @map("registrado_por_id")
   pagoCuotaId     Int? @unique @map("pago_cuota_id")
+
+  comprobanteUrl String? @map("comprobante_url") @db.VarChar(500)
 
   anulado         Boolean   @default(false)
   fechaAnulacion  DateTime? @map("fecha_anulacion")

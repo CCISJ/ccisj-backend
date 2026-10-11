@@ -5,8 +5,10 @@ import type { AuthRequest } from '@/middlewares/auth.middleware';
 import {
   addManualCashMovement,
   cancelManualCashMovement,
+  getCashMovementReceipt,
   getCashMovements,
   getCurrentMonthCashSummary,
+  uploadCashMovementReceipt,
 } from './cash-movement.service';
 
 export async function getMovements(req: AuthRequest, res: Response) {
@@ -98,6 +100,47 @@ export async function cancelMovement(req: AuthRequest, res: Response) {
       error instanceof Error
         ? error.message
         : 'Error al anular el movimiento de caja';
+
+    return res.status(400).json({ message });
+  }
+}
+
+export async function uploadMovementReceipt(req: AuthRequest, res: Response) {
+  try {
+    const id = Number(req.params.id);
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: 'El comprobante es obligatorio',
+      });
+    }
+
+    const result = await uploadCashMovementReceipt(id, req.file);
+
+    return res.status(200).json({
+      message: 'Comprobante guardado correctamente',
+      ...result,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : 'Error al subir el comprobante';
+
+    return res.status(400).json({ message });
+  }
+}
+
+export async function getMovementReceipt(req: AuthRequest, res: Response) {
+  try {
+    const id = Number(req.params.id);
+
+    const result = await getCashMovementReceipt(id);
+
+    return res.json(result);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : 'Error al obtener el comprobante';
 
     return res.status(400).json({ message });
   }

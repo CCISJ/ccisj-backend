@@ -49,7 +49,6 @@ export type PagoCuotaMinAggregateOutputType = {
   importe: runtime.Decimal | null
   fechaPago: Date | null
   medioPago: string | null
-  comprobanteUrl: string | null
   observaciones: string | null
   fechaCreacion: Date | null
   anulado: boolean | null
@@ -65,7 +64,6 @@ export type PagoCuotaMaxAggregateOutputType = {
   importe: runtime.Decimal | null
   fechaPago: Date | null
   medioPago: string | null
-  comprobanteUrl: string | null
   observaciones: string | null
   fechaCreacion: Date | null
   anulado: boolean | null
@@ -81,7 +79,6 @@ export type PagoCuotaCountAggregateOutputType = {
   importe: number
   fechaPago: number
   medioPago: number
-  comprobanteUrl: number
   observaciones: number
   fechaCreacion: number
   anulado: number
@@ -115,7 +112,6 @@ export type PagoCuotaMinAggregateInputType = {
   importe?: true
   fechaPago?: true
   medioPago?: true
-  comprobanteUrl?: true
   observaciones?: true
   fechaCreacion?: true
   anulado?: true
@@ -131,7 +127,6 @@ export type PagoCuotaMaxAggregateInputType = {
   importe?: true
   fechaPago?: true
   medioPago?: true
-  comprobanteUrl?: true
   observaciones?: true
   fechaCreacion?: true
   anulado?: true
@@ -147,7 +142,6 @@ export type PagoCuotaCountAggregateInputType = {
   importe?: true
   fechaPago?: true
   medioPago?: true
-  comprobanteUrl?: true
   observaciones?: true
   fechaCreacion?: true
   anulado?: true
@@ -250,7 +244,6 @@ export type PagoCuotaGroupByOutputType = {
   importe: runtime.Decimal
   fechaPago: Date
   medioPago: string
-  comprobanteUrl: string | null
   observaciones: string | null
   fechaCreacion: Date
   anulado: boolean
@@ -289,7 +282,6 @@ export type PagoCuotaWhereInput = {
   importe?: Prisma.DecimalFilter<"PagoCuota"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
   medioPago?: Prisma.StringFilter<"PagoCuota"> | string
-  comprobanteUrl?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
   anulado?: Prisma.BoolFilter<"PagoCuota"> | boolean
@@ -310,7 +302,6 @@ export type PagoCuotaOrderByWithRelationInput = {
   importe?: Prisma.SortOrder
   fechaPago?: Prisma.SortOrder
   medioPago?: Prisma.SortOrder
-  comprobanteUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
@@ -334,7 +325,6 @@ export type PagoCuotaWhereUniqueInput = Prisma.AtLeast<{
   importe?: Prisma.DecimalFilter<"PagoCuota"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
   medioPago?: Prisma.StringFilter<"PagoCuota"> | string
-  comprobanteUrl?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
   anulado?: Prisma.BoolFilter<"PagoCuota"> | boolean
@@ -355,7 +345,6 @@ export type PagoCuotaOrderByWithAggregationInput = {
   importe?: Prisma.SortOrder
   fechaPago?: Prisma.SortOrder
   medioPago?: Prisma.SortOrder
-  comprobanteUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
@@ -379,7 +368,6 @@ export type PagoCuotaScalarWhereWithAggregatesInput = {
   importe?: Prisma.DecimalWithAggregatesFilter<"PagoCuota"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeWithAggregatesFilter<"PagoCuota"> | Date | string
   medioPago?: Prisma.StringWithAggregatesFilter<"PagoCuota"> | string
-  comprobanteUrl?: Prisma.StringNullableWithAggregatesFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableWithAggregatesFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeWithAggregatesFilter<"PagoCuota"> | Date | string
   anulado?: Prisma.BoolWithAggregatesFilter<"PagoCuota"> | boolean
@@ -392,7 +380,6 @@ export type PagoCuotaCreateInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -412,7 +399,6 @@ export type PagoCuotaUncheckedCreateInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -427,7 +413,6 @@ export type PagoCuotaUpdateInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -447,7 +432,6 @@ export type PagoCuotaUncheckedUpdateInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -465,7 +449,6 @@ export type PagoCuotaCreateManyInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -478,7 +461,6 @@ export type PagoCuotaUpdateManyMutationInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -493,7 +475,6 @@ export type PagoCuotaUncheckedUpdateManyInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -519,7 +500,6 @@ export type PagoCuotaCountOrderByAggregateInput = {
   importe?: Prisma.SortOrder
   fechaPago?: Prisma.SortOrder
   medioPago?: Prisma.SortOrder
-  comprobanteUrl?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
@@ -543,7 +523,6 @@ export type PagoCuotaMaxOrderByAggregateInput = {
   importe?: Prisma.SortOrder
   fechaPago?: Prisma.SortOrder
   medioPago?: Prisma.SortOrder
-  comprobanteUrl?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
@@ -559,7 +538,6 @@ export type PagoCuotaMinOrderByAggregateInput = {
   importe?: Prisma.SortOrder
   fechaPago?: Prisma.SortOrder
   medioPago?: Prisma.SortOrder
-  comprobanteUrl?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
   fechaCreacion?: Prisma.SortOrder
   anulado?: Prisma.SortOrder
@@ -754,7 +732,6 @@ export type PagoCuotaCreateWithoutRegistradoPorInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -772,7 +749,6 @@ export type PagoCuotaUncheckedCreateWithoutRegistradoPorInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -797,7 +773,6 @@ export type PagoCuotaCreateWithoutAnuladoPorInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -816,7 +791,6 @@ export type PagoCuotaUncheckedCreateWithoutAnuladoPorInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -862,7 +836,6 @@ export type PagoCuotaScalarWhereInput = {
   importe?: Prisma.DecimalFilter<"PagoCuota"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
   medioPago?: Prisma.StringFilter<"PagoCuota"> | string
-  comprobanteUrl?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   observaciones?: Prisma.StringNullableFilter<"PagoCuota"> | string | null
   fechaCreacion?: Prisma.DateTimeFilter<"PagoCuota"> | Date | string
   anulado?: Prisma.BoolFilter<"PagoCuota"> | boolean
@@ -891,7 +864,6 @@ export type PagoCuotaCreateWithoutSocioInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -909,7 +881,6 @@ export type PagoCuotaUncheckedCreateWithoutSocioInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -950,7 +921,6 @@ export type PagoCuotaCreateWithoutDetallesInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -969,7 +939,6 @@ export type PagoCuotaUncheckedCreateWithoutDetallesInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -999,7 +968,6 @@ export type PagoCuotaUpdateWithoutDetallesInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1018,7 +986,6 @@ export type PagoCuotaUncheckedUpdateWithoutDetallesInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1032,7 +999,6 @@ export type PagoCuotaCreateWithoutMovimientoCajaInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -1051,7 +1017,6 @@ export type PagoCuotaUncheckedCreateWithoutMovimientoCajaInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -1081,7 +1046,6 @@ export type PagoCuotaUpdateWithoutMovimientoCajaInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1100,7 +1064,6 @@ export type PagoCuotaUncheckedUpdateWithoutMovimientoCajaInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1116,7 +1079,6 @@ export type PagoCuotaCreateManyRegistradoPorInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -1132,7 +1094,6 @@ export type PagoCuotaCreateManyAnuladoPorInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -1144,7 +1105,6 @@ export type PagoCuotaUpdateWithoutRegistradoPorInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1162,7 +1122,6 @@ export type PagoCuotaUncheckedUpdateWithoutRegistradoPorInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1179,7 +1138,6 @@ export type PagoCuotaUncheckedUpdateManyWithoutRegistradoPorInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1192,7 +1150,6 @@ export type PagoCuotaUpdateWithoutAnuladoPorInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1211,7 +1168,6 @@ export type PagoCuotaUncheckedUpdateWithoutAnuladoPorInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1228,7 +1184,6 @@ export type PagoCuotaUncheckedUpdateManyWithoutAnuladoPorInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1242,7 +1197,6 @@ export type PagoCuotaCreateManySocioInput = {
   importe: runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago: Date | string
   medioPago: string
-  comprobanteUrl?: string | null
   observaciones?: string | null
   fechaCreacion?: Date | string
   anulado?: boolean
@@ -1255,7 +1209,6 @@ export type PagoCuotaUpdateWithoutSocioInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1273,7 +1226,6 @@ export type PagoCuotaUncheckedUpdateWithoutSocioInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1290,7 +1242,6 @@ export type PagoCuotaUncheckedUpdateManyWithoutSocioInput = {
   importe?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   fechaPago?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   medioPago?: Prisma.StringFieldUpdateOperationsInput | string
-  comprobanteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   anulado?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1337,7 +1288,6 @@ export type PagoCuotaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   importe?: boolean
   fechaPago?: boolean
   medioPago?: boolean
-  comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
   anulado?: boolean
@@ -1359,7 +1309,6 @@ export type PagoCuotaSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   importe?: boolean
   fechaPago?: boolean
   medioPago?: boolean
-  comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
   anulado?: boolean
@@ -1378,7 +1327,6 @@ export type PagoCuotaSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   importe?: boolean
   fechaPago?: boolean
   medioPago?: boolean
-  comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
   anulado?: boolean
@@ -1397,7 +1345,6 @@ export type PagoCuotaSelectScalar = {
   importe?: boolean
   fechaPago?: boolean
   medioPago?: boolean
-  comprobanteUrl?: boolean
   observaciones?: boolean
   fechaCreacion?: boolean
   anulado?: boolean
@@ -1406,7 +1353,7 @@ export type PagoCuotaSelectScalar = {
   motivoAnulacion?: boolean
 }
 
-export type PagoCuotaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "socioId" | "registradoPorId" | "importe" | "fechaPago" | "medioPago" | "comprobanteUrl" | "observaciones" | "fechaCreacion" | "anulado" | "fechaAnulacion" | "anuladoPorId" | "motivoAnulacion", ExtArgs["result"]["pagoCuota"]>
+export type PagoCuotaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "socioId" | "registradoPorId" | "importe" | "fechaPago" | "medioPago" | "observaciones" | "fechaCreacion" | "anulado" | "fechaAnulacion" | "anuladoPorId" | "motivoAnulacion", ExtArgs["result"]["pagoCuota"]>
 export type PagoCuotaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   socio?: boolean | Prisma.SocioDefaultArgs<ExtArgs>
   registradoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
@@ -1442,7 +1389,6 @@ export type $PagoCuotaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
     importe: runtime.Decimal
     fechaPago: Date
     medioPago: string
-    comprobanteUrl: string | null
     observaciones: string | null
     fechaCreacion: Date
     anulado: boolean
@@ -1883,7 +1829,6 @@ export interface PagoCuotaFieldRefs {
   readonly importe: Prisma.FieldRef<"PagoCuota", 'Decimal'>
   readonly fechaPago: Prisma.FieldRef<"PagoCuota", 'DateTime'>
   readonly medioPago: Prisma.FieldRef<"PagoCuota", 'String'>
-  readonly comprobanteUrl: Prisma.FieldRef<"PagoCuota", 'String'>
   readonly observaciones: Prisma.FieldRef<"PagoCuota", 'String'>
   readonly fechaCreacion: Prisma.FieldRef<"PagoCuota", 'DateTime'>
   readonly anulado: Prisma.FieldRef<"PagoCuota", 'Boolean'>
