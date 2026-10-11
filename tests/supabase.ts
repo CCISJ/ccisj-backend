@@ -16,4 +16,4 @@ async function testSupabase() {
   console.log('Archivos encontrados:', data.length);
 }
 
-testSupabase();
+await testSupabase();
