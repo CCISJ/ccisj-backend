@@ -1,0 +1,42 @@
+# Dependabot: un bot de GitHub que revisa las dependencias y abre un PR cuando
+# hay una versión nueva. Cada PR pasa por el CI (lint, build y tests), así que
+# llega ya probado: si está en verde, se puede mergear.
+#
+# Los PR salen los lunes, agrupados para no llenar el repo de PR sueltos:
+# - uno con todas las actualizaciones menores y parches;
+# - uno por cada actualización mayor, que puede romper cosas y se mira aparte.
+#
+# Las vulnerabilidades ya conocidas y aceptadas están en pnpm-workspace.yaml
+# (`auditConfig.ignoreGhsas`), con su motivo.
+
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Montevideo
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+    groups:
+      menores-y-parches:
+        update-types: [minor, patch]
+
+  # Las acciones del CI van fijadas por SHA (ver ci.yml). Dependabot actualiza
+  # el SHA y el comentario con la versión.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: America/Montevideo
+    commit-message:
+      prefix: 'chore(ci)'
+    groups:
+      acciones:
+        patterns: ['*']
