@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { supabase } from '@/config/supabase';
+import { getSupabase } from '@/config/supabase';
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'comprobantes';
 
@@ -42,8 +42,8 @@ export async function uploadReceiptToStorage(
 
   const path = `movimientos/${movementId}/${randomUUID()}.${extension}`;
 
-  const { error } = await supabase.storage
-    .from(BUCKET)
+  const { error } = await getSupabase()
+    .storage.from(BUCKET)
     .upload(path, new Uint8Array(file.buffer), {
       contentType: contentTypes[extension],
       upsert: false,
@@ -57,7 +57,7 @@ export async function uploadReceiptToStorage(
 }
 
 export async function deleteReceiptFromStorage(path: string) {
-  const { error } = await supabase.storage.from(BUCKET).remove([path]);
+  const { error } = await getSupabase().storage.from(BUCKET).remove([path]);
 
   if (error) {
     throw new Error(`Error al eliminar el comprobante: ${error.message}`);
@@ -65,8 +65,8 @@ export async function deleteReceiptFromStorage(path: string) {
 }
 
 export async function getReceiptSignedUrl(path: string) {
-  const { data, error } = await supabase.storage
-    .from(BUCKET)
+  const { data, error } = await getSupabase()
+    .storage.from(BUCKET)
     .createSignedUrl(path, 60);
 
   if (error || !data) {

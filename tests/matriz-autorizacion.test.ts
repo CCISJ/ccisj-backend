@@ -141,6 +141,8 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /caja/movimientos': SOLO_ADMIN,
   'POST /caja/movimientos': SOLO_ADMIN,
   'GET /caja/movimientos/resumen': SOLO_ADMIN,
+  'POST /caja/movimientos/:id/comprobante': SOLO_ADMIN,
+  'GET /caja/movimientos/:id/comprobante': SOLO_ADMIN,
   'PATCH /caja/movimientos/:id/anular': SOLO_ADMIN,
 
   // El cartel de la API.
