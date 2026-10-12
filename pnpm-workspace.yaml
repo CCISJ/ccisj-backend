@@ -5,3 +5,25 @@ allowBuilds:
   msgpackr-extract: true
   prisma: true
   workerd: true
+
+# Prisma 7.10 (la última 7.x) fija mysql2 en 3.15.3, que tiene dos
+# vulnerabilidades (GHSA-3f6p-5ww8-9rcr y GHSA-rgwj-5xj2-c3m3). Se fuerza la
+# versión corregida dentro de la misma mayor. La usaría solo con una base
+# MySQL (acá es PostgreSQL), pero así `pnpm audit` no la sigue marcando.
+# Sacar cuando Prisma traiga una versión corregida.
+overrides:
+  'prisma>mysql2': ^3.23.1
+
+# Riesgos aceptados: `pnpm audit` no los cuenta. Cada uno con su motivo, y se
+# revisan cuando Dependabot ofrezca una actualización.
+auditConfig:
+  ignoreGhsas:
+    # deepmerge-ts 7.1.5, dentro de la CLI de Prisma (@prisma/config). La
+    # corrección es la 8, una mayor que Prisma 7 no acepta. Solo combina la
+    # configuración de prisma.config.ts, que es nuestra: no recibe datos de
+    # ningún usuario, y no llega al servidor.
+    - GHSA-ggr8-5vv4-36mx
+    # braces 3.0.3, dentro de tsc-alias (solo en el build). No hay versión
+    # corregida. Procesa los patrones de archivos de nuestro tsconfig, nunca
+    # datos de un usuario, y no llega al servidor.
+    - GHSA-vfj7-8cjw-p6xm
