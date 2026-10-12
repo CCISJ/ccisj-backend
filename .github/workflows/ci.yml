@@ -1,0 +1,81 @@
+# Integración continua: en cada PR y en cada push a main, GitHub levanta una
+# máquina limpia y corre los mismos chequeos que cada uno corre en su máquina.
+# Si alguno falla, el PR aparece en rojo antes de mergearlo.
+#
+# Existe por #61: entró a main con los 18 archivos de tests sin poder cargar,
+# el lint y el build rotos, y SonarCloud igual en verde, porque Sonar analiza
+# el código pero no lo compila ni lo ejecuta.
+#
+# Los tests corren contra un PostgreSQL propio de la máquina de GitHub, igual
+# al de docker-compose.test.yml. Nunca contra la base compartida: no hay
+# ningún secreto configurado, así que este workflow no tiene cómo llegar a
+# Supabase aunque quisiera.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Solo lee el código: no puede escribir en el repo ni comentar en los PR.
+permissions:
+  contents: read
+
+# Si se sube otro commit al mismo PR, se cancela la corrida anterior.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verificar:
+    name: Lint, build y tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      # Mismos datos que docker-compose.test.yml, así `TEST_DB_URL` no hace
+      # falta configurarla: el valor por omisión ya apunta acá.
+      test-db:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: ccisj_test
+          POSTGRES_PASSWORD: ccisj_test
+          POSTGRES_DB: ccisj_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U ccisj_test -d ccisj_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.3.4
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Instalar dependencias
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Formato
+        run: pnpm format:check
+
+      - name: Build (incluye el chequeo de tipos de todo el repo)
+        run: pnpm build
+
+      - name: Preparar la base de pruebas (migraciones y seed)
+        run: pnpm test:db:prepare
+
+      - name: Tests
+        run: pnpm test:run
