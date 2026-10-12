@@ -128,10 +128,10 @@ export async function uploadMovementReceipt(req: AuthRequest, res: Response) {
       ...result,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : 'Error al subir el comprobante';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al subir el comprobante',
+    });
   }
 }
 
@@ -143,11 +143,9 @@ export async function getMovementReceipt(req: AuthRequest, res: Response) {
 
     return res.json(result);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : 'Error al obtener el comprobante';
-
-    return res.status(400).json({ message });
+    return sendError(res, error, {
+      status: 400,
+      message: 'Error al obtener el comprobante',
+    });
   }
 }

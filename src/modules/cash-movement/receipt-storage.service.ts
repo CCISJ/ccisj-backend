@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { getSupabase } from '@/config/supabase';
+import { StorageError, getSupabase } from '@/config/supabase';
 
 const BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'comprobantes';
 
@@ -50,7 +50,7 @@ export async function uploadReceiptToStorage(
     });
 
   if (error) {
-    throw new Error(`Error al subir el comprobante: ${error.message}`);
+    throw new StorageError(`Error al subir el comprobante: ${error.message}`);
   }
 
   return path;
@@ -60,7 +60,9 @@ export async function deleteReceiptFromStorage(path: string) {
   const { error } = await getSupabase().storage.from(BUCKET).remove([path]);
 
   if (error) {
-    throw new Error(`Error al eliminar el comprobante: ${error.message}`);
+    throw new StorageError(
+      `Error al eliminar el comprobante: ${error.message}`,
+    );
   }
 }
 
@@ -70,7 +72,9 @@ export async function getReceiptSignedUrl(path: string) {
     .createSignedUrl(path, 60);
 
   if (error || !data) {
-    throw new Error('No se pudo obtener el comprobante');
+    throw new StorageError(
+      `No se pudo obtener el comprobante: ${error?.message}`,
+    );
   }
 
   return data.signedUrl;

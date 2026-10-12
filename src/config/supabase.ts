@@ -1,5 +1,18 @@
 import { type SupabaseClient, createClient } from '@supabase/supabase-js';
 
+/**
+ * Una falla de Storage (o de su configuración), no del usuario. Tiene su propia
+ * clase para que `sendError` no la confunda con un error de negocio
+ * (`new Error`), que se le muestra tal cual: el detalle queda en el log del
+ * servidor y el usuario recibe un 500 con el mensaje genérico del controller.
+ */
+export class StorageError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'StorageError';
+  }
+}
+
 let client: SupabaseClient | undefined;
 
 // El cliente se crea la primera vez que se usa y no al importar el módulo.
@@ -15,7 +28,7 @@ export function getSupabase() {
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Falta configurar Supabase Storage');
+    throw new StorageError('Falta configurar Supabase Storage');
   }
 
   client = createClient(supabaseUrl, supabaseKey, {
