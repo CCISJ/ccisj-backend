@@ -41,23 +41,23 @@ describe('Socios', () => {
   };
 
   afterAll(async () => {
-    if (createdMemberId) {
-      await prisma.socio.deleteMany({
-        where: {
-          id: createdMemberId,
-        },
-      });
-    }
+    // Se borra con `deleteUsers` y no directo, porque además borra las cuotas
+    // del socio. Puede tenerlas aunque este archivo no genere ninguna: la
+    // generación masiva de fee.test.ts le genera cuota a todo socio activo de
+    // la base, y si los dos archivos corren a la vez incluye a este. Con una
+    // cuota, el socio ya no se puede borrar directo.
+    const member = createdMemberId
+      ? await prisma.socio.findUnique({
+          where: { id: createdMemberId },
+          select: { usuarioId: true },
+        })
+      : null;
 
-    if (createdUserId) {
-      await prisma.usuario.deleteMany({
-        where: {
-          id: createdUserId,
-        },
-      });
-    }
-
-    await deleteUsers([admin.userId]);
+    await deleteUsers([
+      admin.userId,
+      createdUserId ?? 0,
+      member?.usuarioId ?? 0,
+    ]);
 
     await prisma.$disconnect();
   });
