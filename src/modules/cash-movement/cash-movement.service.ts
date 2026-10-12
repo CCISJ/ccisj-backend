@@ -2,6 +2,7 @@ import {
   CashMovementFilters,
   CreateManualCashMovementData,
 } from '@/types/cash-movement.type';
+import { HttpError } from '@/utils/http-error';
 
 import { findCashCategoryById } from '../cash-categories/cash-category.repository';
 import {
@@ -205,7 +206,7 @@ export async function uploadCashMovementReceipt(
   const movement = await findCashMovementById(id);
 
   if (!movement) {
-    throw new Error('El movimiento no existe');
+    throw new HttpError(404, 'El movimiento no existe');
   }
 
   if (movement.anulado) {
@@ -249,7 +250,7 @@ export async function getCashMovementReceipt(id: number) {
   const movement = await findCashMovementById(id);
 
   if (!movement) {
-    throw new Error('El movimiento no existe');
+    throw new HttpError(404, 'El movimiento no existe');
   }
 
   if (!movement.comprobanteUrl) {

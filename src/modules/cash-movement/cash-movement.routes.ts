@@ -24,7 +24,7 @@ router.post(
   '/:id/comprobante',
   requireAuth,
   requireAdmin,
-  uploadReceipt.single('comprobante'),
+  uploadReceipt,
   uploadMovementReceipt,
 );
 

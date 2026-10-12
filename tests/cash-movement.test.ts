@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
@@ -16,6 +16,54 @@ import {
   deleteUsers,
   uniqueSuffix,
 } from './session';
+
+// Supabase Storage es un servicio externo, así que en estos tests se reemplaza
+// por uno en memoria. Todo lo demás corre de verdad: multer, la detección del
+// tipo por el contenido, la base y las rutas.
+const storage = vi.hoisted(() => ({
+  // ruta → tipo de contenido con el que se guardó
+  files: new Map<string, string>(),
+  failing: false,
+}));
+
+vi.mock('../src/config/supabase', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('../src/config/supabase')>();
+
+  const bucket = {
+    upload(path: string, _body: Uint8Array, options: { contentType: string }) {
+      if (storage.failing) {
+        return Promise.resolve({
+          error: { message: 'Bucket not found: comprobantes' },
+        });
+      }
+
+      storage.files.set(path, options.contentType);
+
+      return Promise.resolve({ error: null });
+    },
+
+    remove(paths: string[]) {
+      for (const path of paths) {
+        storage.files.delete(path);
+      }
+
+      return Promise.resolve({ error: null });
+    },
+
+    createSignedUrl(path: string, expiresIn: number) {
+      return Promise.resolve({
+        data: { signedUrl: `https://storage.test/${path}?expira=${expiresIn}` },
+        error: null,
+      });
+    },
+  };
+
+  return {
+    ...original,
+    getSupabase: () => ({ storage: { from: () => bucket } }),
+  };
+});
 
 describe('Movimientos de caja', () => {
   const createdUserIds: number[] = [];
@@ -590,6 +638,251 @@ describe('Movimientos de caja', () => {
       const response = await pedirMovimientos('?desde[x]=1');
 
       expect(response.status).toBe(200);
+    });
+  });
+
+  describe('Comprobantes', () => {
+    const PDF = Buffer.from('%PDF-1.7\nComprobante de prueba');
+    const PNG = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 0]);
+    const pdf = { filename: 'comprobante.pdf', contentType: 'application/pdf' };
+
+    beforeEach(() => {
+      storage.files.clear();
+      storage.failing = false;
+    });
+
+    async function createMovementWithAdmin() {
+      const admin = await createAdmin();
+      createdUserIds.push(admin.userId);
+
+      const category = await createCategory('INGRESO');
+
+      const movement = await createTrackedMovement({
+        tipo: 'INGRESO',
+        categoriaId: category.id,
+        concepto: 'Movimiento con comprobante',
+        importe: 100,
+        fecha: new Date('2026-10-01'),
+        registradoPorId: admin.userId,
+      });
+
+      return { admin, movement };
+    }
+
+    function upload(
+      cookie: string[],
+      id: number,
+      file: Buffer,
+      options: { filename: string; contentType: string; field?: string },
+    ) {
+      return request(app)
+        .post(`/caja/movimientos/${id}/comprobante`)
+        .set('Cookie', cookie)
+        .attach(options.field ?? 'comprobante', file, {
+          filename: options.filename,
+          contentType: options.contentType,
+        });
+    }
+
+    it('guarda el comprobante y lo deja asociado al movimiento', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await upload(admin.cookie, movement.id, PDF, pdf);
+
+      expect(response.status).toBe(200);
+      expect(response.body.comprobanteUrl).toMatch(
+        new RegExp(`^movimientos/${movement.id}/[0-9a-f-]{36}\\.pdf$`),
+      );
+      expect(storage.files.get(response.body.comprobanteUrl)).toBe(
+        'application/pdf',
+      );
+
+      const stored = await prisma.movimientoCaja.findUnique({
+        where: { id: movement.id },
+      });
+
+      expect(stored?.comprobanteUrl).toBe(response.body.comprobanteUrl);
+    });
+
+    it('al reemplazarlo borra el anterior de Storage', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const first = await upload(admin.cookie, movement.id, PDF, pdf);
+      const second = await upload(admin.cookie, movement.id, PNG, {
+        filename: 'foto.png',
+        contentType: 'image/png',
+      });
+
+      expect(second.status).toBe(200);
+      expect(second.body.comprobanteUrl).not.toBe(first.body.comprobanteUrl);
+      expect([...storage.files.keys()]).toEqual([second.body.comprobanteUrl]);
+    });
+
+    it('decide el tipo por el contenido y no por lo que declara el archivo', async () => {
+      // El tipo declarado lo elige quien sube el archivo: un texto que dice
+      // ser PNG pasa el primer filtro, pero no el de los bytes del contenido.
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await upload(
+        admin.cookie,
+        movement.id,
+        Buffer.from('<script>alert(1)</script>'),
+        { filename: 'foto.png', contentType: 'image/png' },
+      );
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'El archivo no es un PDF, JPG o PNG válido',
+      );
+      expect(storage.files.size).toBe(0);
+    });
+
+    it('responde 413 con un mensaje claro a un archivo de más de 5 MB', async () => {
+      // Antes salía como 500 "Error interno del servidor".
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const big = Buffer.concat([PDF, Buffer.alloc(5 * 1024 * 1024)]);
+      const response = await upload(admin.cookie, movement.id, big, pdf);
+
+      expect(response.status).toBe(413);
+      expect(response.body.message).toBe(
+        'El comprobante no puede superar los 5 MB',
+      );
+      expect(storage.files.size).toBe(0);
+    });
+
+    it('responde 400 a un tipo de archivo no permitido', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await upload(admin.cookie, movement.id, PDF, {
+        filename: 'programa.exe',
+        contentType: 'application/x-msdownload',
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Solo se permiten archivos PDF, JPG y PNG',
+      );
+    });
+
+    it('responde 400 si el archivo llega en otro campo', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await upload(admin.cookie, movement.id, PDF, {
+        ...pdf,
+        field: 'archivo',
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Se espera un único archivo, en el campo "comprobante"',
+      );
+    });
+
+    it('responde 400 si el envío llega cortado', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await request(app)
+        .post(`/caja/movimientos/${movement.id}/comprobante`)
+        .set('Cookie', admin.cookie)
+        .set('Content-Type', 'multipart/form-data; boundary=XYZ')
+        .send(
+          '--XYZ\r\nContent-Disposition: form-data; name="comprobante"; ' +
+            'filename="a.pdf"\r\nContent-Type: application/pdf\r\n\r\n%PDF-1',
+        );
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('No se pudo leer el archivo enviado');
+    });
+
+    it('responde 400 si no llega ningún archivo', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await request(app)
+        .post(`/caja/movimientos/${movement.id}/comprobante`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('El comprobante es obligatorio');
+    });
+
+    it('no adjunta un comprobante a un movimiento anulado', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      await cancelManualCashMovement(movement.id, admin.userId, 'Error');
+
+      const response = await upload(admin.cookie, movement.id, PDF, pdf);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'No se puede adjuntar un comprobante a un movimiento anulado',
+      );
+      expect(storage.files.size).toBe(0);
+    });
+
+    it('responde 404 a un movimiento que no existe, al subir y al ver', async () => {
+      const admin = await createAdmin();
+      createdUserIds.push(admin.userId);
+
+      const uploaded = await upload(admin.cookie, 2147483647, PDF, pdf);
+      const viewed = await request(app)
+        .get('/caja/movimientos/2147483647/comprobante')
+        .set('Cookie', admin.cookie);
+
+      expect(uploaded.status).toBe(404);
+      expect(viewed.status).toBe(404);
+      expect(viewed.body.message).toBe('El movimiento no existe');
+    });
+
+    it('no muestra el error de la base con un id que no entra en un entero', async () => {
+      // Antes la respuesta traía la ruta del archivo en el servidor, las
+      // líneas del código y la consulta de Prisma.
+      const admin = await createAdmin();
+      createdUserIds.push(admin.userId);
+
+      const response = await upload(admin.cookie, 2147483648, PDF, pdf);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({
+        message: 'Error al subir el comprobante',
+      });
+    });
+
+    it('no muestra el error de Storage cuando falla', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+      storage.failing = true;
+
+      const response = await upload(admin.cookie, movement.id, PDF, pdf);
+
+      expect(response.status).toBe(500);
+      expect(response.body).toEqual({
+        message: 'Error al subir el comprobante',
+      });
+    });
+
+    it('entrega un enlace firmado que vence en un minuto', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const uploaded = await upload(admin.cookie, movement.id, PDF, pdf);
+      const response = await request(app)
+        .get(`/caja/movimientos/${movement.id}/comprobante`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.url).toBe(
+        `https://storage.test/${uploaded.body.comprobanteUrl}?expira=60`,
+      );
+    });
+
+    it('avisa si el movimiento no tiene comprobante', async () => {
+      const { admin, movement } = await createMovementWithAdmin();
+
+      const response = await request(app)
+        .get(`/caja/movimientos/${movement.id}/comprobante`)
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe('El movimiento no tiene comprobante');
     });
   });
 });
