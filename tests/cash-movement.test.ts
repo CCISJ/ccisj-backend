@@ -16,54 +16,18 @@ import {
   deleteUsers,
   uniqueSuffix,
 } from './session';
+import { storageFalso } from './storage-falso';
 
-// Supabase Storage es un servicio externo, así que en estos tests se reemplaza
-// por uno en memoria. Todo lo demás corre de verdad: multer, la detección del
-// tipo por el contenido, la base y las rutas.
-const storage = vi.hoisted(() => ({
-  // ruta → tipo de contenido con el que se guardó
-  files: new Map<string, string>(),
-  failing: false,
-}));
-
+// Supabase Storage se reemplaza por uno en memoria (ver storage-falso.ts).
 vi.mock('../src/config/supabase', async (importOriginal) => {
   const original =
     await importOriginal<typeof import('../src/config/supabase')>();
+  const { supabaseFalso } = await import('./storage-falso.js');
 
-  const bucket = {
-    upload(path: string, _body: Uint8Array, options: { contentType: string }) {
-      if (storage.failing) {
-        return Promise.resolve({
-          error: { message: 'Bucket not found: comprobantes' },
-        });
-      }
-
-      storage.files.set(path, options.contentType);
-
-      return Promise.resolve({ error: null });
-    },
-
-    remove(paths: string[]) {
-      for (const path of paths) {
-        storage.files.delete(path);
-      }
-
-      return Promise.resolve({ error: null });
-    },
-
-    createSignedUrl(path: string, expiresIn: number) {
-      return Promise.resolve({
-        data: { signedUrl: `https://storage.test/${path}?expira=${expiresIn}` },
-        error: null,
-      });
-    },
-  };
-
-  return {
-    ...original,
-    getSupabase: () => ({ storage: { from: () => bucket } }),
-  };
+  return { ...original, getSupabase: () => supabaseFalso };
 });
+
+const storage = storageFalso;
 
 describe('Movimientos de caja', () => {
   const createdUserIds: number[] = [];
@@ -647,8 +611,7 @@ describe('Movimientos de caja', () => {
     const pdf = { filename: 'comprobante.pdf', contentType: 'application/pdf' };
 
     beforeEach(() => {
-      storage.files.clear();
-      storage.failing = false;
+      storage.reset();
     });
 
     async function createMovementWithAdmin() {

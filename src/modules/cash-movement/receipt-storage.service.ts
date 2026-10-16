@@ -32,6 +32,23 @@ export async function uploadReceiptToStorage(
   movementId: number,
   file: Express.Multer.File,
 ) {
+  return uploadReceiptFile(`movimientos/${movementId}`, file);
+}
+
+/**
+ * El comprobante de un pago de cuota se sube *antes* de crear el pago, para
+ * que el pago y su movimiento de caja se graben ya con él en una sola
+ * transacción. Como el movimiento todavía no existe, la carpeta es la del
+ * socio y no la del movimiento.
+ */
+export async function uploadFeePaymentReceiptToStorage(
+  socioId: number,
+  file: Express.Multer.File,
+) {
+  return uploadReceiptFile(`pagos-cuota/socio-${socioId}`, file);
+}
+
+async function uploadReceiptFile(folder: string, file: Express.Multer.File) {
   const extension = getFileExtension(file.buffer);
 
   const contentTypes: Record<string, string> = {
@@ -40,7 +57,7 @@ export async function uploadReceiptToStorage(
     png: 'image/png',
   };
 
-  const path = `movimientos/${movementId}/${randomUUID()}.${extension}`;
+  const path = `${folder}/${randomUUID()}.${extension}`;
 
   const { error } = await getSupabase()
     .storage.from(BUCKET)

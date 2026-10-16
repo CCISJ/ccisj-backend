@@ -25,7 +25,8 @@ export type RegisterFeePaymentData = {
   importe: number;
   fechaPago: Date;
   medioPago: string;
-  comprobanteUrl?: string;
+  /** El archivo tal como lo deja multer; se guarda en Supabase Storage. */
+  comprobante?: Express.Multer.File;
   observaciones?: string;
 };
 
@@ -41,6 +42,11 @@ export type CreateFeePaymentData = {
   importe: number;
   fechaPago: Date;
   medioPago: string;
+  /**
+   * Ruta del comprobante ya subido a Storage. Va en el movimiento de caja del
+   * pago, como en cualquier otro movimiento: `pago_cuota` no tiene columna
+   * para esto desde la migración 20261008221118.
+   */
   comprobanteUrl?: string;
   observaciones?: string;
   detalles: PaymentDetailData[];

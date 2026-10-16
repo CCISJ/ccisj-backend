@@ -5,6 +5,7 @@ import {
   requireAuth,
   requireMemberAccess,
 } from '@/middlewares/auth.middleware';
+import { uploadReceipt } from '@/middlewares/upload-receipt.middleware';
 
 import {
   cancelPayment,
@@ -86,7 +87,16 @@ router.get(
   getPaymentsByMember,
 );
 
-router.post('/socio/:socioId/pagos', requireAuth, requireAdmin, createPayment);
+// El comprobante es opcional (obligatorio con tarjeta) y viaja en el mismo
+// request, como multipart en el campo `comprobante`. Sin archivo, el pago se
+// sigue pudiendo mandar como JSON: multer solo lee los multipart.
+router.post(
+  '/socio/:socioId/pagos',
+  requireAuth,
+  requireAdmin,
+  uploadReceipt,
+  createPayment,
+);
 
 router.get(
   '/socio/:socioId/estado',
