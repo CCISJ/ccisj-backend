@@ -1,11 +1,20 @@
-FROM node:22-alpine
+# Node y pnpm van en las mismas versiones que en el CI
+# (.github/workflows/ci.yml): si no, los tests prueban una versión y esta
+# imagen corre otra. Al cambiar una, cambiar la otra.
+FROM node:24-alpine
 
 # corepack se activa como root porque escribe en /usr/local/bin, y su caché
 # queda en una ruta compartida y legible: todo el resto del build corre como
 # el usuario `node`, que necesita leer el pnpm ya descargado.
+#
+# El `pnpm --version` no es decorativo: desde la 12, pnpm baja su binario la
+# primera vez que se ejecuta, dentro de esa misma caché. Si esa primera vez
+# fuera el `pnpm install` de más abajo, ya como `node`, no podría escribir
+# ahí y el build fallaría con EACCES (pasó).
 ENV COREPACK_HOME=/opt/corepack
 RUN corepack enable \
-  && corepack prepare pnpm@11.25.0 --activate \
+  && corepack prepare pnpm@12.3.4 --activate \
+  && pnpm --version \
   && chmod -R a+rX "$COREPACK_HOME"
 
 # La imagen oficial de node corre como root. Si alguien consigue ejecutar
