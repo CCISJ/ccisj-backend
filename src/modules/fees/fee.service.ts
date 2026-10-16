@@ -2,6 +2,10 @@ import { AddFeeAdjustmentData, RegisterFeePaymentData } from '@/types/fee.type';
 import { HttpError } from '@/utils/http-error';
 
 import {
+  deleteReceiptFromStorage,
+  uploadFeePaymentReceiptToStorage,
+} from '../cash-movement/receipt-storage.service';
+import {
   findActive,
   findById as findMemberById,
 } from '../members/member.repository';
@@ -491,7 +495,7 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     importe,
     fechaPago,
     medioPago,
-    comprobanteUrl,
+    comprobante,
     observaciones,
   } = data;
 
@@ -515,7 +519,7 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     throw new Error('El medio de pago es obligatorio');
   }
 
-  if (medioPago.trim().toUpperCase() === 'TARJETA' && !comprobanteUrl?.trim()) {
+  if (medioPago.trim().toUpperCase() === 'TARJETA' && !comprobante) {
     throw new Error('El comprobante es obligatorio para pagos con tarjeta');
   }
 
@@ -576,18 +580,40 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     remaining -= applied;
   }
 
-  const payment = await createFeePayment({
-    socioId,
-    registradoPorId,
-    importe,
-    fechaPago,
-    medioPago: medioPago.trim(),
-    comprobanteUrl: comprobanteUrl?.trim() || undefined,
-    observaciones: observaciones?.trim() || undefined,
-    detalles: details,
-  });
+  // El comprobante se sube recién acá, con todas las validaciones pasadas, y
+  // antes de grabar: así el pago y su movimiento de caja se crean ya con él
+  // en la misma transacción, y un pago con tarjeta nunca queda sin
+  // comprobante. Si la transacción falla, se borra el archivo para que no
+  // quede huérfano en Storage (lo mismo que hace caja al reemplazar uno).
+  const comprobanteUrl = comprobante
+    ? await uploadFeePaymentReceiptToStorage(socioId, comprobante)
+    : undefined;
 
-  return payment;
+  try {
+    return await createFeePayment({
+      socioId,
+      registradoPorId,
+      importe,
+      fechaPago,
+      medioPago: medioPago.trim(),
+      comprobanteUrl,
+      observaciones: observaciones?.trim() || undefined,
+      detalles: details,
+    });
+  } catch (error) {
+    if (comprobanteUrl) {
+      try {
+        await deleteReceiptFromStorage(comprobanteUrl);
+      } catch (cleanupError) {
+        console.error(
+          'No se pudo limpiar el comprobante subido:',
+          cleanupError,
+        );
+      }
+    }
+
+    throw error;
+  }
 }
 
 export async function cancelMemberFeePayment(

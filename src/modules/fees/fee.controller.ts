@@ -202,8 +202,9 @@ export async function createPayment(req: AuthRequest, res: Response) {
       });
     }
 
-    const { importe, fechaPago, medioPago, comprobanteUrl, observaciones } =
-      req.body;
+    // Con multipart (cuando viene el comprobante) todos los campos llegan
+    // como texto; por eso el `Number(importe)` de abajo.
+    const { importe, fechaPago, medioPago, observaciones } = req.body;
 
     if (importe === undefined || !fechaPago || !medioPago) {
       return res.status(400).json({
@@ -217,7 +218,7 @@ export async function createPayment(req: AuthRequest, res: Response) {
       importe: Number(importe),
       fechaPago: new Date(fechaPago),
       medioPago,
-      comprobanteUrl,
+      comprobante: req.file,
       observaciones,
     });
 

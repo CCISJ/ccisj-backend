@@ -166,6 +166,18 @@ export async function findMemberFeesWithPayments(socioId: number) {
   });
 }
 
+/**
+ * El comprobante de un pago vive en su movimiento de caja: con esto el pago
+ * dice si tiene uno y con qué movimiento pedirlo
+ * (`GET /caja/movimientos/:id/comprobante`).
+ */
+const PAYMENT_CASH_MOVEMENT = {
+  select: {
+    id: true,
+    comprobanteUrl: true,
+  },
+} as const;
+
 export async function createFeePayment(data: CreateFeePaymentData) {
   const {
     socioId,
@@ -186,7 +198,6 @@ export async function createFeePayment(data: CreateFeePaymentData) {
         importe,
         fechaPago,
         medioPago,
-        comprobanteUrl,
         observaciones,
       },
     });
@@ -233,6 +244,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
         observaciones,
         registradoPorId,
         pagoCuotaId: payment.id,
+        comprobanteUrl,
       },
     });
 
@@ -242,6 +254,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
       },
       include: {
         detalles: true,
+        movimientoCaja: PAYMENT_CASH_MOVEMENT,
       },
     });
   });
@@ -381,6 +394,7 @@ export async function findMemberFeePayments(socioId: number) {
           email: true,
         },
       },
+      movimientoCaja: PAYMENT_CASH_MOVEMENT,
     },
     orderBy: {
       fechaPago: 'desc',

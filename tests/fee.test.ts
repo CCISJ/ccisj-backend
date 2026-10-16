@@ -1,5 +1,13 @@
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
@@ -19,6 +27,16 @@ import {
   deleteMemberPayments,
   deleteUsers,
 } from './session';
+import { storageFalso } from './storage-falso';
+
+// Supabase Storage se reemplaza por uno en memoria (ver storage-falso.ts).
+vi.mock('../src/config/supabase', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('../src/config/supabase')>();
+  const { supabaseFalso } = await import('./storage-falso.js');
+
+  return { ...original, getSupabase: () => supabaseFalso };
+});
 
 describe('Cuotas', () => {
   let firstMember: Awaited<ReturnType<typeof createMember>>;
@@ -356,7 +374,6 @@ describe('Cuotas', () => {
         importe: 760,
         fechaPago: new Date('2026-07-15'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-001.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -440,7 +457,6 @@ describe('Cuotas', () => {
         importe: 1000,
         fechaPago: new Date('2026-09-18'),
         medioPago: 'TRANSFERENCIA',
-        comprobanteUrl: 'https://comprobantes.test/TEST-002.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -586,7 +602,6 @@ describe('Cuotas', () => {
         importe: 760,
         fechaPago: new Date('2026-07-15'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-CANCEL-001.pdf',
       });
 
       expect(payment).not.toBeNull();
@@ -685,7 +700,6 @@ describe('Cuotas', () => {
         importe: 300,
         fechaPago: new Date('2026-07-10'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-CANCEL-002.pdf',
       });
 
       const secondPayment = await registerFeePayment({
@@ -694,7 +708,6 @@ describe('Cuotas', () => {
         importe: 460,
         fechaPago: new Date('2026-07-20'),
         medioPago: 'EFECTIVO',
-        comprobanteUrl: 'https://comprobantes.test/TEST-CANCEL-003.pdf',
       });
 
       expect(firstPayment).not.toBeNull();
@@ -1240,7 +1253,6 @@ it('devuelve el historial de pagos del socio con el detalle de cuotas', async ()
       importe: 300,
       fechaPago: new Date('2026-09-20'),
       medioPago: 'EFECTIVO',
-      comprobanteUrl: 'https://comprobantes.test/REC-TEST-001.pdf',
       observaciones: 'Pago parcial de prueba',
     });
 
@@ -1254,7 +1266,6 @@ it('devuelve el historial de pagos del socio con el detalle de cuotas', async ()
     expect(response.body[0]).toMatchObject({
       socioId: member.socioId,
       medioPago: 'EFECTIVO',
-      comprobanteUrl: 'https://comprobantes.test/REC-TEST-001.pdf',
       observaciones: 'Pago parcial de prueba',
     });
 
@@ -1606,6 +1617,252 @@ describe('Edición de la configuración de cuota', () => {
     expect(response.status).toBe(400);
     expect(response.body.message).toBe(
       'El importe de la cuota debe ser mayor a 0',
+    );
+  });
+});
+
+describe('Comprobante del pago de cuota', () => {
+  // El comprobante de un pago vive en su movimiento de caja, igual que el de
+  // cualquier otro movimiento. Antes se intentaba guardar en
+  // `pago_cuota.comprobante_url`, una columna que la migración
+  // 20261008221118 había borrado: ningún pago con tarjeta se podía registrar.
+  const PDF = Buffer.from('%PDF-1.7\nComprobante de prueba');
+  const pdf = { filename: 'comprobante.pdf', contentType: 'application/pdf' };
+
+  let admin: Awaited<ReturnType<typeof createAdmin>>;
+  const members: Awaited<ReturnType<typeof createMember>>[] = [];
+
+  beforeAll(async () => {
+    admin = await createAdmin();
+  });
+
+  beforeEach(() => {
+    storageFalso.reset();
+  });
+
+  afterAll(async () => {
+    const socioIds = members.map((member) => member.socioId);
+
+    await deleteMemberPayments(socioIds);
+    await prisma.cuota.deleteMany({ where: { socioId: { in: socioIds } } });
+    await deleteUsers([admin.userId, ...members.map((m) => m.userId)]);
+  });
+
+  /** Un socio nuevo con una cuota de julio de 760 pendiente. */
+  async function memberWithFee() {
+    const member = await createMember();
+    members.push(member);
+
+    await generateMonthlyFee(member.socioId, 2026, 7);
+
+    return member;
+  }
+
+  function pay(
+    socioId: number,
+    fields: Record<string, string>,
+    file?: { content: Buffer; filename: string; contentType: string },
+  ) {
+    const req = request(app)
+      .post(`/cuotas/socio/${socioId}/pagos`)
+      .set('Cookie', admin.cookie);
+
+    for (const [name, value] of Object.entries(fields)) {
+      req.field(name, value);
+    }
+
+    if (file) {
+      req.attach('comprobante', file.content, {
+        filename: file.filename,
+        contentType: file.contentType,
+      });
+    }
+
+    return req;
+  }
+
+  const cardPayment = {
+    importe: '760',
+    fechaPago: '2026-07-15',
+    medioPago: 'TARJETA',
+  };
+
+  function paymentsOf(socioId: number) {
+    return prisma.pagoCuota.findMany({
+      where: { socioId },
+      include: { movimientoCaja: true },
+    });
+  }
+
+  it('registra un pago con tarjeta y guarda el comprobante en su movimiento de caja', async () => {
+    const member = await memberWithFee();
+
+    const response = await pay(member.socioId, cardPayment, {
+      content: PDF,
+      ...pdf,
+    });
+
+    expect(response.status).toBe(201);
+
+    const path = response.body.movimientoCaja.comprobanteUrl;
+
+    expect(path).toMatch(
+      new RegExp(`^pagos-cuota/socio-${member.socioId}/[0-9a-f-]{36}\\.pdf$`),
+    );
+    expect(storageFalso.files.get(path)).toBe('application/pdf');
+
+    const [payment] = await paymentsOf(member.socioId);
+
+    expect(payment.movimientoCaja?.comprobanteUrl).toBe(path);
+    expect(payment.movimientoCaja?.id).toBe(response.body.movimientoCaja.id);
+  });
+
+  it('rechaza un pago con tarjeta sin comprobante y no registra nada', async () => {
+    const member = await memberWithFee();
+
+    const response = await pay(member.socioId, cardPayment);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'El comprobante es obligatorio para pagos con tarjeta',
+    );
+    expect(await paymentsOf(member.socioId)).toHaveLength(0);
+  });
+
+  it('sigue aceptando un pago sin comprobante enviado como JSON', async () => {
+    // El frontend anterior a este cambio manda JSON: efectivo y transferencia
+    // tienen que seguir funcionando igual.
+    const member = await memberWithFee();
+
+    const response = await request(app)
+      .post(`/cuotas/socio/${member.socioId}/pagos`)
+      .set('Cookie', admin.cookie)
+      .send({ importe: 760, fechaPago: '2026-07-15', medioPago: 'EFECTIVO' });
+
+    expect(response.status).toBe(201);
+    expect(response.body.movimientoCaja.comprobanteUrl).toBeNull();
+  });
+
+  it('acepta un comprobante opcional en un pago por transferencia', async () => {
+    const member = await memberWithFee();
+
+    const response = await pay(
+      member.socioId,
+      { ...cardPayment, medioPago: 'TRANSFERENCIA' },
+      { content: PDF, ...pdf },
+    );
+
+    expect(response.status).toBe(201);
+    expect(
+      storageFalso.files.has(response.body.movimientoCaja.comprobanteUrl),
+    ).toBe(true);
+  });
+
+  it('no sube nada si el pago no pasa las validaciones', async () => {
+    // Las reglas del pago se revisan antes de subir el archivo: un pago
+    // rechazado no deja un comprobante huérfano en Storage.
+    const member = await memberWithFee();
+
+    const response = await pay(
+      member.socioId,
+      { ...cardPayment, importe: '100000' },
+      { content: PDF, ...pdf },
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'El importe del pago no puede superar la deuda pendiente',
+    );
+    expect(storageFalso.files.size).toBe(0);
+  });
+
+  it('borra el comprobante subido si después falla la grabación del pago', async () => {
+    // Para que falle la transacción con el archivo ya subido se usa un límite
+    // de la base: `observaciones` es VARCHAR(500) y el service no lo valida,
+    // así que 501 caracteres hacen fallar el insert del pago (Prisma P2000,
+    // que `sendError` responde como 400).
+    const member = await memberWithFee();
+
+    const response = await pay(
+      member.socioId,
+      { ...cardPayment, observaciones: 'x'.repeat(501) },
+      { content: PDF, ...pdf },
+    );
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      message: 'Uno de los datos es demasiado largo',
+    });
+    expect(storageFalso.files.size).toBe(0);
+    expect(await paymentsOf(member.socioId)).toHaveLength(0);
+  });
+
+  it('no registra el pago si falla Storage, y no muestra su error', async () => {
+    const member = await memberWithFee();
+    storageFalso.failing = true;
+
+    const response = await pay(member.socioId, cardPayment, {
+      content: PDF,
+      ...pdf,
+    });
+
+    expect(response.status).toBe(500);
+    expect(response.body).toEqual({ message: 'Error al registrar el pago' });
+    expect(await paymentsOf(member.socioId)).toHaveLength(0);
+  });
+
+  it('decide el tipo por el contenido y no por lo que declara el archivo', async () => {
+    const member = await memberWithFee();
+
+    const response = await pay(member.socioId, cardPayment, {
+      content: Buffer.from('<script>alert(1)</script>'),
+      ...pdf,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'El archivo no es un PDF, JPG o PNG válido',
+    );
+    expect(await paymentsOf(member.socioId)).toHaveLength(0);
+  });
+
+  it('responde 413 a un comprobante de más de 5 MB', async () => {
+    const member = await memberWithFee();
+
+    const response = await pay(member.socioId, cardPayment, {
+      content: Buffer.concat([PDF, Buffer.alloc(5 * 1024 * 1024)]),
+      ...pdf,
+    });
+
+    expect(response.status).toBe(413);
+    expect(response.body.message).toBe(
+      'El comprobante no puede superar los 5 MB',
+    );
+    expect(await paymentsOf(member.socioId)).toHaveLength(0);
+  });
+
+  it('el historial dice qué movimiento tiene el comprobante, y se puede ver desde caja', async () => {
+    const member = await memberWithFee();
+
+    const created = await pay(member.socioId, cardPayment, {
+      content: PDF,
+      ...pdf,
+    });
+
+    const history = await request(app)
+      .get(`/cuotas/socio/${member.socioId}/pagos`)
+      .set('Cookie', admin.cookie);
+
+    expect(history.status).toBe(200);
+    expect(history.body[0].movimientoCaja).toEqual(created.body.movimientoCaja);
+
+    const receipt = await request(app)
+      .get(`/caja/movimientos/${history.body[0].movimientoCaja.id}/comprobante`)
+      .set('Cookie', admin.cookie);
+
+    expect(receipt.status).toBe(200);
+    expect(receipt.body.url).toBe(
+      `https://storage.test/${created.body.movimientoCaja.comprobanteUrl}?expira=60`,
     );
   });
 });
