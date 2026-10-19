@@ -135,17 +135,22 @@ describe('Controles de configuración aplicados a la aplicación', () => {
   it('manda las cabeceras de seguridad de helmet', async () => {
     const respuesta = await request(app).get('/');
 
-    expect(respuesta.headers['content-security-policy']).toContain(
-      "default-src 'self'",
-    );
-    expect(respuesta.headers['content-security-policy']).toContain(
-      "object-src 'none'",
-    );
     expect(respuesta.headers['strict-transport-security']).toContain(
       'max-age=',
     );
     expect(respuesta.headers['x-content-type-options']).toBe('nosniff');
-    expect(respuesta.headers['x-frame-options']).toBe('SAMEORIGIN');
+  });
+
+  // Exacta y no con `toContain`: lo que importa es que no se cuele ninguna
+  // directiva que permita algo. Con la de helmet por omisión, ZAP marcaba
+  // `font-src https:` y `style-src 'unsafe-inline'`.
+  it('la CSP no permite cargar nada ni incrustar la API en un frame', async () => {
+    const respuesta = await request(app).get('/');
+
+    expect(respuesta.headers['content-security-policy']).toBe(
+      "default-src 'none';base-uri 'none';form-action 'none';frame-ancestors 'none'",
+    );
+    expect(respuesta.headers['x-frame-options']).toBe('DENY');
   });
 
   describe('límite de tamaño del body', () => {
