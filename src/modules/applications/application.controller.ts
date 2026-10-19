@@ -24,6 +24,19 @@ function invalidId(res: Response) {
   });
 }
 
+export async function getMine(req: AuthRequest, res: Response) {
+  try {
+    const applications = await applicationService.getMine(req.user!);
+
+    res.json(applications);
+  } catch (error) {
+    sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener las postulaciones',
+    });
+  }
+}
+
 export async function getReceived(req: AuthRequest, res: Response) {
   try {
     const applications = await applicationService.getReceived(req.user!);
