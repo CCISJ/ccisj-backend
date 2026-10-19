@@ -61,6 +61,13 @@ const SALIDA = join(DAST, 'salida');
 const ADMIN = { email: 'admin@ccisj.uy', password: '1234' };
 const POSTULANTE = { email: 'postulante@ccisj.uy', password: '1234' };
 
+/**
+ * Contraseña de las cuentas que crea el escaneo, nueva en cada corrida: no
+ * hace falta conocerla después, y así no queda ninguna escrita en el código.
+ * Cumple la política (`assertPasswordPolicy`): letras, números y más de 10.
+ */
+const CLAVE_DE_LAS_CUENTAS = `Dast${randomBytes(12).toString('hex')}9`;
+
 function abortar(mensaje: string): never {
   console.error(`\n${mensaje}\n`);
   process.exit(1);
@@ -253,7 +260,7 @@ async function crearJuego(admin: Pedir, postulante: Pedir, n: number) {
 
   const usuario = await admin('POST', '/usuarios', {
     email: `dast-usuario-${sufijo}@ccisj.uy`,
-    password: 'ClaveDeEjemplo1',
+    password: CLAVE_DE_LAS_CUENTAS,
     tipo: 'POSTULANTE',
   });
 
@@ -333,7 +340,7 @@ async function crearJuego(admin: Pedir, postulante: Pedir, n: number) {
   // Un perfil de postulante propio, en una cuenta aparte.
   const cuentaPostulante = await admin('POST', '/usuarios', {
     email: `dast-postulante-${sufijo}@ccisj.uy`,
-    password: 'ClaveDeEjemplo1',
+    password: CLAVE_DE_LAS_CUENTAS,
     tipo: 'POSTULANTE',
   });
   const perfil = await admin('POST', '/postulantes', {
@@ -529,8 +536,14 @@ function correrZap(cookie: string): Promise<number> {
   //
   // `spawn` y no `spawnSync`: el proxy contador vive en este mismo proceso, y
   // con el proceso bloqueado esperando a Docker no atendería ningún request.
+  //
+  // `docker` se busca en el PATH a propósito (Sonar S4036). Es un script de
+  // desarrollo que cada uno corre en su máquina con su PATH: si alguien puede
+  // escribir en uno de esos directorios, la máquina ya está comprometida. Una
+  // ruta fija lo rompería en cada sistema operativo.
   const zap = spawn(
-    'docker',
+    'docker', // NOSONAR: ver arriba
+
     [
       'run',
       '--rm',
