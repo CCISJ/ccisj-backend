@@ -1,0 +1,1304 @@
+# Descripción de la API de CCISJ en OpenAPI 3.0.
+#
+# La usa el análisis dinámico (DAST): OWASP ZAP la lee para saber qué
+# endpoints hay y qué datos manda cada uno, y con eso los ataca de a uno. Sin
+# esta descripción, ZAP solo encuentra lo que puede adivinar, y en una API no
+# adivina casi nada: ni los POST ni los PATCH. Ver `dast/README.md`.
+#
+# Sirve además como documentación de la API: se puede abrir en cualquier
+# visor de OpenAPI (por ejemplo, editor.swagger.io).
+#
+# Dos convenciones propias:
+#
+# - Los `example` son datos VÁLIDOS. Un ataque que empieza con un body
+#   inválido se queda en la primera validación y no llega al código que
+#   importa.
+# - `x-fixture` marca un ID que tiene que existir en la base: el script del
+#   escaneo crea esos registros antes de empezar y reemplaza el `example` con
+#   su ID real (`scripts/dast.mts`). El número que está escrito acá es solo
+#   para quien lo lee.
+#
+# Que esta descripción tenga exactamente los endpoints de la app lo verifica
+# `tests/openapi.test.ts`, igual que la matriz de autorización: si se agrega
+# una ruta y no se describe acá, el test falla.
+
+openapi: 3.0.3
+
+info:
+  title: API de CCISJ
+  version: 1.0.0
+  description: >-
+    Sistema de gestión del Centro Comercial e Industrial de San José. La
+    sesión es una cookie `token` (httpOnly) que devuelve el login. Los errores
+    tienen siempre la forma `{ "message": "..." }`. Un recurso que existe pero
+    es de otro usuario responde 404, no 403, para no confirmar que existe.
+
+servers:
+  - url: http://localhost:3000
+
+security:
+  - cookieAuth: []
+
+tags:
+  - name: Autenticación
+  - name: Usuarios
+  - name: Socios
+  - name: Postulantes
+  - name: Categorías de ofertas
+  - name: Ofertas
+  - name: Postulaciones
+  - name: Notificaciones
+  - name: Cuotas
+  - name: Caja
+
+paths:
+  /:
+    get:
+      tags: [Autenticación]
+      summary: Cartel de la API.
+      security: []
+      responses:
+        '200':
+          description: Texto plano.
+
+  # --- Autenticación -------------------------------------------------------
+
+  /auth/login:
+    post:
+      tags: [Autenticación]
+      summary: Inicia sesión y deja la cookie.
+      description: 10 intentos fallidos cada 15 minutos por IP.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  { type: string, format: email, example: dast-login@ccisj.uy }
+                password:
+                  { type: string, format: password, example: ClaveDeEjemplo1 }
+      responses:
+        '200': { description: Sesión iniciada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '401': { description: Email o contraseña incorrectos. }
+        '429': { $ref: '#/components/responses/DemasiadasSolicitudes' }
+
+  /auth/registro:
+    post:
+      tags: [Autenticación]
+      summary: Crea una cuenta de postulante y deja la sesión iniciada.
+      description: 5 registros por hora por IP.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, nombre, apellido]
+              properties:
+                email:
+                  {
+                    type: string,
+                    format: email,
+                    example: dast-registro@ccisj.uy,
+                  }
+                password:
+                  {
+                    type: string,
+                    format: password,
+                    minLength: 10,
+                    example: ClaveDeEjemplo1,
+                  }
+                nombre: { type: string, maxLength: 100, example: Ana }
+                apellido: { type: string, maxLength: 100, example: Pérez }
+                telefono: { type: string, example: '099123456' }
+      responses:
+        '201': { description: Cuenta creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '409': { description: El email ya está registrado. }
+        '429': { $ref: '#/components/responses/DemasiadasSolicitudes' }
+
+  /auth/me:
+    get:
+      tags: [Autenticación]
+      summary: Usuario de la sesión, con su perfil.
+      responses:
+        '200': { description: El usuario. }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+
+  /auth/cambiar-contrasena:
+    post:
+      tags: [Autenticación]
+      summary: Cambia la contraseña y renueva la cookie.
+      description: >-
+        Invalida todas las demás sesiones del usuario. 5 intentos fallidos
+        cada 15 minutos por usuario.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [passwordActual, passwordNueva]
+              properties:
+                # A propósito NO es la contraseña real de la sesión del
+                # escaneo: si ZAP la cambiara, el resto del escaneo seguiría
+                # con una sesión invalidada y solo recibiría 401.
+                passwordActual:
+                  { type: string, format: password, example: NoEsLaActual1 }
+                passwordNueva:
+                  {
+                    type: string,
+                    format: password,
+                    minLength: 10,
+                    example: ClaveNueva12345,
+                  }
+      responses:
+        '200': { description: Contraseña cambiada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '429': { $ref: '#/components/responses/DemasiadasSolicitudes' }
+
+  /auth/logout:
+    post:
+      tags: [Autenticación]
+      summary: Borra la cookie de sesión.
+      security: []
+      responses:
+        '200': { description: Sesión cerrada. }
+
+  # --- Usuarios (solo administración) --------------------------------------
+
+  /usuarios:
+    get:
+      tags: [Usuarios]
+      summary: Lista las cuentas.
+      responses:
+        '200': { description: Lista de usuarios. }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      tags: [Usuarios]
+      summary: Crea una cuenta de administración o de postulante.
+      description: Las cuentas de socio se crean al dar de alta el socio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password, tipo]
+              properties:
+                email:
+                  { type: string, format: email, example: dast-nuevo@ccisj.uy }
+                password:
+                  {
+                    type: string,
+                    format: password,
+                    minLength: 10,
+                    example: ClaveDeEjemplo1,
+                  }
+                tipo:
+                  {
+                    type: string,
+                    enum: [ADMIN, POSTULANTE],
+                    example: POSTULANTE,
+                  }
+      responses:
+        '201': { description: Cuenta creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '409': { description: El email ya está registrado. }
+
+  /usuarios/destinatarios-notificaciones:
+    get:
+      tags: [Usuarios]
+      summary: Cuentas que pueden recibir una notificación.
+      responses:
+        '200': { description: Lista de usuarios. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /usuarios/{id}:
+    parameters:
+      - $ref: '#/components/parameters/UsuarioId'
+    get:
+      tags: [Usuarios]
+      summary: Una cuenta.
+      responses:
+        '200': { description: El usuario. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Usuarios]
+      summary: Edita email, tipo o estado de una cuenta.
+      description: Nadie puede desactivar su propia cuenta.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  {
+                    type: string,
+                    format: email,
+                    example: dast-editado@ccisj.uy,
+                  }
+                tipo:
+                  {
+                    type: string,
+                    enum: [ADMIN, POSTULANTE],
+                    example: POSTULANTE,
+                  }
+                activo: { type: boolean, example: true }
+      responses:
+        '200': { description: Cuenta editada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Usuarios]
+      summary: Borra una cuenta.
+      responses:
+        '200': { description: Cuenta borrada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Socios ---------------------------------------------------------------
+
+  /socios/me:
+    get:
+      tags: [Socios]
+      summary: La empresa del socio de la sesión.
+      responses:
+        '200': { description: El socio. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    patch:
+      tags: [Socios]
+      summary: El socio edita sus propios datos de contacto.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                telefono: { type: string, example: '43421234' }
+                celular: { type: string, example: '099123456' }
+                email:
+                  {
+                    type: string,
+                    format: email,
+                    example: dast-socio-me@ccisj.uy,
+                  }
+                direccion: { type: string, example: 25 de Mayo 123 }
+                ciudad: { type: string, example: San José }
+                numeroBps: { type: string, example: '1234567' }
+      responses:
+        '200': { description: Datos actualizados. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /socios:
+    get:
+      tags: [Socios]
+      summary: Padrón de socios (administración y socios directivos).
+      responses:
+        '200': { description: Lista de socios. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      tags: [Socios]
+      summary: Da de alta un socio, con su cuenta de acceso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocioNuevo'
+      responses:
+        '201': { description: Socio creado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '409': { description: RUT, número de BPS o email ya registrados. }
+
+  /socios/{id}:
+    parameters:
+      - $ref: '#/components/parameters/SocioId'
+    get:
+      tags: [Socios]
+      summary: Un socio.
+      responses:
+        '200': { description: El socio. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Socios]
+      summary: Edita un socio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocioEdicion'
+      responses:
+        '200': { description: Socio editado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Socios]
+      summary: Da de baja un socio.
+      responses:
+        '200': { description: Socio borrado. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Postulantes ----------------------------------------------------------
+
+  /postulantes:
+    get:
+      tags: [Postulantes]
+      summary: Lista los postulantes.
+      responses:
+        '200': { description: Lista de postulantes. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      tags: [Postulantes]
+      summary: Crea el perfil de postulante de una cuenta existente.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [usuarioId, nombre, apellido]
+              properties:
+                usuarioId: { type: integer, example: 3, x-fixture: usuario }
+                nombre: { type: string, maxLength: 100, example: Ana }
+                apellido: { type: string, maxLength: 100, example: Pérez }
+                telefono: { type: string, example: '099111222' }
+      responses:
+        '201': { description: Perfil creado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /postulantes/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PostulanteId'
+    get:
+      tags: [Postulantes]
+      summary: Un postulante (el propio, o cualquiera para la administración).
+      responses:
+        '200': { description: El postulante. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Postulantes]
+      summary: Edita el perfil de un postulante.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string, maxLength: 100, example: Ana }
+                apellido: { type: string, maxLength: 100, example: Pérez }
+                telefono: { type: string, example: '099111222' }
+      responses:
+        '200': { description: Perfil editado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Postulantes]
+      summary: Borra un postulante.
+      responses:
+        '200': { description: Postulante borrado. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Categorías de las ofertas --------------------------------------------
+
+  /categorias:
+    get:
+      tags: [Categorías de ofertas]
+      summary: Lista las categorías.
+      responses:
+        '200': { description: Lista de categorías. }
+    post:
+      tags: [Categorías de ofertas]
+      summary: Crea una categoría.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre]
+              properties:
+                nombre: { type: string, example: Logística }
+                descripcion: { type: string, example: Depósitos y distribución }
+      responses:
+        '201': { description: Categoría creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '409': { description: Ya existe una categoría con ese nombre. }
+
+  /categorias/{id}:
+    parameters:
+      - $ref: '#/components/parameters/CategoriaId'
+    get:
+      tags: [Categorías de ofertas]
+      summary: Una categoría.
+      responses:
+        '200': { description: La categoría. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Categorías de ofertas]
+      summary: Edita una categoría, o la desactiva.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string, example: Logística y transporte }
+                descripcion:
+                  { type: string, example: Depósitos, distribución y fletes }
+                activa: { type: boolean, example: true }
+      responses:
+        '200': { description: Categoría editada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Categorías de ofertas]
+      summary: Borra una categoría que ninguna oferta usa.
+      responses:
+        '200': { description: Categoría borrada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Ofertas (la bolsa de trabajo es pública) -----------------------------
+
+  /ofertas:
+    get:
+      tags: [Ofertas]
+      summary: Ofertas activas; con sesión de administración, todas.
+      security: [{}, { cookieAuth: [] }]
+      responses:
+        '200': { description: Lista de ofertas. }
+    post:
+      tags: [Ofertas]
+      summary: Publica una oferta (el socio, la suya; la administración, la de cualquier socio).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [titulo, descripcion, categoriaIds]
+              properties:
+                socioId:
+                  type: integer
+                  description: Solo lo usa la administración. A un socio se le ignora.
+                  example: 1
+                  x-fixture: socio
+                titulo: { type: string, example: Vendedor de mostrador }
+                descripcion:
+                  { type: string, example: Atención al público en ferretería. }
+                ubicacion: { type: string, nullable: true, example: San José }
+                modalidad:
+                  {
+                    type: string,
+                    nullable: true,
+                    enum: [PRESENCIAL, REMOTO, HIBRIDO],
+                    example: PRESENCIAL,
+                  }
+                cantidadVacantes: { type: integer, minimum: 1, example: 2 }
+                fechaCierre:
+                  {
+                    type: string,
+                    format: date,
+                    nullable: true,
+                    example: '2099-12-31',
+                  }
+                categoriaIds:
+                  type: array
+                  items: { type: integer, example: 1, x-fixture: categoria }
+      responses:
+        '201': { description: Oferta creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /ofertas/mias:
+    get:
+      tags: [Ofertas]
+      summary: Las ofertas del socio de la sesión.
+      responses:
+        '200': { description: Lista de ofertas. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /ofertas/mias/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OfertaId'
+    get:
+      tags: [Ofertas]
+      summary: Una oferta del socio de la sesión, con sus postulaciones.
+      responses:
+        '200': { description: La oferta. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /ofertas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/OfertaId'
+    get:
+      tags: [Ofertas]
+      summary: Una oferta.
+      security: [{}, { cookieAuth: [] }]
+      responses:
+        '200': { description: La oferta. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Ofertas]
+      summary: Edita una oferta, o la cierra.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                titulo: { type: string, example: Vendedor de mostrador }
+                descripcion:
+                  { type: string, example: Atención al público y caja. }
+                ubicacion: { type: string, nullable: true, example: San José }
+                modalidad:
+                  {
+                    type: string,
+                    nullable: true,
+                    enum: [PRESENCIAL, REMOTO, HIBRIDO],
+                    example: HIBRIDO,
+                  }
+                cantidadVacantes: { type: integer, minimum: 1, example: 3 }
+                fechaCierre:
+                  {
+                    type: string,
+                    format: date,
+                    nullable: true,
+                    example: '2099-12-31',
+                  }
+                estado:
+                  { type: string, enum: [ACTIVA, CERRADA], example: ACTIVA }
+                categoriaIds:
+                  type: array
+                  items: { type: integer, example: 1, x-fixture: categoria }
+      responses:
+        '200': { description: Oferta editada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Ofertas]
+      summary: Borra una oferta.
+      responses:
+        '200': { description: Oferta borrada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Postulaciones --------------------------------------------------------
+
+  /postulaciones:
+    get:
+      tags: [Postulaciones]
+      summary: Todas las postulaciones.
+      responses:
+        '200': { description: Lista de postulaciones. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      tags: [Postulaciones]
+      summary: El postulante se postula a una oferta (necesita un CV cargado).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ofertaId]
+              properties:
+                ofertaId: { type: integer, example: 1, x-fixture: oferta }
+                observaciones:
+                  { type: string, example: Disponibilidad inmediata. }
+      responses:
+        '201': { description: Postulación creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /postulaciones/recibidas:
+    get:
+      tags: [Postulaciones]
+      summary: Postulaciones a las ofertas del socio de la sesión.
+      responses:
+        '200': { description: Lista de postulaciones. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /postulaciones/recibidas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PostulacionId'
+    get:
+      tags: [Postulaciones]
+      summary: Una postulación a una oferta del socio de la sesión.
+      responses:
+        '200': { description: La postulación. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /postulaciones/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PostulacionId'
+    get:
+      tags: [Postulaciones]
+      summary: Una postulación (la propia, la recibida o, para la administración, cualquiera).
+      responses:
+        '200': { description: La postulación. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Postulaciones]
+      summary: Cambia el estado de una postulación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                estado:
+                  type: string
+                  enum:
+                    [
+                      ENVIADA,
+                      EN_REVISION,
+                      SELECCIONADO,
+                      NO_SELECCIONADO,
+                      FINALIZADA,
+                    ]
+                  example: EN_REVISION
+                observaciones:
+                  { type: string, example: Se coordina entrevista. }
+      responses:
+        '200': { description: Postulación editada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Postulaciones]
+      summary: Borra una postulación (el postulante, la suya).
+      responses:
+        '200': { description: Postulación borrada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Notificaciones -------------------------------------------------------
+
+  /notificaciones:
+    get:
+      tags: [Notificaciones]
+      summary: Todas las notificaciones enviadas.
+      responses:
+        '200': { description: Lista de notificaciones. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    post:
+      tags: [Notificaciones]
+      summary: Envía una notificación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [titulo, mensaje, tipo, destinatarioTipo]
+              properties:
+                titulo: { type: string, example: Asamblea anual }
+                mensaje:
+                  { type: string, example: El jueves a las 19 h en la sede. }
+                tipo:
+                  { type: string, enum: [NORMAL, EMERGENTE], example: NORMAL }
+                destinatarioTipo:
+                  {
+                    type: string,
+                    enum: [TODOS, SOCIOS, POSTULANTES, USUARIOS],
+                    example: TODOS,
+                  }
+                usuarioIds:
+                  type: array
+                  description: Solo con `destinatarioTipo` USUARIOS.
+                  items: { type: integer, example: 3, x-fixture: usuario }
+      responses:
+        '201': { description: Notificación enviada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /notificaciones/recibidas:
+    get:
+      tags: [Notificaciones]
+      summary: Las notificaciones del usuario de la sesión.
+      responses:
+        '200': { description: Lista de notificaciones. }
+
+  /notificaciones/emergentes:
+    get:
+      tags: [Notificaciones]
+      summary: Notificaciones emergentes que el usuario todavía no vio.
+      responses:
+        '200': { description: Lista de notificaciones. }
+
+  /notificaciones/{id}/leida:
+    parameters:
+      - $ref: '#/components/parameters/NotificacionId'
+    patch:
+      tags: [Notificaciones]
+      summary: Marca como leída una notificación propia.
+      responses:
+        '200': { description: Marcada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /notificaciones/{id}/emergente-vista:
+    parameters:
+      - $ref: '#/components/parameters/NotificacionId'
+    patch:
+      tags: [Notificaciones]
+      summary: Marca como vista una notificación emergente propia.
+      responses:
+        '200': { description: Marcada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Cuotas ---------------------------------------------------------------
+
+  /cuotas/resumen:
+    get:
+      tags: [Cuotas]
+      summary: Tablero de cuotas.
+      responses:
+        '200': { description: Resumen. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /cuotas/configuracion:
+    get:
+      tags: [Cuotas]
+      summary: Importe de la cuota vigente.
+      responses:
+        '200': { description: Configuración vigente. }
+    post:
+      tags: [Cuotas]
+      summary: Fija un nuevo importe a partir de una fecha.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [importeBase, vigenciaDesde]
+              properties:
+                importeBase: { type: number, minimum: 0, example: 1500 }
+                vigenciaDesde:
+                  { type: string, format: date, example: '2099-01-01' }
+      responses:
+        '201': { description: Configuración creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /cuotas/configuracion/historial:
+    get:
+      tags: [Cuotas]
+      summary: Todos los importes que tuvo la cuota.
+      responses:
+        '200': { description: Historial. }
+
+  /cuotas/configuracion/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ConfiguracionId'
+    patch:
+      tags: [Cuotas]
+      summary: Corrige el importe de una configuración.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [importeBase]
+              properties:
+                importeBase: { type: number, minimum: 0, example: 1600 }
+      responses:
+        '200': { description: Configuración editada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /cuotas/pagos/recientes:
+    get:
+      tags: [Cuotas]
+      summary: Últimos pagos registrados.
+      responses:
+        '200': { description: Lista de pagos. }
+
+  /cuotas/generar:
+    post:
+      tags: [Cuotas]
+      summary: Genera la cuota de un mes para todos los socios activos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Periodo'
+      responses:
+        '201': { description: Cuotas generadas. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /cuotas/socio/{socioId}:
+    parameters:
+      - $ref: '#/components/parameters/SocioIdCuotas'
+    get:
+      tags: [Cuotas]
+      summary: Cuotas de un socio.
+      responses:
+        '200': { description: Lista de cuotas. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    post:
+      tags: [Cuotas]
+      summary: Genera la cuota de un mes para un socio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Periodo'
+      responses:
+        '201': { description: Cuota generada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /cuotas/socio/{socioId}/ajustes:
+    parameters:
+      - $ref: '#/components/parameters/SocioIdCuotas'
+    get:
+      tags: [Cuotas]
+      summary: Ajustes (adicionales y descuentos) de un socio.
+      responses:
+        '200': { description: Lista de ajustes. }
+    post:
+      tags: [Cuotas]
+      summary: Agrega un ajuste a la cuota de un socio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tipo, importe, fechaDesde]
+              properties:
+                tipo:
+                  {
+                    type: string,
+                    enum: [ADICIONAL, DESCUENTO],
+                    example: DESCUENTO,
+                  }
+                importe: { type: number, minimum: 0, example: 200 }
+                fechaDesde:
+                  { type: string, format: date, example: '2099-01-01' }
+                fechaHasta:
+                  { type: string, format: date, example: '2099-06-30' }
+                motivo: { type: string, example: Bonificación por antigüedad }
+      responses:
+        '201': { description: Ajuste creado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /cuotas/socio/{socioId}/pagos:
+    parameters:
+      - $ref: '#/components/parameters/SocioIdCuotas'
+    get:
+      tags: [Cuotas]
+      summary: Pagos de un socio, con el comprobante de cada uno.
+      responses:
+        '200': { description: Lista de pagos. }
+    post:
+      tags: [Cuotas]
+      summary: Registra un pago y lo aplica a las cuotas pendientes.
+      description: >-
+        Acepta JSON o multipart. El comprobante (PDF, JPG o PNG, hasta 5 MB)
+        es obligatorio con tarjeta, y se guarda en el movimiento de caja del
+        pago.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [importe, fechaPago, medioPago]
+              properties:
+                importe: { type: number, minimum: 0, example: 100 }
+                fechaPago: { type: string, format: date, example: '2026-10-01' }
+                medioPago: { type: string, example: EFECTIVO }
+                observaciones:
+                  { type: string, maxLength: 500, example: Pago en ventanilla }
+                comprobante: { type: string, format: binary }
+          application/json:
+            schema:
+              type: object
+              required: [importe, fechaPago, medioPago]
+              properties:
+                importe: { type: number, minimum: 0, example: 100 }
+                fechaPago: { type: string, format: date, example: '2026-10-01' }
+                medioPago: { type: string, example: EFECTIVO }
+                observaciones:
+                  { type: string, maxLength: 500, example: Pago en ventanilla }
+      responses:
+        '201': { description: Pago registrado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '413': { $ref: '#/components/responses/ArchivoDemasiadoGrande' }
+
+  /cuotas/socio/{socioId}/estado:
+    parameters:
+      - $ref: '#/components/parameters/SocioIdCuotas'
+    get:
+      tags: [Cuotas]
+      summary: Si el socio está al día, y cuánto debe.
+      responses:
+        '200': { description: Estado de cuenta. }
+
+  /cuotas/{pagoId}/anular:
+    parameters:
+      - name: pagoId
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+        x-fixture: pago
+    patch:
+      tags: [Cuotas]
+      summary: Anula un pago y su movimiento de caja.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Motivo'
+      responses:
+        '200': { description: Pago anulado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /cuotas/ajustes/{adjustmentId}:
+    parameters:
+      - name: adjustmentId
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+        x-fixture: ajuste
+    delete:
+      tags: [Cuotas]
+      summary: Borra un ajuste.
+      responses:
+        '200': { description: Ajuste borrado. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  # --- Caja -------------------------------------------------------------------
+
+  /caja/categorias:
+    get:
+      tags: [Caja]
+      summary: Categorías de ingresos y egresos.
+      responses:
+        '200': { description: Lista de categorías. }
+    post:
+      tags: [Caja]
+      summary: Crea una categoría de caja.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, tipo]
+              properties:
+                nombre: { type: string, example: Alquiler de salón }
+                tipo:
+                  { type: string, enum: [INGRESO, EGRESO], example: INGRESO }
+      responses:
+        '201': { description: Categoría creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /caja/categorias/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+        x-fixture: cajaCategoria
+    delete:
+      tags: [Caja]
+      summary: Desactiva una categoría de caja.
+      responses:
+        '200': { description: Categoría desactivada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /caja/movimientos:
+    get:
+      tags: [Caja]
+      summary: Movimientos de caja, con filtros.
+      parameters:
+        - {
+            name: desde,
+            in: query,
+            schema: { type: string, format: date, example: '2026-01-01' },
+          }
+        - {
+            name: hasta,
+            in: query,
+            schema: { type: string, format: date, example: '2026-12-31' },
+          }
+        - {
+            name: tipo,
+            in: query,
+            schema: { type: string, enum: [INGRESO, EGRESO], example: INGRESO },
+          }
+        - name: categoriaId
+          in: query
+          schema: { type: integer, example: 1 }
+          x-fixture: cajaCategoria
+        - { name: buscar, in: query, schema: { type: string, example: salón } }
+      responses:
+        '200': { description: Lista de movimientos. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+    post:
+      tags: [Caja]
+      summary: Registra un movimiento manual.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tipo, categoriaId, concepto, importe, fecha]
+              properties:
+                tipo:
+                  { type: string, enum: [INGRESO, EGRESO], example: INGRESO }
+                categoriaId:
+                  { type: integer, example: 1, x-fixture: cajaCategoria }
+                concepto: { type: string, example: Alquiler del salón, octubre }
+                importe: { type: number, minimum: 0, example: 3000 }
+                fecha: { type: string, format: date, example: '2026-10-01' }
+                observaciones: { type: string, example: Evento de socios }
+      responses:
+        '201': { description: Movimiento registrado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /caja/movimientos/resumen:
+    get:
+      tags: [Caja]
+      summary: Saldo, ingresos y egresos.
+      responses:
+        '200': { description: Resumen. }
+
+  /caja/movimientos/{id}/comprobante:
+    parameters:
+      - $ref: '#/components/parameters/MovimientoId'
+    get:
+      tags: [Caja]
+      summary: Enlace firmado y temporal al comprobante de un movimiento.
+      responses:
+        '200': { description: El enlace. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    post:
+      tags: [Caja]
+      summary: Adjunta o reemplaza el comprobante de un movimiento.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [comprobante]
+              properties:
+                comprobante:
+                  type: string
+                  format: binary
+                  description: PDF, JPG o PNG, hasta 5 MB.
+      responses:
+        '200': { description: Comprobante guardado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '413': { $ref: '#/components/responses/ArchivoDemasiadoGrande' }
+
+  /caja/movimientos/{id}/anular:
+    parameters:
+      - $ref: '#/components/parameters/MovimientoId'
+    patch:
+      tags: [Caja]
+      summary: Anula un movimiento manual.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Motivo'
+      responses:
+        '200': { description: Movimiento anulado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: token
+
+  parameters:
+    UsuarioId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 3 }
+      x-fixture: usuario
+    SocioId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: socio
+    SocioIdCuotas:
+      name: socioId
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: socio
+    PostulanteId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: postulante
+    CategoriaId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: categoria
+    OfertaId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: oferta
+    PostulacionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: postulacion
+    NotificacionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: notificacion
+    ConfiguracionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: configuracion
+    MovimientoId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: movimiento
+
+  schemas:
+    Error:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, example: Datos inválidos }
+
+    Periodo:
+      type: object
+      required: [year, month]
+      properties:
+        year: { type: integer, example: 2026 }
+        month: { type: integer, minimum: 1, maximum: 12, example: 10 }
+
+    Motivo:
+      type: object
+      required: [motivo]
+      properties:
+        motivo: { type: string, example: Registrado por error }
+
+    SocioNuevo:
+      type: object
+      required:
+        - razonSocial
+        - titular
+        - giroComercial
+        - tipo
+        - rut
+        - numeroBps
+        - fechaInicioEmpresa
+        - fechaAfiliacion
+        - direccion
+        - ciudad
+        - celular
+        - telefono
+        - email
+      properties:
+        razonSocial: { type: string, example: Ferretería Central SRL }
+        titular: { type: string, example: Juan Pérez }
+        giroComercial: { type: string, example: Ferretería }
+        tipo: { type: string, enum: [COMUN, DIRECTIVO], example: COMUN }
+        rut: { type: string, example: '211234560019' }
+        numeroBps: { type: string, example: '2345678' }
+        fechaInicioEmpresa:
+          { type: string, format: date, example: '2020-01-15' }
+        fechaAfiliacion: { type: string, format: date, example: '2026-09-01' }
+        direccion: { type: string, example: 25 de Mayo 123 }
+        ciudad: { type: string, example: San José }
+        celular: { type: string, example: '099123456' }
+        telefono: { type: string, example: '43421234' }
+        email:
+          { type: string, format: email, example: dast-socio-nuevo@ccisj.uy }
+        observaciones:
+          { type: string, nullable: true, example: Alta desde el escaneo }
+
+    SocioEdicion:
+      type: object
+      properties:
+        razonSocial: { type: string, example: Ferretería Central SRL }
+        titular: { type: string, example: Juan Pérez }
+        giroComercial: { type: string, example: Ferretería y pinturería }
+        tipo: { type: string, enum: [COMUN, DIRECTIVO], example: COMUN }
+        direccion: { type: string, example: 25 de Mayo 456 }
+        ciudad: { type: string, example: San José }
+        celular: { type: string, example: '099654321' }
+        telefono: { type: string, example: '43429876' }
+        observaciones:
+          { type: string, nullable: true, example: Cambio de local }
+
+  responses:
+    DatosInvalidos:
+      description: Faltan datos o alguno no es válido.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoAutenticado:
+      description: Falta la sesión, o ya no sirve.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    SinPermiso:
+      description: La sesión no tiene el rol necesario.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NoEncontrado:
+      description: No existe, o es de otro usuario.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ArchivoDemasiadoGrande:
+      description: El archivo supera los 5 MB.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    DemasiadasSolicitudes:
+      description: Se superó el límite de intentos.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

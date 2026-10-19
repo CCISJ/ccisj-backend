@@ -17,3 +17,7 @@ Thumbs.db
 
 # Reporte de cobertura (lo genera "pnpm test:coverage")
 coverage/
+
+# Lo que deja el escaneo de ZAP ("pnpm dast"): reportes y copias de trabajo.
+# Se regenera en cada corrida.
+dast/salida/
