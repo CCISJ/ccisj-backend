@@ -1,4 +1,5 @@
 import { prisma } from '@/config/prisma';
+import { escapeLike } from '@/utils/like';
 
 export function findAll() {
   return prisma.categoria.findMany({
@@ -19,7 +20,7 @@ export function findByName(nombre: string) {
   return prisma.categoria.findFirst({
     where: {
       nombre: {
-        equals: nombre,
+        equals: escapeLike(nombre),
         mode: 'insensitive',
       },
     },
