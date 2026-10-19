@@ -52,6 +52,7 @@ const RUIDO = new Set([
   'cookieParser',
   'logger',
   'corsMiddleware',
+  'rechazarNul',
 ]);
 
 export type Endpoint = {

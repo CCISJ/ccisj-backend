@@ -15,6 +15,9 @@ type Fallback = {
 // se le muestran al usuario. Estos casos tienen una respuesta clara.
 const PRISMA_ERRORS: Record<string, { status: number; message: string }> = {
   P2000: { status: 400, message: 'Uno de los datos es demasiado largo' },
+  // Un número que no entra en su columna, como un ID enorme que llega en el
+  // body o en una ruta que no pasa por `parseId`.
+  P2020: { status: 400, message: 'Uno de los datos está fuera de rango' },
   P2002: { status: 409, message: 'Ya existe un registro con esos datos' },
   P2003: {
     status: 409,

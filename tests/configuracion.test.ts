@@ -243,4 +243,73 @@ describe('Controles de configuración aplicados a la aplicación', () => {
       }
     });
   });
+
+  // Lo encontró el escaneo activo de ZAP: datos que pasaban la validación y
+  // que la base rechazaba, con un error que llegaba al usuario como 500.
+  describe('datos que la base no admite', () => {
+    const NUL = 'Los datos enviados tienen caracteres no válidos';
+
+    it('rechaza un carácter NUL en el body, en cualquier nivel', async () => {
+      for (const body of [
+        { email: 'a\u0000@ccisj.uy', password: 'x' },
+        { email: 'a@ccisj.uy', password: 'x', extra: ['ok', 'n\u0000'] },
+        { email: 'a@ccisj.uy', password: 'x', ['clave\u0000']: 1 },
+      ]) {
+        const respuesta = await request(app).post('/auth/login').send(body);
+
+        expect(respuesta.status).toBe(400);
+        expect(respuesta.body.message).toBe(NUL);
+      }
+    });
+
+    it('rechaza un carácter NUL en la query', async () => {
+      const respuesta = await request(app).get('/ofertas?buscar=a%00b');
+
+      expect(respuesta.status).toBe(400);
+      expect(respuesta.body.message).toBe(NUL);
+    });
+
+    // multer lee estos campos dentro de la ruta, después del control general.
+    it('rechaza un carácter NUL en un campo de un multipart', async () => {
+      const admin = await createAdmin();
+
+      try {
+        const respuesta = await request(app)
+          .post('/cuotas/socio/999999/pagos')
+          .set('Cookie', admin.cookie)
+          .field('importe', '100')
+          .field('observaciones', 'pago\u0000');
+
+        expect(respuesta.status).toBe(400);
+        expect(respuesta.body.message).toBe(NUL);
+      } finally {
+        await deleteUsers([admin.userId]);
+      }
+    });
+
+    it('un ID que no entra en un INTEGER es inválido, no un 500', async () => {
+      const respuesta = await request(app).get('/ofertas/3059842083074936368');
+
+      expect(respuesta.status).toBe(400);
+      expect(respuesta.body.message).toBe('ID inválido');
+    });
+
+    // Las rutas de cuotas no usan `parseId`: ahí responde el mapeo de P2020.
+    it('un número fuera de rango que llega a la base responde 400', async () => {
+      const admin = await createAdmin();
+
+      try {
+        const respuesta = await request(app)
+          .get('/cuotas/socio/3059842083074936368')
+          .set('Cookie', admin.cookie);
+
+        expect(respuesta.status).toBe(400);
+        expect(respuesta.body.message).toBe(
+          'Uno de los datos está fuera de rango',
+        );
+      } finally {
+        await deleteUsers([admin.userId]);
+      }
+    });
+  });
 });

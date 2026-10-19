@@ -22,12 +22,19 @@ export function singleQueryParam(value: unknown, name: string) {
   return value === '' ? undefined : value;
 }
 
+/** El ID más grande que entra en una columna `INTEGER` de PostgreSQL. */
+const MAX_ID = 2_147_483_647;
+
 /**
  * ID de ruta (`/recurso/:id`). Devuelve null si no es un entero positivo:
  * `Number('1.5')` o `Number('')` no son IDs aunque no den NaN.
+ *
+ * Tampoco uno más grande que `MAX_ID`: ese registro no puede existir, y la
+ * base rechazaba la consulta con un error que llegaba como 500 (lo encontró el
+ * escaneo de ZAP con `/socios/3059842083074936368`).
  */
 export function parseId(value: unknown) {
   const id = Number(value);
 
-  return Number.isInteger(id) && id > 0 ? id : null;
+  return Number.isInteger(id) && id > 0 && id <= MAX_ID ? id : null;
 }

@@ -1,6 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
 import multer from 'multer';
 
+import { rechazarNul } from './nul-byte.middleware';
+
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
@@ -39,8 +41,9 @@ class InvalidReceiptTypeError extends Error {
  */
 export function uploadReceipt(req: Request, res: Response, next: NextFunction) {
   upload(req, res, (error: unknown) => {
+    // Los campos de texto del multipart recién existen ahora.
     if (!error) {
-      return next();
+      return rechazarNul(req, res, next);
     }
 
     if (error instanceof InvalidReceiptTypeError) {
