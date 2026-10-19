@@ -98,6 +98,33 @@ describe('Categories', () => {
     expect(response.body.message).toBe('El nombre es obligatorio');
   });
 
+  // H-16: el nombre se compara con ILIKE. Sin escapar, `Ventas%` "ya existía"
+  // si había otra que empezara con "Ventas", y un nombre terminado en `\` era
+  // un patrón inválido que la base rechazaba con un 500.
+  it('POST /categorias compara el nombre literal aunque tenga comodines', async () => {
+    const base = `Comodin ${Date.now()}`;
+    const nombres = [`${base} ventas`, `${base}%`, `${base}\\`];
+    const creadas: number[] = [];
+
+    try {
+      const respuestas: string[] = [];
+
+      for (const nombre of nombres) {
+        const response = await request(app)
+          .post('/categorias')
+          .set('Cookie', admin.cookie)
+          .send({ nombre });
+
+        respuestas.push(`${nombre} → ${response.status}`);
+        if (response.body.id) creadas.push(response.body.id);
+      }
+
+      expect(respuestas).toEqual(nombres.map((nombre) => `${nombre} → 201`));
+    } finally {
+      await prisma.categoria.deleteMany({ where: { id: { in: creadas } } });
+    }
+  });
+
   it('POST /categorias falla si la categoría ya existe', async () => {
     const response = await request(app)
       .post('/categorias')

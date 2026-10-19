@@ -237,6 +237,41 @@ describe('Movimientos de caja', () => {
     ).toBe(true);
   });
 
+  // H-16: `%` y `_` funcionaban como comodines en la búsqueda: buscar `%`
+  // traía todos los movimientos.
+  it('busca el texto literal aunque tenga comodines', async () => {
+    const admin = await createAdmin();
+    createdUserIds.push(admin.userId);
+
+    const category = await createCategory('INGRESO');
+    const uniqueText = `Comodin-${uniqueSuffix()}`;
+
+    const conPorcentaje = await createTrackedMovement({
+      tipo: 'INGRESO',
+      categoriaId: category.id,
+      concepto: `${uniqueText} recargo 10%`,
+      importe: 100,
+      fecha: new Date('2026-08-10'),
+      registradoPorId: admin.userId,
+    });
+
+    const sinPorcentaje = await createTrackedMovement({
+      tipo: 'INGRESO',
+      categoriaId: category.id,
+      concepto: `${uniqueText} recargo 10 pesos`,
+      importe: 100,
+      fecha: new Date('2026-08-10'),
+      registradoPorId: admin.userId,
+    });
+
+    const ids = (
+      await getCashMovements({ buscar: `${uniqueText} recargo 10%` })
+    ).map((movement: MovimientoCaja) => movement.id);
+
+    expect(ids).toContain(conPorcentaje.id);
+    expect(ids).not.toContain(sinPorcentaje.id);
+  });
+
   it('anula lógicamente un movimiento manual', async () => {
     const admin = await createAdmin();
     createdUserIds.push(admin.userId);

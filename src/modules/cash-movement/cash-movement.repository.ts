@@ -3,6 +3,7 @@ import {
   CashMovementFilters,
   CreateManualCashMovementData,
 } from '@/types/cash-movement.type';
+import { escapeLike } from '@/utils/like';
 
 export async function createCashMovement(data: CreateManualCashMovementData) {
   return prisma.movimientoCaja.create({
@@ -57,7 +58,7 @@ export async function findCashMovements(filters: CashMovementFilters = {}) {
       categoriaId: filters.categoriaId,
       concepto: filters.buscar
         ? {
-            contains: filters.buscar,
+            contains: escapeLike(filters.buscar),
             mode: 'insensitive',
           }
         : undefined,

@@ -74,6 +74,28 @@ describe('Auth', () => {
     expect(response.body.user.id).toBe(userId);
   });
 
+  // H-16: Prisma busca el email con ILIKE y no escapaba `%` ni `_`, así que
+  // el email era un patrón. Con la contraseña correcta, `adm_n@ccisj.uy`
+  // entraba a `admin@ccisj.uy`, y `%` a la primera cuenta que coincidiera.
+  it('POST /auth/login no acepta comodines en el email', async () => {
+    const [usuario] = email.split('@');
+    const respuestas: string[] = [];
+
+    for (const patron of [`_${email.slice(1)}`, `${usuario}%`, `${email}\\`]) {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ email: patron, password });
+
+      respuestas.push(`${patron} → ${response.status}`);
+    }
+
+    expect(respuestas).toEqual([
+      `_${email.slice(1)} → 401`,
+      `${usuario}% → 401`,
+      `${email}\\ → 401`,
+    ]);
+  });
+
   it('POST /auth/login falla con contraseña incorrecta', async () => {
     const response = await request(app).post('/auth/login').send({
       email,
