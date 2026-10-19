@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { environment } from './config/environment';
+import { rechazarNul } from './middlewares/nul-byte.middleware';
 import { globalLimiter } from './middlewares/rate-limit';
 import applicantRoutes from './modules/applicants/applicant.routes';
 import applicationRoutes from './modules/applications/application.routes';
@@ -77,6 +78,11 @@ app.use(
 // respuesta 429 lleve sus cabeceras y el frontend pueda leer el mensaje; las
 // consultas previas (OPTIONS) las contesta CORS antes y no cuentan.
 app.use(globalLimiter);
+
+// PostgreSQL no admite el carácter NUL en un texto (ver el middleware). Va
+// después del límite, para que estos requests también cuenten, y después de
+// CORS, para que el frontend pueda leer el 400.
+app.use(rechazarNul);
 
 // ROUTES
 app.use('/usuarios', userRoutes);

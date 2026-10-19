@@ -549,11 +549,12 @@ describe('Movimientos de caja', () => {
     }
   });
 
-  it('no muestra el error de la base cuando algo falla de forma inesperada', async () => {
+  it('un id de categoría fuera de rango responde 400 sin mostrar el error de la base', async () => {
     // Un id de categoría que no entra en un entero de la base pasa la
     // validación del service y lo rechaza Prisma. Antes la respuesta traía el
     // mensaje de Prisma entero: la ruta del archivo en el servidor, las líneas
-    // del código y la consulta.
+    // del código y la consulta. Después fue un 500 genérico, y desde el
+    // escaneo de ZAP es un 400 que dice qué pasó.
     const admin = await createAdmin();
     createdUserIds.push(admin.userId);
 
@@ -568,10 +569,10 @@ describe('Movimientos de caja', () => {
         fecha: '2026-10-01',
       });
 
-    expect(response.status).toBe(500);
-    expect(response.body.message).toBe(
-      'Error al registrar el movimiento de caja',
-    );
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      message: 'Uno de los datos está fuera de rango',
+    });
   });
 
   describe('Filtros que llegan por la query string', () => {
@@ -832,17 +833,17 @@ describe('Movimientos de caja', () => {
       expect(viewed.body.message).toBe('El movimiento no existe');
     });
 
-    it('no muestra el error de la base con un id que no entra en un entero', async () => {
+    it('un id que no entra en un entero responde 400 sin mostrar el error de la base', async () => {
       // Antes la respuesta traía la ruta del archivo en el servidor, las
-      // líneas del código y la consulta de Prisma.
+      // líneas del código y la consulta de Prisma; después, un 500 genérico.
       const admin = await createAdmin();
       createdUserIds.push(admin.userId);
 
       const response = await upload(admin.cookie, 2147483648, PDF, pdf);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(400);
       expect(response.body).toEqual({
-        message: 'Error al subir el comprobante',
+        message: 'Uno de los datos está fuera de rango',
       });
     });
 
