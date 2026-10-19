@@ -9,6 +9,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 
 import { environment } from './config/environment';
+import { rechazarNul } from './middlewares/nul-byte.middleware';
 import { globalLimiter } from './middlewares/rate-limit';
 import applicantRoutes from './modules/applicants/applicant.routes';
 import applicationRoutes from './modules/applications/application.routes';
@@ -42,7 +43,27 @@ app.set('trust proxy', environment.trustProxy);
 
 // MIDDLEWARES
 // Cabeceras de seguridad estándar; también saca `X-Powered-By`.
-app.use(helmet());
+//
+// La CSP por omisión de helmet es la de un sitio web: deja cargar fuentes de
+// cualquier `https:` y estilos `unsafe-inline`. Esta API no sirve páginas ni
+// recursos, así que no tiene por qué permitir nada, ni que la metan en un
+// frame. Lo marcó el escaneo de ZAP (`dast/`), igual que `base-uri` y
+// `form-action`: son las dos que no heredan de `default-src`, así que sin
+// declararlas quedaban abiertas.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      useDefaults: false,
+      directives: {
+        defaultSrc: ["'none'"],
+        baseUri: ["'none'"],
+        formAction: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+    frameguard: { action: 'deny' },
+  }),
+);
 
 // El límite ya existía: es el valor por omisión de `express.json()`. Se
 // escribe para que sea una decisión visible y no un default heredado, y para
@@ -77,6 +98,11 @@ app.use(
 // respuesta 429 lleve sus cabeceras y el frontend pueda leer el mensaje; las
 // consultas previas (OPTIONS) las contesta CORS antes y no cuentan.
 app.use(globalLimiter);
+
+// PostgreSQL no admite el carácter NUL en un texto (ver el middleware). Va
+// después del límite, para que estos requests también cuenten, y después de
+// CORS, para que el frontend pueda leer el 400.
+app.use(rechazarNul);
 
 // ROUTES
 app.use('/usuarios', userRoutes);

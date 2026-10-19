@@ -1,6 +1,7 @@
 import { prisma } from '@/config/prisma';
 import { Prisma } from '@/generated/prisma/client';
 import { TipoUsuario } from '@/types/user.type';
+import { escapeLike } from '@/utils/like';
 
 export function findAll() {
   return prisma.usuario.findMany({
@@ -111,7 +112,9 @@ export function findByEmail(email: string) {
   return prisma.usuario.findFirst({
     where: {
       email: {
-        equals: email,
+        // Escapado: sin esto, el email `%` entraba a cualquier cuenta (ver
+        // `escapeLike`).
+        equals: escapeLike(email),
         mode: 'insensitive',
       },
     },

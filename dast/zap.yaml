@@ -1,0 +1,87 @@
+# Plan de OWASP ZAP (Automation Framework) para la API.
+#
+# No se corre a mano: lo corre `scripts/dast.mts` (`pnpm dast` o
+# `pnpm dast:activo`), que antes levanta la API contra la base de pruebas,
+# crea los datos que el escaneo necesita y le pasa a ZAP la sesión y la
+# dirección por variables de entorno. En el modo pasivo, el script saca el
+# job `activeScan`.
+#
+# La sesión no aparece acá: el script se la pasa a ZAP con `ZAP_AUTH_HEADER`
+# y `ZAP_AUTH_HEADER_VALUE`, que le agregan la cookie del admin del seed a
+# cada request. Así es determinista y no deja ninguna sesión escrita en un
+# archivo. (Un `replacer` con `${VARIABLE}` no sirve: ZAP no reemplaza las
+# variables dentro de sus reglas, y cada request salía sin sesión.)
+#
+# Documentación del formato: https://www.zaproxy.org/docs/automate/automation-framework/
+
+env:
+  contexts:
+    - name: ccisj-api
+      urls:
+        - ${ZAP_API}
+      includePaths:
+        - ${ZAP_API}.*
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  # Falsos positivos revisados a mano. Cada uno, acotado al parámetro exacto:
+  # si la misma regla salta en otro lado, aparece y se vuelve a revisar.
+  - type: alertFilter
+    alertFilters:
+      # Path Traversal (regla 6) en dos parámetros numéricos. ZAP lo marca
+      # porque la respuesta cambia al cambiar el número (otro importe, otro
+      # mes), que es justamente lo esperable. Ninguno llega a un archivo: el
+      # backend no lee archivos con datos del usuario, y los comprobantes van
+      # a Storage con un nombre que genera el servidor (revisado el 19/10).
+      - ruleId: 6
+        newRisk: False Positive
+        url: .*/cuotas/configuracion/[0-9]+
+        urlRegex: true
+        parameter: importeBase
+      - ruleId: 6
+        newRisk: False Positive
+        url: .*/cuotas/socio/[0-9]+
+        urlRegex: true
+        parameter: month
+
+  # Un request a cada endpoint de la descripción, con los datos de ejemplo.
+  - type: openapi
+    parameters:
+      apiFile: /zap/wrk/openapi.json
+      targetUrl: ${ZAP_API}
+      context: ccisj-api
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  # Ataca cada parámetro de cada request que importó el job anterior.
+  - type: activeScan
+    parameters:
+      context: ccisj-api
+      maxRuleDurationInMins: 10
+      maxScanDurationInMins: 120
+      threadPerHost: 4
+    policyDefinition:
+      defaultStrength: medium
+      defaultThreshold: medium
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 5
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: reporte.html
+      reportTitle: CCISJ - análisis dinámico de la API
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: reporte.json
