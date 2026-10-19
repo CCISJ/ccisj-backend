@@ -626,6 +626,14 @@ paths:
         '400': { $ref: '#/components/responses/DatosInvalidos' }
         '403': { $ref: '#/components/responses/SinPermiso' }
 
+  /postulaciones/mias:
+    get:
+      tags: [Postulaciones]
+      summary: Las postulaciones del postulante de la sesión, con la oferta y la empresa.
+      responses:
+        '200': { description: Lista de postulaciones. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
   /postulaciones/recibidas:
     get:
       tags: [Postulaciones]
