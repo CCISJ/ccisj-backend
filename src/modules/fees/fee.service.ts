@@ -274,15 +274,6 @@ export async function addFeeConfiguration(
   importeBase: number,
   vigenciaDesde: Date,
 ) {
-  const existingConfiguration =
-    await findConfigurationByEffectiveDate(vigenciaDesde);
-
-  if (existingConfiguration) {
-    throw new Error(
-      `Ya existe una configuración de cuota para el año ${vigenciaDesde.getUTCFullYear()}`,
-    );
-  }
-
   if (!Number.isFinite(importeBase) || importeBase <= 0) {
     throw new Error('El importe de la cuota debe ser mayor a 0');
   }
@@ -294,6 +285,18 @@ export async function addFeeConfiguration(
   if (vigenciaDesde.getUTCMonth() !== 0 || vigenciaDesde.getUTCDate() !== 1) {
     throw new Error(
       'La nueva configuración de cuota debe comenzar el 1 de enero',
+    );
+  }
+
+  // Después de validar la fecha, no antes: con una fecha inválida esta
+  // consulta la rechaza Prisma, y la respuesta era un 500 en vez del
+  // "La fecha de vigencia no es válida" de arriba.
+  const existingConfiguration =
+    await findConfigurationByEffectiveDate(vigenciaDesde);
+
+  if (existingConfiguration) {
+    throw new Error(
+      `Ya existe una configuración de cuota para el año ${vigenciaDesde.getUTCFullYear()}`,
     );
   }
 

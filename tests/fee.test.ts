@@ -1521,10 +1521,11 @@ it('permite a un administrador obtener el resumen del dashboard', async () => {
   }
 });
 
-it('no muestra el error de la base cuando algo falla de forma inesperada', async () => {
-  // La fecha inválida llega a Prisma antes de que el service la valide. Antes
-  // la respuesta traía el mensaje de Prisma entero: la ruta del archivo en el
-  // servidor, las líneas del código y la consulta.
+it('rechaza una fecha de vigencia inválida con su propio mensaje', async () => {
+  // La fecha inválida llegaba a Prisma antes de que el service la validara.
+  // Primero la respuesta traía el mensaje de Prisma entero (la ruta del
+  // archivo en el servidor, las líneas del código y la consulta); después,
+  // un 500 genérico. El escaneo de ZAP lo provocó 188 veces.
   const admin = await createAdmin();
 
   try {
@@ -1536,10 +1537,10 @@ it('no muestra el error de la base cuando algo falla de forma inesperada', async
         vigenciaDesde: 'no-es-una-fecha',
       });
 
-    expect(response.status).toBe(500);
-    expect(response.body.message).toBe(
-      'Error al crear la configuración de cuota',
-    );
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      message: 'La fecha de vigencia no es válida',
+    });
   } finally {
     await deleteUsers([admin.userId]);
   }
