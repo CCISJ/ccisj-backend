@@ -150,6 +150,38 @@ export function findReceivedById(id: number, socioId: number) {
   });
 }
 
+// Lo que ve el postulante de sus propias postulaciones: la oferta y la empresa
+// que la publicó, sin datos internos de la oferta ni de su cuenta.
+const ownApplicationSelect = {
+  id: true,
+  fechaPostulacion: true,
+  estado: true,
+  observaciones: true,
+  oferta: {
+    select: {
+      id: true,
+      titulo: true,
+      estado: true,
+      ubicacion: true,
+      modalidad: true,
+      fechaCierre: true,
+      socio: {
+        select: {
+          razonSocial: true,
+        },
+      },
+    },
+  },
+} as const;
+
+export function findByApplicant(postulanteId: number) {
+  return prisma.postulacion.findMany({
+    where: { postulanteId },
+    select: ownApplicationSelect,
+    orderBy: [{ fechaPostulacion: 'desc' }, { id: 'desc' }],
+  });
+}
+
 /** Lo necesario para cambiar el estado y avisarle al postulante. */
 export function findForStatusChange(id: number) {
   return prisma.postulacion.findUnique({

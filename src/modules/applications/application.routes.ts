@@ -6,6 +6,7 @@ import {
   create,
   getAll,
   getById,
+  getMine,
   getReceived,
   getReceivedById,
   remove,
@@ -19,7 +20,8 @@ router.use(requireAuth);
 // El service verifica que cada uno acceda solo a lo suyo: el postulante a sus
 // postulaciones y el socio a las recibidas en sus ofertas.
 router.get('/', requireRole('ADMIN'), getAll);
-// Van antes de /:id para que 'recibidas' no se tome como un ID.
+// Van antes de /:id para que 'mias' y 'recibidas' no se tomen como un ID.
+router.get('/mias', requireRole('POSTULANTE'), getMine);
 router.get('/recibidas', requireRole('SOCIO'), getReceived);
 router.get('/recibidas/:id', requireRole('SOCIO'), getReceivedById);
 router.get('/:id', getById);

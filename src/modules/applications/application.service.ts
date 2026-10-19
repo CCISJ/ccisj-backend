@@ -151,6 +151,15 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
   }
 }
 
+/** Las postulaciones del postulante de la sesión. */
+export async function getMine(actor: SessionUser) {
+  if (!actor.postulanteId) {
+    throw new HttpError(404, 'Postulante no encontrado');
+  }
+
+  return applicationRepository.findByApplicant(actor.postulanteId);
+}
+
 /** Las postulaciones recibidas en las ofertas de la empresa del socio. */
 export async function getReceived(actor: SessionUser) {
   if (!actor.socioId) {

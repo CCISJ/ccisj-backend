@@ -86,6 +86,7 @@ const ESPERADO: Record<string, Actor[]> = {
   'DELETE /ofertas/:id': ['socio', 'direc', 'admin'],
 
   'GET /postulaciones': SOLO_ADMIN,
+  'GET /postulaciones/mias': ['post'],
   'GET /postulaciones/recibidas': SOCIOS,
   'GET /postulaciones/recibidas/:id': SOCIOS,
   'GET /postulaciones/:id': AUTENTICADOS,

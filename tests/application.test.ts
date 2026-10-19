@@ -365,6 +365,83 @@ describe('Applications', () => {
     });
   });
 
+  describe('mis postulaciones (postulante)', () => {
+    let ownOfferId: number;
+    let ownId: number;
+    let otherId: number;
+
+    beforeAll(async () => {
+      const offer = await request(app)
+        .post('/ofertas')
+        .set('Cookie', socio.cookie)
+        .send({
+          titulo: 'Oferta para mis postulaciones',
+          descripcion: 'Oferta de prueba',
+          modalidad: 'HIBRIDO',
+          categoriaIds: [categoryId],
+        });
+
+      expect(offer.status).toBe(201);
+
+      ownOfferId = offer.body.id;
+
+      const mine = await request(app)
+        .post('/postulaciones')
+        .set('Cookie', postulante.cookie)
+        .send({ ofertaId: ownOfferId, observaciones: 'Quiero trabajar acá' });
+
+      const other = await request(app)
+        .post('/postulaciones')
+        .set('Cookie', otherPostulante.cookie)
+        .send({ ofertaId: ownOfferId });
+
+      expect(mine.status).toBe(201);
+      expect(other.status).toBe(201);
+
+      ownId = mine.body.id;
+      otherId = other.body.id;
+    });
+
+    it('el postulante ve solo sus postulaciones, con la oferta y la empresa', async () => {
+      const response = await request(app)
+        .get('/postulaciones/mias')
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(200);
+
+      const ids = response.body.map((a: { id: number }) => a.id);
+
+      expect(ids).toContain(ownId);
+      expect(ids).not.toContain(otherId);
+
+      const own = response.body.find((a: { id: number }) => a.id === ownId);
+
+      expect(own.estado).toBe('ENVIADA');
+      expect(own.observaciones).toBe('Quiero trabajar acá');
+      expect(own.oferta.id).toBe(ownOfferId);
+      expect(own.oferta.titulo).toBe('Oferta para mis postulaciones');
+      expect(own.oferta.socio.razonSocial).toEqual(expect.any(String));
+
+      // Nada de datos de otros ni de la cuenta.
+      expect(own.postulante).toBeUndefined();
+      expect(own.postulanteId).toBeUndefined();
+    });
+
+    it('un socio no puede pedir /postulaciones/mias', async () => {
+      const response = await request(app)
+        .get('/postulaciones/mias')
+        .set('Cookie', socio.cookie);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('sin sesión devuelve 401', async () => {
+      const response = await request(app).get('/postulaciones/mias');
+
+      expect(response.status).toBe(401);
+    });
+  });
+
   describe('postulaciones recibidas por la empresa', () => {
     let receivedOfferId: number;
     let receivedId: number;
