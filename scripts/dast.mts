@@ -587,7 +587,11 @@ function resumir() {
     readFileSync(join(SALIDA, `${MODO}-reporte.json`), 'utf8'),
   ) as { site: { alerts: Alerta[] }[] };
 
-  const alertas = reporte.site.flatMap((sitio) => sitio.alerts);
+  // Cuando `alertFilter` marca todas las instancias como falso positivo, el
+  // reporte deja la alerta con su riesgo original y 0 instancias: no cuenta.
+  const alertas = reporte.site
+    .flatMap((sitio) => sitio.alerts)
+    .filter((alerta) => Number(alerta.count) > 0);
   // -1 es lo que `alertFilter` (en `zap.yaml`) marcó como falso positivo.
   const riesgos: Record<string, string> = {
     '-1': 'Falso positivo',
