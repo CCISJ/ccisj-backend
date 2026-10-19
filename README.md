@@ -546,6 +546,17 @@ Ese último está a propósito: si los tests no encuentran su base, la salida
 fácil es apuntar `DB_URL` a Supabase y volver al problema de antes. El chequeo
 no lo permite.
 
+## Análisis dinámico de seguridad (DAST)
+
+OWASP ZAP, en Docker, contra la API andando sobre esta misma base:
+
+```bash
+pnpm dast          # pasivo, ~1 minuto
+pnpm dast:activo   # con ataques a cada parámetro de cada endpoint
+```
+
+Cómo funciona, qué cubre y qué no, en [`dast/README.md`](dast/README.md).
+
 ---
 
 # Ejecutar backend sin Docker
