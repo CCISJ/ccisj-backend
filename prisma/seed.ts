@@ -187,7 +187,8 @@ async function main() {
     data: {
       direccion: '18 de Julio 456, San José de Mayo',
       fechaNacimiento: new Date('1998-04-12'),
-      otros: 'Libreta de conducir categoría A. Disponibilidad horaria completa.',
+      otros:
+        'Libreta de conducir categoría A. Disponibilidad horaria completa.',
     },
   });
 
@@ -195,7 +196,9 @@ async function main() {
   await prisma.experienciaLaboral.deleteMany({
     where: { postulanteId: postulante.id },
   });
-  await prisma.referencia.deleteMany({ where: { postulanteId: postulante.id } });
+  await prisma.referencia.deleteMany({
+    where: { postulanteId: postulante.id },
+  });
 
   await prisma.estudio.createMany({
     data: [

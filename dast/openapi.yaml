@@ -452,7 +452,8 @@ paths:
                 apellido: { type: string, maxLength: 100, example: Pérez }
                 telefono: { type: string, example: '099111222' }
                 direccion: { type: string, example: 18 de Julio 456 }
-                fechaNacimiento: { type: string, format: date, example: '1998-04-12' }
+                fechaNacimiento:
+                  { type: string, format: date, example: '1998-04-12' }
                 categoriaIds:
                   type: array
                   items: { type: integer }

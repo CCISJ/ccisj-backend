@@ -126,9 +126,7 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     applicant._count.experiencias > 0;
 
   if (!hasCv) {
-    throw new Error(
-      'Completá tu CV o subí uno en PDF antes de postularte',
-    );
+    throw new Error('Completá tu CV o subí uno en PDF antes de postularte');
   }
 
   const existingApplication =

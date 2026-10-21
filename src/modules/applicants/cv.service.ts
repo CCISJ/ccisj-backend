@@ -1,13 +1,13 @@
 import { EMAIL_MAX, EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
 
+import { parseCategoryPreferences } from './category-preferences';
 import {
   deleteCvsFromStorage,
   getCvSignedUrl,
   isPdf,
   uploadCvToStorage,
 } from './cv-storage.service';
-import { parseCategoryPreferences } from './category-preferences';
 import * as cvRepository from './cv.repository';
 import type {
   CvInput,
@@ -74,7 +74,11 @@ function optionalBoolean(value: unknown, label: string) {
  * guarda el día 1). Se arma en UTC para que la zona horaria del servidor no
  * la corra un día.
  */
-function optionalDate(value: unknown, label: string, { monthOnly = false } = {}) {
+function optionalDate(
+  value: unknown,
+  label: string,
+  { monthOnly = false } = {},
+) {
   if (value === undefined || value === null || value === '') return null;
 
   const pattern = monthOnly
@@ -133,7 +137,10 @@ function parseList<T>(
   }
 
   if (value.length > CV_MAX_ITEMS) {
-    throw new HttpError(400, `${label}: se pueden cargar hasta ${CV_MAX_ITEMS}`);
+    throw new HttpError(
+      400,
+      `${label}: se pueden cargar hasta ${CV_MAX_ITEMS}`,
+    );
   }
 
   return value.map((item, index) => parseItem(item, `${label} ${index + 1}`));
@@ -159,12 +166,20 @@ function parseEducation(item: unknown, label: string): EducationInput {
 
   return {
     tipo: item.tipo,
-    institucion: requiredText(item.institucion, `${label}: la institución`, 150),
+    institucion: requiredText(
+      item.institucion,
+      `${label}: la institución`,
+      150,
+    ),
     titulo: requiredText(item.titulo, `${label}: el título o curso`, 150),
     fechaInicio,
     fechaFin,
     enCurso,
-    descripcion: optionalText(item.descripcion, `${label}: la descripción`, TEXT_MAX),
+    descripcion: optionalText(
+      item.descripcion,
+      `${label}: la descripción`,
+      TEXT_MAX,
+    ),
   };
 }
 
@@ -231,7 +246,10 @@ function parseCv(body: unknown): CvInput {
     apellido: requiredText(body.apellido, 'El apellido', 100),
     telefono: optionalText(body.telefono, 'El teléfono', 50),
     direccion: optionalText(body.direccion, 'La dirección', 255),
-    fechaNacimiento: optionalDate(body.fechaNacimiento, 'La fecha de nacimiento'),
+    fechaNacimiento: optionalDate(
+      body.fechaNacimiento,
+      'La fecha de nacimiento',
+    ),
     otros: optionalText(body.otros, 'Otros datos', TEXT_MAX),
     estudios: parseList(body.estudios, 'Estudio', parseEducation),
     experiencias: parseList(body.experiencias, 'Experiencia', parseExperience),
@@ -280,7 +298,10 @@ export async function saveProfile(postulanteId: number, body: unknown) {
     apellido: requiredText(body.apellido, 'El apellido', 100),
     telefono: requiredText(body.telefono, 'El teléfono', 50),
     direccion: optionalText(body.direccion, 'La dirección', 255),
-    fechaNacimiento: optionalDate(body.fechaNacimiento, 'La fecha de nacimiento'),
+    fechaNacimiento: optionalDate(
+      body.fechaNacimiento,
+      'La fecha de nacimiento',
+    ),
     categoriaIds: await parseCategoryPreferences(body.categoriaIds),
   };
 

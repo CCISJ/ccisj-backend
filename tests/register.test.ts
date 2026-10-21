@@ -202,7 +202,9 @@ describe('Registro de postulantes', () => {
       const usuario = await prisma.usuario.findUnique({
         where: { email: email.toLowerCase() },
         select: {
-          postulante: { select: { categorias: { select: { categoriaId: true } } } },
+          postulante: {
+            select: { categorias: { select: { categoriaId: true } } },
+          },
         },
       });
 
@@ -229,8 +231,10 @@ describe('Registro de postulantes', () => {
       const response = await request(app).post('/auth/registro').send(body);
 
       expect(response.status).toBe(201);
-      expect((await storedCategories(body.email)).sort()).toEqual(
-        [a.id, b.id].sort(),
+      const byId = (x: number, y: number) => x - y;
+
+      expect((await storedCategories(body.email)).sort(byId)).toEqual(
+        [a.id, b.id].sort(byId),
       );
     });
 

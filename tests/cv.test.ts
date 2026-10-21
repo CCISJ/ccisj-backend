@@ -83,7 +83,9 @@ describe('Mi CV', () => {
   }
 
   function uploadFiles(cookie: string[], files: Buffer[]) {
-    let req = request(app).post('/postulantes/me/cv/archivos').set('Cookie', cookie);
+    let req = request(app)
+      .post('/postulantes/me/cv/archivos')
+      .set('Cookie', cookie);
 
     files.forEach((file, index) => {
       req = req.attach('archivos', file, {
@@ -124,7 +126,10 @@ describe('Mi CV', () => {
   it('las listas se reemplazan completas al volver a guardar', async () => {
     const { cookie, postulanteId } = await applicant();
 
-    await request(app).put('/postulantes/me/cv').set('Cookie', cookie).send(validCv);
+    await request(app)
+      .put('/postulantes/me/cv')
+      .set('Cookie', cookie)
+      .send(validCv);
 
     const response = await request(app)
       .put('/postulantes/me/cv')
@@ -141,17 +146,31 @@ describe('Mi CV', () => {
     ['sin nombre', { nombre: '' }],
     ['fecha de nacimiento inválida', { fechaNacimiento: '1998-02-30' }],
     ['fecha de nacimiento futura', { fechaNacimiento: '2999-01-01' }],
-    ['tipo de estudio inválido', { estudios: [{ tipo: 'X', institucion: 'A', titulo: 'B' }] }],
-    ['estudio sin institución', { estudios: [{ tipo: 'CURRICULAR', titulo: 'B' }] }],
+    [
+      'tipo de estudio inválido',
+      { estudios: [{ tipo: 'X', institucion: 'A', titulo: 'B' }] },
+    ],
+    [
+      'estudio sin institución',
+      { estudios: [{ tipo: 'CURRICULAR', titulo: 'B' }] },
+    ],
     [
       'fin antes del inicio',
       {
         experiencias: [
-          { empresa: 'A', cargo: 'B', fechaInicio: '2024-05', fechaFin: '2023-01' },
+          {
+            empresa: 'A',
+            cargo: 'B',
+            fechaInicio: '2024-05',
+            fechaFin: '2023-01',
+          },
         ],
       },
     ],
-    ['referencia sin contacto', { referencias: [{ tipo: 'PERSONAL', nombre: 'A' }] }],
+    [
+      'referencia sin contacto',
+      { referencias: [{ tipo: 'PERSONAL', nombre: 'A' }] },
+    ],
     ['lista que no es lista', { estudios: 'UTEC' }],
   ])('rechaza con 400: %s', async (_caso, cambio) => {
     const { cookie } = await applicant();
@@ -179,7 +198,9 @@ describe('Mi CV', () => {
       expect(path).toMatch(new RegExp(`^cvs/postulante-${postulanteId}/`));
     }
 
-    const cv = await request(app).get('/postulantes/me/cv').set('Cookie', cookie);
+    const cv = await request(app)
+      .get('/postulantes/me/cv')
+      .set('Cookie', cookie);
 
     expect(cv.body.cvs).toHaveLength(3);
   });
@@ -256,7 +277,10 @@ describe('Mi CV', () => {
       },
     });
 
-    await request(app).put('/postulantes/me/cv').set('Cookie', cookie).send(validCv);
+    await request(app)
+      .put('/postulantes/me/cv')
+      .set('Cookie', cookie)
+      .send(validCv);
 
     const response = await request(app)
       .post('/postulaciones')
@@ -274,7 +298,10 @@ describe('Mi CV', () => {
       data: { nombre: `Rubro perfil ${postulanteId}-${Date.now()}` },
     });
 
-    await request(app).put('/postulantes/me/cv').set('Cookie', cookie).send(validCv);
+    await request(app)
+      .put('/postulantes/me/cv')
+      .set('Cookie', cookie)
+      .send(validCv);
 
     const response = await request(app)
       .patch('/postulantes/me/perfil')

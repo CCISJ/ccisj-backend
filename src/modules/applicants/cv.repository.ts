@@ -194,7 +194,10 @@ export function saveProfile(postulanteId: number, data: ProfileInput) {
 
     if (categoriaIds.length > 0) {
       await tx.postulanteCategoria.createMany({
-        data: categoriaIds.map((categoriaId) => ({ postulanteId, categoriaId })),
+        data: categoriaIds.map((categoriaId) => ({
+          postulanteId,
+          categoriaId,
+        })),
       });
     }
 
