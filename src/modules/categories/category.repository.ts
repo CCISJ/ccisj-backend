@@ -9,6 +9,15 @@ export function findAll() {
   });
 }
 
+/** Las activas, solo id y nombre: es lo que se muestra sin sesión. */
+export function findActive() {
+  return prisma.categoria.findMany({
+    where: { activa: true },
+    select: { id: true, nombre: true },
+    orderBy: { nombre: 'asc' },
+  });
+}
+
 export function findById(id: number) {
   return prisma.categoria.findUnique({
     where: { id },

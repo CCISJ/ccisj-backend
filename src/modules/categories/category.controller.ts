@@ -3,6 +3,7 @@ import type { Request, Response } from 'express';
 import { parseId } from '@/utils/params';
 import { sendError } from '@/utils/send-error';
 
+import * as categoryRepository from './category.repository';
 import * as categoryService from './category.service';
 
 function invalidId(res: Response) {
@@ -15,6 +16,17 @@ export async function getAll(_req: Request, res: Response) {
   try {
     const categories = await categoryService.getAll();
     res.json(categories);
+  } catch (error) {
+    sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener las categorías',
+    });
+  }
+}
+
+export async function getActive(_req: Request, res: Response) {
+  try {
+    res.json(await categoryRepository.findActive());
   } catch (error) {
     sendError(res, error, {
       status: 500,

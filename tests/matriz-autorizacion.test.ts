@@ -67,9 +67,17 @@ const ESPERADO: Record<string, Actor[]> = {
   'POST /postulantes': SOLO_ADMIN,
   'PATCH /postulantes/:id': ['post', 'admin'],
   'DELETE /postulantes/:id': SOLO_ADMIN,
+  // "Mi CV": cada postulante el suyo, que se toma de la sesión.
+  'GET /postulantes/me/cv': ['post'],
+  'PUT /postulantes/me/cv': ['post'],
+  'PATCH /postulantes/me/perfil': ['post'],
+  'POST /postulantes/me/cv/archivos': ['post'],
+  'GET /postulantes/me/cv/archivos/:cvId': ['post'],
+  'DELETE /postulantes/me/cv/archivos/:cvId': ['post'],
 
   // Las categorías de las ofertas las lee cualquiera con sesión; las edita la
   // administración.
+  'GET /categorias/activas': TODOS,
   'GET /categorias': AUTENTICADOS,
   'GET /categorias/:id': AUTENTICADOS,
   'POST /categorias': SOLO_ADMIN,
@@ -89,6 +97,7 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /postulaciones/mias': ['post'],
   'GET /postulaciones/recibidas': SOCIOS,
   'GET /postulaciones/recibidas/:id': SOCIOS,
+  'GET /postulaciones/recibidas/:id/cv/:cvId': SOCIOS,
   'GET /postulaciones/:id': AUTENTICADOS,
   'POST /postulaciones': ['post'],
   'PATCH /postulaciones/:id': ['socio', 'direc', 'admin'],

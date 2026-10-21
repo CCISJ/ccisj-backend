@@ -111,7 +111,7 @@ describe('Applications', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe(
-        'El postulante debe tener un CV cargado',
+        'Completá tu CV o subí uno en PDF antes de postularte',
       );
     } finally {
       await deleteUsers([sinCv.userId]);
@@ -516,9 +516,10 @@ describe('Applications', () => {
 
       expect(received.postulante.cvs).toHaveLength(1);
       expect(received.postulante.cvs[0]).toMatchObject({
-        archivoUrl: '/uploads/cv/test.pdf',
         descripcion: 'CV de prueba',
       });
+      // La ruta interna del PDF no viaja: se abre con un enlace firmado.
+      expect(received.postulante.cvs[0]).not.toHaveProperty('archivoUrl');
 
       // De la cuenta del postulante solo viaja el email.
       expect(received.postulante).not.toHaveProperty('usuarioId');

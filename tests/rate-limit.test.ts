@@ -91,6 +91,7 @@ describe('Rate limit del registro', () => {
         password: TEST_PASSWORD,
         nombre: 'Ana',
         apellido: 'Pérez',
+        telefono: '099123456',
         ...overrides,
       });
   }

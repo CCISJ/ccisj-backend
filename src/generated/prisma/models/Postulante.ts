@@ -42,6 +42,9 @@ export type PostulanteMinAggregateOutputType = {
   nombre: string | null
   apellido: string | null
   telefono: string | null
+  direccion: string | null
+  fechaNacimiento: Date | null
+  otros: string | null
 }
 
 export type PostulanteMaxAggregateOutputType = {
@@ -50,6 +53,9 @@ export type PostulanteMaxAggregateOutputType = {
   nombre: string | null
   apellido: string | null
   telefono: string | null
+  direccion: string | null
+  fechaNacimiento: Date | null
+  otros: string | null
 }
 
 export type PostulanteCountAggregateOutputType = {
@@ -58,6 +64,9 @@ export type PostulanteCountAggregateOutputType = {
   nombre: number
   apellido: number
   telefono: number
+  direccion: number
+  fechaNacimiento: number
+  otros: number
   _all: number
 }
 
@@ -78,6 +87,9 @@ export type PostulanteMinAggregateInputType = {
   nombre?: true
   apellido?: true
   telefono?: true
+  direccion?: true
+  fechaNacimiento?: true
+  otros?: true
 }
 
 export type PostulanteMaxAggregateInputType = {
@@ -86,6 +98,9 @@ export type PostulanteMaxAggregateInputType = {
   nombre?: true
   apellido?: true
   telefono?: true
+  direccion?: true
+  fechaNacimiento?: true
+  otros?: true
 }
 
 export type PostulanteCountAggregateInputType = {
@@ -94,6 +109,9 @@ export type PostulanteCountAggregateInputType = {
   nombre?: true
   apellido?: true
   telefono?: true
+  direccion?: true
+  fechaNacimiento?: true
+  otros?: true
   _all?: true
 }
 
@@ -189,6 +207,9 @@ export type PostulanteGroupByOutputType = {
   nombre: string
   apellido: string
   telefono: string | null
+  direccion: string | null
+  fechaNacimiento: Date | null
+  otros: string | null
   _count: PostulanteCountAggregateOutputType | null
   _avg: PostulanteAvgAggregateOutputType | null
   _sum: PostulanteSumAggregateOutputType | null
@@ -220,8 +241,15 @@ export type PostulanteWhereInput = {
   nombre?: Prisma.StringFilter<"Postulante"> | string
   apellido?: Prisma.StringFilter<"Postulante"> | string
   telefono?: Prisma.StringNullableFilter<"Postulante"> | string | null
+  direccion?: Prisma.StringNullableFilter<"Postulante"> | string | null
+  fechaNacimiento?: Prisma.DateTimeNullableFilter<"Postulante"> | Date | string | null
+  otros?: Prisma.StringNullableFilter<"Postulante"> | string | null
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   cvs?: Prisma.CvListRelationFilter
+  estudios?: Prisma.EstudioListRelationFilter
+  experiencias?: Prisma.ExperienciaLaboralListRelationFilter
+  referencias?: Prisma.ReferenciaListRelationFilter
+  categorias?: Prisma.PostulanteCategoriaListRelationFilter
   postulaciones?: Prisma.PostulacionListRelationFilter
 }
 
@@ -231,8 +259,15 @@ export type PostulanteOrderByWithRelationInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrder
   telefono?: Prisma.SortOrderInput | Prisma.SortOrder
+  direccion?: Prisma.SortOrderInput | Prisma.SortOrder
+  fechaNacimiento?: Prisma.SortOrderInput | Prisma.SortOrder
+  otros?: Prisma.SortOrderInput | Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
   cvs?: Prisma.CvOrderByRelationAggregateInput
+  estudios?: Prisma.EstudioOrderByRelationAggregateInput
+  experiencias?: Prisma.ExperienciaLaboralOrderByRelationAggregateInput
+  referencias?: Prisma.ReferenciaOrderByRelationAggregateInput
+  categorias?: Prisma.PostulanteCategoriaOrderByRelationAggregateInput
   postulaciones?: Prisma.PostulacionOrderByRelationAggregateInput
 }
 
@@ -245,8 +280,15 @@ export type PostulanteWhereUniqueInput = Prisma.AtLeast<{
   nombre?: Prisma.StringFilter<"Postulante"> | string
   apellido?: Prisma.StringFilter<"Postulante"> | string
   telefono?: Prisma.StringNullableFilter<"Postulante"> | string | null
+  direccion?: Prisma.StringNullableFilter<"Postulante"> | string | null
+  fechaNacimiento?: Prisma.DateTimeNullableFilter<"Postulante"> | Date | string | null
+  otros?: Prisma.StringNullableFilter<"Postulante"> | string | null
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   cvs?: Prisma.CvListRelationFilter
+  estudios?: Prisma.EstudioListRelationFilter
+  experiencias?: Prisma.ExperienciaLaboralListRelationFilter
+  referencias?: Prisma.ReferenciaListRelationFilter
+  categorias?: Prisma.PostulanteCategoriaListRelationFilter
   postulaciones?: Prisma.PostulacionListRelationFilter
 }, "id" | "usuarioId">
 
@@ -256,6 +298,9 @@ export type PostulanteOrderByWithAggregationInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrder
   telefono?: Prisma.SortOrderInput | Prisma.SortOrder
+  direccion?: Prisma.SortOrderInput | Prisma.SortOrder
+  fechaNacimiento?: Prisma.SortOrderInput | Prisma.SortOrder
+  otros?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PostulanteCountOrderByAggregateInput
   _avg?: Prisma.PostulanteAvgOrderByAggregateInput
   _max?: Prisma.PostulanteMaxOrderByAggregateInput
@@ -272,14 +317,24 @@ export type PostulanteScalarWhereWithAggregatesInput = {
   nombre?: Prisma.StringWithAggregatesFilter<"Postulante"> | string
   apellido?: Prisma.StringWithAggregatesFilter<"Postulante"> | string
   telefono?: Prisma.StringNullableWithAggregatesFilter<"Postulante"> | string | null
+  direccion?: Prisma.StringNullableWithAggregatesFilter<"Postulante"> | string | null
+  fechaNacimiento?: Prisma.DateTimeNullableWithAggregatesFilter<"Postulante"> | Date | string | null
+  otros?: Prisma.StringNullableWithAggregatesFilter<"Postulante"> | string | null
 }
 
 export type PostulanteCreateInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
 }
 
@@ -289,7 +344,14 @@ export type PostulanteUncheckedCreateInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
@@ -297,8 +359,15 @@ export type PostulanteUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -308,7 +377,14 @@ export type PostulanteUncheckedUpdateInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -318,12 +394,18 @@ export type PostulanteCreateManyInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
 }
 
 export type PostulanteUpdateManyMutationInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PostulanteUncheckedUpdateManyInput = {
@@ -332,6 +414,9 @@ export type PostulanteUncheckedUpdateManyInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type PostulanteNullableScalarRelationFilter = {
@@ -345,6 +430,9 @@ export type PostulanteCountOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrder
   telefono?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  fechaNacimiento?: Prisma.SortOrder
+  otros?: Prisma.SortOrder
 }
 
 export type PostulanteAvgOrderByAggregateInput = {
@@ -358,6 +446,9 @@ export type PostulanteMaxOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrder
   telefono?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  fechaNacimiento?: Prisma.SortOrder
+  otros?: Prisma.SortOrder
 }
 
 export type PostulanteMinOrderByAggregateInput = {
@@ -366,6 +457,9 @@ export type PostulanteMinOrderByAggregateInput = {
   nombre?: Prisma.SortOrder
   apellido?: Prisma.SortOrder
   telefono?: Prisma.SortOrder
+  direccion?: Prisma.SortOrder
+  fechaNacimiento?: Prisma.SortOrder
+  otros?: Prisma.SortOrder
 }
 
 export type PostulanteSumOrderByAggregateInput = {
@@ -410,6 +504,48 @@ export type PostulanteUncheckedUpdateOneWithoutUsuarioNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutUsuarioInput, Prisma.PostulanteUpdateWithoutUsuarioInput>, Prisma.PostulanteUncheckedUpdateWithoutUsuarioInput>
 }
 
+export type PostulanteCreateNestedOneWithoutEstudiosInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutEstudiosInput, Prisma.PostulanteUncheckedCreateWithoutEstudiosInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutEstudiosInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+}
+
+export type PostulanteUpdateOneRequiredWithoutEstudiosNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutEstudiosInput, Prisma.PostulanteUncheckedCreateWithoutEstudiosInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutEstudiosInput
+  upsert?: Prisma.PostulanteUpsertWithoutEstudiosInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutEstudiosInput, Prisma.PostulanteUpdateWithoutEstudiosInput>, Prisma.PostulanteUncheckedUpdateWithoutEstudiosInput>
+}
+
+export type PostulanteCreateNestedOneWithoutExperienciasInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutExperienciasInput, Prisma.PostulanteUncheckedCreateWithoutExperienciasInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutExperienciasInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+}
+
+export type PostulanteUpdateOneRequiredWithoutExperienciasNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutExperienciasInput, Prisma.PostulanteUncheckedCreateWithoutExperienciasInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutExperienciasInput
+  upsert?: Prisma.PostulanteUpsertWithoutExperienciasInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutExperienciasInput, Prisma.PostulanteUpdateWithoutExperienciasInput>, Prisma.PostulanteUncheckedUpdateWithoutExperienciasInput>
+}
+
+export type PostulanteCreateNestedOneWithoutReferenciasInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutReferenciasInput, Prisma.PostulanteUncheckedCreateWithoutReferenciasInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutReferenciasInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+}
+
+export type PostulanteUpdateOneRequiredWithoutReferenciasNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutReferenciasInput, Prisma.PostulanteUncheckedCreateWithoutReferenciasInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutReferenciasInput
+  upsert?: Prisma.PostulanteUpsertWithoutReferenciasInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutReferenciasInput, Prisma.PostulanteUpdateWithoutReferenciasInput>, Prisma.PostulanteUncheckedUpdateWithoutReferenciasInput>
+}
+
 export type PostulanteCreateNestedOneWithoutCvsInput = {
   create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCvsInput, Prisma.PostulanteUncheckedCreateWithoutCvsInput>
   connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCvsInput
@@ -422,6 +558,20 @@ export type PostulanteUpdateOneRequiredWithoutCvsNestedInput = {
   upsert?: Prisma.PostulanteUpsertWithoutCvsInput
   connect?: Prisma.PostulanteWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutCvsInput, Prisma.PostulanteUpdateWithoutCvsInput>, Prisma.PostulanteUncheckedUpdateWithoutCvsInput>
+}
+
+export type PostulanteCreateNestedOneWithoutCategoriasInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCategoriasInput, Prisma.PostulanteUncheckedCreateWithoutCategoriasInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCategoriasInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+}
+
+export type PostulanteUpdateOneRequiredWithoutCategoriasNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulanteCreateWithoutCategoriasInput, Prisma.PostulanteUncheckedCreateWithoutCategoriasInput>
+  connectOrCreate?: Prisma.PostulanteCreateOrConnectWithoutCategoriasInput
+  upsert?: Prisma.PostulanteUpsertWithoutCategoriasInput
+  connect?: Prisma.PostulanteWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PostulanteUpdateToOneWithWhereWithoutCategoriasInput, Prisma.PostulanteUpdateWithoutCategoriasInput>, Prisma.PostulanteUncheckedUpdateWithoutCategoriasInput>
 }
 
 export type PostulanteCreateNestedOneWithoutPostulacionesInput = {
@@ -442,7 +592,14 @@ export type PostulanteCreateWithoutUsuarioInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
 }
 
@@ -451,7 +608,14 @@ export type PostulanteUncheckedCreateWithoutUsuarioInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
@@ -475,7 +639,14 @@ export type PostulanteUpdateWithoutUsuarioInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -484,7 +655,248 @@ export type PostulanteUncheckedUpdateWithoutUsuarioInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteCreateWithoutEstudiosInput = {
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteUncheckedCreateWithoutEstudiosInput = {
+  id?: number
+  usuarioId: number
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteCreateOrConnectWithoutEstudiosInput = {
+  where: Prisma.PostulanteWhereUniqueInput
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutEstudiosInput, Prisma.PostulanteUncheckedCreateWithoutEstudiosInput>
+}
+
+export type PostulanteUpsertWithoutEstudiosInput = {
+  update: Prisma.XOR<Prisma.PostulanteUpdateWithoutEstudiosInput, Prisma.PostulanteUncheckedUpdateWithoutEstudiosInput>
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutEstudiosInput, Prisma.PostulanteUncheckedCreateWithoutEstudiosInput>
+  where?: Prisma.PostulanteWhereInput
+}
+
+export type PostulanteUpdateToOneWithWhereWithoutEstudiosInput = {
+  where?: Prisma.PostulanteWhereInput
+  data: Prisma.XOR<Prisma.PostulanteUpdateWithoutEstudiosInput, Prisma.PostulanteUncheckedUpdateWithoutEstudiosInput>
+}
+
+export type PostulanteUpdateWithoutEstudiosInput = {
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteUncheckedUpdateWithoutEstudiosInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteCreateWithoutExperienciasInput = {
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteUncheckedCreateWithoutExperienciasInput = {
+  id?: number
+  usuarioId: number
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteCreateOrConnectWithoutExperienciasInput = {
+  where: Prisma.PostulanteWhereUniqueInput
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutExperienciasInput, Prisma.PostulanteUncheckedCreateWithoutExperienciasInput>
+}
+
+export type PostulanteUpsertWithoutExperienciasInput = {
+  update: Prisma.XOR<Prisma.PostulanteUpdateWithoutExperienciasInput, Prisma.PostulanteUncheckedUpdateWithoutExperienciasInput>
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutExperienciasInput, Prisma.PostulanteUncheckedCreateWithoutExperienciasInput>
+  where?: Prisma.PostulanteWhereInput
+}
+
+export type PostulanteUpdateToOneWithWhereWithoutExperienciasInput = {
+  where?: Prisma.PostulanteWhereInput
+  data: Prisma.XOR<Prisma.PostulanteUpdateWithoutExperienciasInput, Prisma.PostulanteUncheckedUpdateWithoutExperienciasInput>
+}
+
+export type PostulanteUpdateWithoutExperienciasInput = {
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteUncheckedUpdateWithoutExperienciasInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteCreateWithoutReferenciasInput = {
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteUncheckedCreateWithoutReferenciasInput = {
+  id?: number
+  usuarioId: number
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteCreateOrConnectWithoutReferenciasInput = {
+  where: Prisma.PostulanteWhereUniqueInput
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutReferenciasInput, Prisma.PostulanteUncheckedCreateWithoutReferenciasInput>
+}
+
+export type PostulanteUpsertWithoutReferenciasInput = {
+  update: Prisma.XOR<Prisma.PostulanteUpdateWithoutReferenciasInput, Prisma.PostulanteUncheckedUpdateWithoutReferenciasInput>
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutReferenciasInput, Prisma.PostulanteUncheckedCreateWithoutReferenciasInput>
+  where?: Prisma.PostulanteWhereInput
+}
+
+export type PostulanteUpdateToOneWithWhereWithoutReferenciasInput = {
+  where?: Prisma.PostulanteWhereInput
+  data: Prisma.XOR<Prisma.PostulanteUpdateWithoutReferenciasInput, Prisma.PostulanteUncheckedUpdateWithoutReferenciasInput>
+}
+
+export type PostulanteUpdateWithoutReferenciasInput = {
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteUncheckedUpdateWithoutReferenciasInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -492,7 +904,14 @@ export type PostulanteCreateWithoutCvsInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
 }
 
@@ -502,6 +921,13 @@ export type PostulanteUncheckedCreateWithoutCvsInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
   postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
@@ -525,7 +951,14 @@ export type PostulanteUpdateWithoutCvsInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -535,6 +968,91 @@ export type PostulanteUncheckedUpdateWithoutCvsInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteCreateWithoutCategoriasInput = {
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
+  cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteUncheckedCreateWithoutCategoriasInput = {
+  id?: number
+  usuarioId: number
+  nombre: string
+  apellido: string
+  telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
+  cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutPostulanteInput
+}
+
+export type PostulanteCreateOrConnectWithoutCategoriasInput = {
+  where: Prisma.PostulanteWhereUniqueInput
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutCategoriasInput, Prisma.PostulanteUncheckedCreateWithoutCategoriasInput>
+}
+
+export type PostulanteUpsertWithoutCategoriasInput = {
+  update: Prisma.XOR<Prisma.PostulanteUpdateWithoutCategoriasInput, Prisma.PostulanteUncheckedUpdateWithoutCategoriasInput>
+  create: Prisma.XOR<Prisma.PostulanteCreateWithoutCategoriasInput, Prisma.PostulanteUncheckedCreateWithoutCategoriasInput>
+  where?: Prisma.PostulanteWhereInput
+}
+
+export type PostulanteUpdateToOneWithWhereWithoutCategoriasInput = {
+  where?: Prisma.PostulanteWhereInput
+  data: Prisma.XOR<Prisma.PostulanteUpdateWithoutCategoriasInput, Prisma.PostulanteUncheckedUpdateWithoutCategoriasInput>
+}
+
+export type PostulanteUpdateWithoutCategoriasInput = {
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
+  cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  postulaciones?: Prisma.PostulacionUpdateManyWithoutPostulanteNestedInput
+}
+
+export type PostulanteUncheckedUpdateWithoutCategoriasInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  usuarioId?: Prisma.IntFieldUpdateOperationsInput | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  apellido?: Prisma.StringFieldUpdateOperationsInput | string
+  telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
   postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
@@ -542,8 +1060,15 @@ export type PostulanteCreateWithoutPostulacionesInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaCreateNestedManyWithoutPostulanteInput
 }
 
 export type PostulanteUncheckedCreateWithoutPostulacionesInput = {
@@ -552,7 +1077,14 @@ export type PostulanteUncheckedCreateWithoutPostulacionesInput = {
   nombre: string
   apellido: string
   telefono?: string | null
+  direccion?: string | null
+  fechaNacimiento?: Date | string | null
+  otros?: string | null
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
+  estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
+  referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutPostulanteInput
 }
 
 export type PostulanteCreateOrConnectWithoutPostulacionesInput = {
@@ -575,8 +1107,15 @@ export type PostulanteUpdateWithoutPostulacionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUpdateManyWithoutPostulanteNestedInput
 }
 
 export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
@@ -585,7 +1124,14 @@ export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   apellido?: Prisma.StringFieldUpdateOperationsInput | string
   telefono?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
+  estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
+  experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
+  referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
+  categorias?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutPostulanteNestedInput
 }
 
 
@@ -595,11 +1141,19 @@ export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
 
 export type PostulanteCountOutputType = {
   cvs: number
+  estudios: number
+  experiencias: number
+  referencias: number
+  categorias: number
   postulaciones: number
 }
 
 export type PostulanteCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   cvs?: boolean | PostulanteCountOutputTypeCountCvsArgs
+  estudios?: boolean | PostulanteCountOutputTypeCountEstudiosArgs
+  experiencias?: boolean | PostulanteCountOutputTypeCountExperienciasArgs
+  referencias?: boolean | PostulanteCountOutputTypeCountReferenciasArgs
+  categorias?: boolean | PostulanteCountOutputTypeCountCategoriasArgs
   postulaciones?: boolean | PostulanteCountOutputTypeCountPostulacionesArgs
 }
 
@@ -623,6 +1177,34 @@ export type PostulanteCountOutputTypeCountCvsArgs<ExtArgs extends runtime.Types.
 /**
  * PostulanteCountOutputType without action
  */
+export type PostulanteCountOutputTypeCountEstudiosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EstudioWhereInput
+}
+
+/**
+ * PostulanteCountOutputType without action
+ */
+export type PostulanteCountOutputTypeCountExperienciasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ExperienciaLaboralWhereInput
+}
+
+/**
+ * PostulanteCountOutputType without action
+ */
+export type PostulanteCountOutputTypeCountReferenciasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ReferenciaWhereInput
+}
+
+/**
+ * PostulanteCountOutputType without action
+ */
+export type PostulanteCountOutputTypeCountCategoriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PostulanteCategoriaWhereInput
+}
+
+/**
+ * PostulanteCountOutputType without action
+ */
 export type PostulanteCountOutputTypeCountPostulacionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.PostulacionWhereInput
 }
@@ -634,8 +1216,15 @@ export type PostulanteSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   nombre?: boolean
   apellido?: boolean
   telefono?: boolean
+  direccion?: boolean
+  fechaNacimiento?: boolean
+  otros?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   cvs?: boolean | Prisma.Postulante$cvsArgs<ExtArgs>
+  estudios?: boolean | Prisma.Postulante$estudiosArgs<ExtArgs>
+  experiencias?: boolean | Prisma.Postulante$experienciasArgs<ExtArgs>
+  referencias?: boolean | Prisma.Postulante$referenciasArgs<ExtArgs>
+  categorias?: boolean | Prisma.Postulante$categoriasArgs<ExtArgs>
   postulaciones?: boolean | Prisma.Postulante$postulacionesArgs<ExtArgs>
   _count?: boolean | Prisma.PostulanteCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulante"]>
@@ -646,6 +1235,9 @@ export type PostulanteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   nombre?: boolean
   apellido?: boolean
   telefono?: boolean
+  direccion?: boolean
+  fechaNacimiento?: boolean
+  otros?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulante"]>
 
@@ -655,6 +1247,9 @@ export type PostulanteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   nombre?: boolean
   apellido?: boolean
   telefono?: boolean
+  direccion?: boolean
+  fechaNacimiento?: boolean
+  otros?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulante"]>
 
@@ -664,12 +1259,19 @@ export type PostulanteSelectScalar = {
   nombre?: boolean
   apellido?: boolean
   telefono?: boolean
+  direccion?: boolean
+  fechaNacimiento?: boolean
+  otros?: boolean
 }
 
-export type PostulanteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "nombre" | "apellido" | "telefono", ExtArgs["result"]["postulante"]>
+export type PostulanteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "nombre" | "apellido" | "telefono" | "direccion" | "fechaNacimiento" | "otros", ExtArgs["result"]["postulante"]>
 export type PostulanteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   cvs?: boolean | Prisma.Postulante$cvsArgs<ExtArgs>
+  estudios?: boolean | Prisma.Postulante$estudiosArgs<ExtArgs>
+  experiencias?: boolean | Prisma.Postulante$experienciasArgs<ExtArgs>
+  referencias?: boolean | Prisma.Postulante$referenciasArgs<ExtArgs>
+  categorias?: boolean | Prisma.Postulante$categoriasArgs<ExtArgs>
   postulaciones?: boolean | Prisma.Postulante$postulacionesArgs<ExtArgs>
   _count?: boolean | Prisma.PostulanteCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -685,6 +1287,10 @@ export type $PostulantePayload<ExtArgs extends runtime.Types.Extensions.Internal
   objects: {
     usuario: Prisma.$UsuarioPayload<ExtArgs>
     cvs: Prisma.$CvPayload<ExtArgs>[]
+    estudios: Prisma.$EstudioPayload<ExtArgs>[]
+    experiencias: Prisma.$ExperienciaLaboralPayload<ExtArgs>[]
+    referencias: Prisma.$ReferenciaPayload<ExtArgs>[]
+    categorias: Prisma.$PostulanteCategoriaPayload<ExtArgs>[]
     postulaciones: Prisma.$PostulacionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -693,6 +1299,9 @@ export type $PostulantePayload<ExtArgs extends runtime.Types.Extensions.Internal
     nombre: string
     apellido: string
     telefono: string | null
+    direccion: string | null
+    fechaNacimiento: Date | null
+    otros: string | null
   }, ExtArgs["result"]["postulante"]>
   composites: {}
 }
@@ -1089,6 +1698,10 @@ export interface Prisma__PostulanteClient<T, Null = never, ExtArgs extends runti
   readonly [Symbol.toStringTag]: "PrismaPromise"
   usuario<T extends Prisma.UsuarioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UsuarioDefaultArgs<ExtArgs>>): Prisma.Prisma__UsuarioClient<runtime.Types.Result.GetResult<Prisma.$UsuarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   cvs<T extends Prisma.Postulante$cvsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$cvsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CvPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  estudios<T extends Prisma.Postulante$estudiosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$estudiosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EstudioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  experiencias<T extends Prisma.Postulante$experienciasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$experienciasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExperienciaLaboralPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  referencias<T extends Prisma.Postulante$referenciasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$referenciasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ReferenciaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  categorias<T extends Prisma.Postulante$categoriasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$categoriasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostulanteCategoriaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   postulaciones<T extends Prisma.Postulante$postulacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulante$postulacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostulacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1124,6 +1737,9 @@ export interface PostulanteFieldRefs {
   readonly nombre: Prisma.FieldRef<"Postulante", 'String'>
   readonly apellido: Prisma.FieldRef<"Postulante", 'String'>
   readonly telefono: Prisma.FieldRef<"Postulante", 'String'>
+  readonly direccion: Prisma.FieldRef<"Postulante", 'String'>
+  readonly fechaNacimiento: Prisma.FieldRef<"Postulante", 'DateTime'>
+  readonly otros: Prisma.FieldRef<"Postulante", 'String'>
 }
     
 
@@ -1546,6 +2162,102 @@ export type Postulante$cvsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.CvScalarFieldEnum | Prisma.CvScalarFieldEnum[]
+}
+
+/**
+ * Postulante.estudios
+ */
+export type Postulante$estudiosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Estudio
+   */
+  select?: Prisma.EstudioSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Estudio
+   */
+  omit?: Prisma.EstudioOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EstudioInclude<ExtArgs> | null
+  where?: Prisma.EstudioWhereInput
+  orderBy?: Prisma.EstudioOrderByWithRelationInput | Prisma.EstudioOrderByWithRelationInput[]
+  cursor?: Prisma.EstudioWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EstudioScalarFieldEnum | Prisma.EstudioScalarFieldEnum[]
+}
+
+/**
+ * Postulante.experiencias
+ */
+export type Postulante$experienciasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ExperienciaLaboral
+   */
+  select?: Prisma.ExperienciaLaboralSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ExperienciaLaboral
+   */
+  omit?: Prisma.ExperienciaLaboralOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ExperienciaLaboralInclude<ExtArgs> | null
+  where?: Prisma.ExperienciaLaboralWhereInput
+  orderBy?: Prisma.ExperienciaLaboralOrderByWithRelationInput | Prisma.ExperienciaLaboralOrderByWithRelationInput[]
+  cursor?: Prisma.ExperienciaLaboralWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ExperienciaLaboralScalarFieldEnum | Prisma.ExperienciaLaboralScalarFieldEnum[]
+}
+
+/**
+ * Postulante.referencias
+ */
+export type Postulante$referenciasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Referencia
+   */
+  select?: Prisma.ReferenciaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Referencia
+   */
+  omit?: Prisma.ReferenciaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ReferenciaInclude<ExtArgs> | null
+  where?: Prisma.ReferenciaWhereInput
+  orderBy?: Prisma.ReferenciaOrderByWithRelationInput | Prisma.ReferenciaOrderByWithRelationInput[]
+  cursor?: Prisma.ReferenciaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ReferenciaScalarFieldEnum | Prisma.ReferenciaScalarFieldEnum[]
+}
+
+/**
+ * Postulante.categorias
+ */
+export type Postulante$categoriasArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PostulanteCategoria
+   */
+  select?: Prisma.PostulanteCategoriaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PostulanteCategoria
+   */
+  omit?: Prisma.PostulanteCategoriaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostulanteCategoriaInclude<ExtArgs> | null
+  where?: Prisma.PostulanteCategoriaWhereInput
+  orderBy?: Prisma.PostulanteCategoriaOrderByWithRelationInput | Prisma.PostulanteCategoriaOrderByWithRelationInput[]
+  cursor?: Prisma.PostulanteCategoriaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PostulanteCategoriaScalarFieldEnum | Prisma.PostulanteCategoriaScalarFieldEnum[]
 }
 
 /**

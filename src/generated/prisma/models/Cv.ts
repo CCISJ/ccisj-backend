@@ -40,6 +40,7 @@ export type CvMinAggregateOutputType = {
   id: number | null
   postulanteId: number | null
   archivoUrl: string | null
+  nombreArchivo: string | null
   descripcion: string | null
   fechaActualizacion: Date | null
 }
@@ -48,6 +49,7 @@ export type CvMaxAggregateOutputType = {
   id: number | null
   postulanteId: number | null
   archivoUrl: string | null
+  nombreArchivo: string | null
   descripcion: string | null
   fechaActualizacion: Date | null
 }
@@ -56,6 +58,7 @@ export type CvCountAggregateOutputType = {
   id: number
   postulanteId: number
   archivoUrl: number
+  nombreArchivo: number
   descripcion: number
   fechaActualizacion: number
   _all: number
@@ -76,6 +79,7 @@ export type CvMinAggregateInputType = {
   id?: true
   postulanteId?: true
   archivoUrl?: true
+  nombreArchivo?: true
   descripcion?: true
   fechaActualizacion?: true
 }
@@ -84,6 +88,7 @@ export type CvMaxAggregateInputType = {
   id?: true
   postulanteId?: true
   archivoUrl?: true
+  nombreArchivo?: true
   descripcion?: true
   fechaActualizacion?: true
 }
@@ -92,6 +97,7 @@ export type CvCountAggregateInputType = {
   id?: true
   postulanteId?: true
   archivoUrl?: true
+  nombreArchivo?: true
   descripcion?: true
   fechaActualizacion?: true
   _all?: true
@@ -187,6 +193,7 @@ export type CvGroupByOutputType = {
   id: number
   postulanteId: number
   archivoUrl: string | null
+  nombreArchivo: string | null
   descripcion: string | null
   fechaActualizacion: Date
   _count: CvCountAggregateOutputType | null
@@ -218,6 +225,7 @@ export type CvWhereInput = {
   id?: Prisma.IntFilter<"Cv"> | number
   postulanteId?: Prisma.IntFilter<"Cv"> | number
   archivoUrl?: Prisma.StringNullableFilter<"Cv"> | string | null
+  nombreArchivo?: Prisma.StringNullableFilter<"Cv"> | string | null
   descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
@@ -227,6 +235,7 @@ export type CvOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
   archivoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  nombreArchivo?: Prisma.SortOrderInput | Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaActualizacion?: Prisma.SortOrder
   postulante?: Prisma.PostulanteOrderByWithRelationInput
@@ -239,6 +248,7 @@ export type CvWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.CvWhereInput | Prisma.CvWhereInput[]
   postulanteId?: Prisma.IntFilter<"Cv"> | number
   archivoUrl?: Prisma.StringNullableFilter<"Cv"> | string | null
+  nombreArchivo?: Prisma.StringNullableFilter<"Cv"> | string | null
   descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
@@ -248,6 +258,7 @@ export type CvOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
   archivoUrl?: Prisma.SortOrderInput | Prisma.SortOrder
+  nombreArchivo?: Prisma.SortOrderInput | Prisma.SortOrder
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaActualizacion?: Prisma.SortOrder
   _count?: Prisma.CvCountOrderByAggregateInput
@@ -264,12 +275,14 @@ export type CvScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Cv"> | number
   postulanteId?: Prisma.IntWithAggregatesFilter<"Cv"> | number
   archivoUrl?: Prisma.StringNullableWithAggregatesFilter<"Cv"> | string | null
+  nombreArchivo?: Prisma.StringNullableWithAggregatesFilter<"Cv"> | string | null
   descripcion?: Prisma.StringNullableWithAggregatesFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeWithAggregatesFilter<"Cv"> | Date | string
 }
 
 export type CvCreateInput = {
   archivoUrl?: string | null
+  nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
   postulante: Prisma.PostulanteCreateNestedOneWithoutCvsInput
@@ -279,12 +292,14 @@ export type CvUncheckedCreateInput = {
   id?: number
   postulanteId: number
   archivoUrl?: string | null
+  nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
 }
 
 export type CvUpdateInput = {
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   postulante?: Prisma.PostulanteUpdateOneRequiredWithoutCvsNestedInput
@@ -294,6 +309,7 @@ export type CvUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   postulanteId?: Prisma.IntFieldUpdateOperationsInput | number
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -302,12 +318,14 @@ export type CvCreateManyInput = {
   id?: number
   postulanteId: number
   archivoUrl?: string | null
+  nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
 }
 
 export type CvUpdateManyMutationInput = {
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -316,6 +334,7 @@ export type CvUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   postulanteId?: Prisma.IntFieldUpdateOperationsInput | number
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -334,6 +353,7 @@ export type CvCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
   archivoUrl?: Prisma.SortOrder
+  nombreArchivo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   fechaActualizacion?: Prisma.SortOrder
 }
@@ -347,6 +367,7 @@ export type CvMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
   archivoUrl?: Prisma.SortOrder
+  nombreArchivo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   fechaActualizacion?: Prisma.SortOrder
 }
@@ -355,6 +376,7 @@ export type CvMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
   archivoUrl?: Prisma.SortOrder
+  nombreArchivo?: Prisma.SortOrder
   descripcion?: Prisma.SortOrder
   fechaActualizacion?: Prisma.SortOrder
 }
@@ -408,6 +430,7 @@ export type CvUncheckedUpdateManyWithoutPostulanteNestedInput = {
 
 export type CvCreateWithoutPostulanteInput = {
   archivoUrl?: string | null
+  nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
 }
@@ -415,6 +438,7 @@ export type CvCreateWithoutPostulanteInput = {
 export type CvUncheckedCreateWithoutPostulanteInput = {
   id?: number
   archivoUrl?: string | null
+  nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
 }
@@ -452,6 +476,7 @@ export type CvScalarWhereInput = {
   id?: Prisma.IntFilter<"Cv"> | number
   postulanteId?: Prisma.IntFilter<"Cv"> | number
   archivoUrl?: Prisma.StringNullableFilter<"Cv"> | string | null
+  nombreArchivo?: Prisma.StringNullableFilter<"Cv"> | string | null
   descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
 }
@@ -459,12 +484,14 @@ export type CvScalarWhereInput = {
 export type CvCreateManyPostulanteInput = {
   id?: number
   archivoUrl?: string | null
+  nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
 }
 
 export type CvUpdateWithoutPostulanteInput = {
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -472,6 +499,7 @@ export type CvUpdateWithoutPostulanteInput = {
 export type CvUncheckedUpdateWithoutPostulanteInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -479,6 +507,7 @@ export type CvUncheckedUpdateWithoutPostulanteInput = {
 export type CvUncheckedUpdateManyWithoutPostulanteInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -489,6 +518,7 @@ export type CvSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
   id?: boolean
   postulanteId?: boolean
   archivoUrl?: boolean
+  nombreArchivo?: boolean
   descripcion?: boolean
   fechaActualizacion?: boolean
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
@@ -498,6 +528,7 @@ export type CvSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions
   id?: boolean
   postulanteId?: boolean
   archivoUrl?: boolean
+  nombreArchivo?: boolean
   descripcion?: boolean
   fechaActualizacion?: boolean
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
@@ -507,6 +538,7 @@ export type CvSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions
   id?: boolean
   postulanteId?: boolean
   archivoUrl?: boolean
+  nombreArchivo?: boolean
   descripcion?: boolean
   fechaActualizacion?: boolean
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
@@ -516,11 +548,12 @@ export type CvSelectScalar = {
   id?: boolean
   postulanteId?: boolean
   archivoUrl?: boolean
+  nombreArchivo?: boolean
   descripcion?: boolean
   fechaActualizacion?: boolean
 }
 
-export type CvOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "postulanteId" | "archivoUrl" | "descripcion" | "fechaActualizacion", ExtArgs["result"]["cv"]>
+export type CvOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "postulanteId" | "archivoUrl" | "nombreArchivo" | "descripcion" | "fechaActualizacion", ExtArgs["result"]["cv"]>
 export type CvInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }
@@ -540,6 +573,7 @@ export type $CvPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
     id: number
     postulanteId: number
     archivoUrl: string | null
+    nombreArchivo: string | null
     descripcion: string | null
     fechaActualizacion: Date
   }, ExtArgs["result"]["cv"]>
@@ -969,6 +1003,7 @@ export interface CvFieldRefs {
   readonly id: Prisma.FieldRef<"Cv", 'Int'>
   readonly postulanteId: Prisma.FieldRef<"Cv", 'Int'>
   readonly archivoUrl: Prisma.FieldRef<"Cv", 'String'>
+  readonly nombreArchivo: Prisma.FieldRef<"Cv", 'String'>
   readonly descripcion: Prisma.FieldRef<"Cv", 'String'>
   readonly fechaActualizacion: Prisma.FieldRef<"Cv", 'DateTime'>
 }

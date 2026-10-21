@@ -9,6 +9,7 @@ import {
   getMine,
   getReceived,
   getReceivedById,
+  getReceivedCvFile,
   remove,
   update,
 } from './application.controller';
@@ -24,6 +25,7 @@ router.get('/', requireRole('ADMIN'), getAll);
 router.get('/mias', requireRole('POSTULANTE'), getMine);
 router.get('/recibidas', requireRole('SOCIO'), getReceived);
 router.get('/recibidas/:id', requireRole('SOCIO'), getReceivedById);
+router.get('/recibidas/:id/cv/:cvId', requireRole('SOCIO'), getReceivedCvFile);
 router.get('/:id', getById);
 router.post('/', requireRole('POSTULANTE'), create);
 router.patch('/:id', requireRole('ADMIN', 'SOCIO'), update);

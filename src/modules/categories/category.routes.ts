@@ -2,9 +2,20 @@ import { Router } from 'express';
 
 import { requireAuth, requireRole } from '@/middlewares/auth.middleware';
 
-import { create, getAll, getById, remove, update } from './category.controller';
+import {
+  create,
+  getActive,
+  getAll,
+  getById,
+  remove,
+  update,
+} from './category.controller';
 
 const router = Router();
+
+// Pública: el registro de postulantes muestra las categorías para elegir de
+// cuáles recibir ofertas. Solo id y nombre de las activas.
+router.get('/activas', getActive);
 
 router.use(requireAuth);
 

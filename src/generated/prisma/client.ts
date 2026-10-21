@@ -65,6 +65,21 @@ export type Socio = Prisma.SocioModel
  */
 export type Postulante = Prisma.PostulanteModel
 /**
+ * Model Estudio
+ * Estudio del CV: curricular (formal) o no curricular (cursos, talleres).
+ */
+export type Estudio = Prisma.EstudioModel
+/**
+ * Model ExperienciaLaboral
+ * 
+ */
+export type ExperienciaLaboral = Prisma.ExperienciaLaboralModel
+/**
+ * Model Referencia
+ * 
+ */
+export type Referencia = Prisma.ReferenciaModel
+/**
  * Model Cv
  * 
  */
@@ -74,6 +89,11 @@ export type Cv = Prisma.CvModel
  * 
  */
 export type Categoria = Prisma.CategoriaModel
+/**
+ * Model PostulanteCategoria
+ * Categoría de ofertas que eligió un postulante. Sin filas = todas.
+ */
+export type PostulanteCategoria = Prisma.PostulanteCategoriaModel
 /**
  * Model Oferta
  * 
