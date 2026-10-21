@@ -3,7 +3,12 @@ import { afterAll, describe, expect, it } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
-import { TEST_PASSWORD, deleteUsers, uniqueEmail } from './session';
+import {
+  TEST_PASSWORD,
+  createCategory,
+  deleteUsers,
+  uniqueEmail,
+} from './session';
 
 describe('Registro de postulantes', () => {
   const createdEmails: string[] = [];
@@ -95,12 +100,14 @@ describe('Registro de postulantes', () => {
     expect(response.body.user.email).toBe(email.toLowerCase());
   });
 
-  it('el teléfono es opcional', async () => {
-    const response = await request(app)
-      .post('/auth/registro')
-      .send(validBody({ telefono: undefined }));
+  it('el teléfono es obligatorio', async () => {
+    for (const telefono of [undefined, '', '   ']) {
+      const response = await request(app)
+        .post('/auth/registro')
+        .send(validBody({ telefono }));
 
-    expect(response.status).toBe(201);
+      expect(response.status).toBe(400);
+    }
   });
 
   it('ignora el tipo enviado en el body: siempre crea un postulante', async () => {
@@ -175,5 +182,81 @@ describe('Registro de postulantes', () => {
     });
 
     expect(usuario).toBeNull();
+  });
+
+  describe('categorías de interés', () => {
+    const categoryIds: number[] = [];
+
+    afterAll(async () => {
+      await prisma.categoria.deleteMany({ where: { id: { in: categoryIds } } });
+    });
+
+    async function category() {
+      const created = await createCategory();
+      categoryIds.push(created.id);
+
+      return created;
+    }
+
+    async function storedCategories(email: string) {
+      const usuario = await prisma.usuario.findUnique({
+        where: { email: email.toLowerCase() },
+        select: {
+          postulante: {
+            select: { categorias: { select: { categoriaId: true } } },
+          },
+        },
+      });
+
+      return usuario?.postulante?.categorias.map((c) => c.categoriaId) ?? [];
+    }
+
+    it('GET /categorias/activas es pública y solo trae id y nombre', async () => {
+      const created = await category();
+
+      const response = await request(app).get('/categorias/activas');
+
+      expect(response.status).toBe(200);
+      expect(response.body).toContainEqual({
+        id: created.id,
+        nombre: created.nombre,
+      });
+    });
+
+    it('guarda las categorías elegidas', async () => {
+      const a = await category();
+      const b = await category();
+      const body = validBody({ categoriaIds: [a.id, b.id, a.id] });
+
+      const response = await request(app).post('/auth/registro').send(body);
+
+      expect(response.status).toBe(201);
+      const byId = (x: number, y: number) => x - y;
+
+      expect((await storedCategories(body.email)).sort(byId)).toEqual(
+        [a.id, b.id].sort(byId),
+      );
+    });
+
+    it('sin categorías es "todas" y no guarda ninguna', async () => {
+      const body = validBody({ categoriaIds: [] });
+
+      const response = await request(app).post('/auth/registro').send(body);
+
+      expect(response.status).toBe(201);
+      expect(await storedCategories(body.email)).toEqual([]);
+    });
+
+    it.each([
+      ['un ID que no existe', [999999999]],
+      ['algo que no es una lista', 'todas'],
+      ['IDs que no son números', ['1']],
+    ])('rechaza con 400: %s', async (_caso, categoriaIds) => {
+      const response = await request(app)
+        .post('/auth/registro')
+        .send(validBody({ categoriaIds }));
+
+      expect(response.status).toBe(400);
+    });
   });
 });

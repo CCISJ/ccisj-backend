@@ -1,4 +1,5 @@
 import { prisma } from '@/config/prisma';
+import { cvSelect } from '@/modules/applicants/cv.repository';
 import type { ApplicationStatus } from '@/types/application.type';
 
 const applicationInclude = {
@@ -91,7 +92,9 @@ export function remove(id: number) {
 }
 
 // Lo que ve la empresa de cada postulación a sus ofertas: datos de contacto y
-// CV del postulante, sin el resto de su cuenta.
+// CV del postulante (el formulario y los PDF), sin el resto de su cuenta. Los
+// PDF van sin su ruta interna: se abren con un enlace firmado
+// (`GET /postulaciones/recibidas/:id/cv/:cvId`).
 const receivedApplicationSelect = {
   id: true,
   fechaPostulacion: true,
@@ -105,28 +108,7 @@ const receivedApplicationSelect = {
     },
   },
   postulante: {
-    select: {
-      id: true,
-      nombre: true,
-      apellido: true,
-      telefono: true,
-      usuario: {
-        select: {
-          email: true,
-        },
-      },
-      cvs: {
-        select: {
-          id: true,
-          archivoUrl: true,
-          descripcion: true,
-          fechaActualizacion: true,
-        },
-        orderBy: {
-          fechaActualizacion: 'desc',
-        },
-      },
-    },
+    select: cvSelect,
   },
 } as const;
 
@@ -173,6 +155,25 @@ const ownApplicationSelect = {
     },
   },
 } as const;
+
+/** El PDF de un CV, si es del postulante de una postulación del socio. */
+export function findReceivedCvFile(
+  applicationId: number,
+  socioId: number,
+  cvId: number,
+) {
+  return prisma.cv.findFirst({
+    where: {
+      id: cvId,
+      postulante: {
+        postulaciones: {
+          some: { id: applicationId, oferta: { socioId } },
+        },
+      },
+    },
+    select: { archivoUrl: true },
+  });
+}
 
 export function findByApplicant(postulanteId: number) {
   return prisma.postulacion.findMany({

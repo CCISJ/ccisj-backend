@@ -99,7 +99,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [email, password, nombre, apellido]
+              required: [email, password, nombre, apellido, telefono]
               properties:
                 email:
                   {
@@ -117,6 +117,10 @@ paths:
                 nombre: { type: string, maxLength: 100, example: Ana }
                 apellido: { type: string, maxLength: 100, example: Pérez }
                 telefono: { type: string, example: '099123456' }
+                categoriaIds:
+                  type: array
+                  items: { type: integer }
+                  description: Categorías de las que recibir ofertas. Vacío o ausente = todas.
       responses:
         '201': { description: Cuenta creada. }
         '400': { $ref: '#/components/responses/DatosInvalidos' }
@@ -413,7 +417,97 @@ paths:
         '200': { description: Postulante borrado. }
         '404': { $ref: '#/components/responses/NoEncontrado' }
 
+  /postulantes/me/cv:
+    get:
+      tags: [Postulantes]
+      summary: El CV del postulante de la sesión (datos, estudios, experiencia, referencias y PDF).
+      responses:
+        '200': { description: El CV. }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+    put:
+      tags: [Postulantes]
+      summary: Guarda el CV del postulante de la sesión. Las listas se reemplazan completas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Cv' }
+      responses:
+        '200': { description: CV guardado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /postulantes/me/perfil:
+    patch:
+      tags: [Postulantes]
+      summary: Guarda los datos personales y los rubros de interés del postulante de la sesión.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, apellido, telefono]
+              properties:
+                nombre: { type: string, maxLength: 100, example: Ana }
+                apellido: { type: string, maxLength: 100, example: Pérez }
+                telefono: { type: string, example: '099111222' }
+                direccion: { type: string, example: 18 de Julio 456 }
+                fechaNacimiento:
+                  { type: string, format: date, example: '1998-04-12' }
+                categoriaIds:
+                  type: array
+                  items: { type: integer }
+                  description: Vacío = todas.
+      responses:
+        '200': { description: Perfil guardado. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /postulantes/me/cv/archivos:
+    post:
+      tags: [Postulantes]
+      summary: Sube uno o varios CV en PDF del postulante de la sesión.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [archivos]
+              properties:
+                archivos:
+                  type: array
+                  items: { type: string, format: binary }
+                  description: Hasta 5 PDF por subida, de hasta 5 MB cada uno.
+      responses:
+        '201': { description: CV subidos. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '413': { $ref: '#/components/responses/ArchivoDemasiadoGrande' }
+
+  /postulantes/me/cv/archivos/{cvId}:
+    parameters:
+      - $ref: '#/components/parameters/CvId'
+    get:
+      tags: [Postulantes]
+      summary: Enlace firmado y temporal a un PDF propio.
+      responses:
+        '200': { description: El enlace. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Postulantes]
+      summary: Borra un PDF propio.
+      responses:
+        '204': { description: CV borrado. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
   # --- Categorías de las ofertas --------------------------------------------
+
+  /categorias/activas:
+    get:
+      tags: [Categorías de ofertas]
+      summary: Las categorías activas (id y nombre), sin sesión. Las usa el registro.
+      security: []
+      responses:
+        '200': { description: Lista de categorías. }
 
   /categorias:
     get:
@@ -650,6 +744,17 @@ paths:
       summary: Una postulación a una oferta del socio de la sesión.
       responses:
         '200': { description: La postulación. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /postulaciones/recibidas/{id}/cv/{cvId}:
+    parameters:
+      - $ref: '#/components/parameters/PostulacionId'
+      - $ref: '#/components/parameters/CvId'
+    get:
+      tags: [Postulaciones]
+      summary: Enlace firmado y temporal a un PDF del postulante de una postulación recibida.
+      responses:
+        '200': { description: El enlace. }
         '404': { $ref: '#/components/responses/NoEncontrado' }
 
   /postulaciones/{id}:
@@ -1209,6 +1314,11 @@ components:
       required: true
       schema: { type: integer, example: 1 }
       x-fixture: movimiento
+    CvId:
+      name: cvId
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
 
   schemas:
     Error:
@@ -1264,6 +1374,53 @@ components:
           { type: string, format: email, example: dast-socio-nuevo@ccisj.uy }
         observaciones:
           { type: string, nullable: true, example: Alta desde el escaneo }
+
+    Cv:
+      type: object
+      required: [nombre, apellido]
+      properties:
+        nombre: { type: string, maxLength: 100, example: Ana }
+        apellido: { type: string, maxLength: 100, example: Pérez }
+        telefono: { type: string, example: '099111222' }
+        direccion: { type: string, example: 18 de Julio 456, San José }
+        fechaNacimiento: { type: string, format: date, example: '1998-04-12' }
+        otros: { type: string, example: Libreta de conducir categoría A }
+        estudios:
+          type: array
+          items:
+            type: object
+            required: [tipo, institucion, titulo]
+            properties:
+              tipo: { type: string, enum: [CURRICULAR, NO_CURRICULAR] }
+              institucion: { type: string, example: UTEC }
+              titulo: { type: string, example: Tecnólogo en Informática }
+              fechaInicio: { type: string, example: '2022-03' }
+              fechaFin: { type: string, example: '2025-12' }
+              enCurso: { type: boolean }
+              descripcion: { type: string }
+        experiencias:
+          type: array
+          items:
+            type: object
+            required: [empresa, cargo]
+            properties:
+              empresa: { type: string, example: Ferretería Central }
+              cargo: { type: string, example: Vendedor }
+              fechaInicio: { type: string, example: '2023-01' }
+              fechaFin: { type: string, example: '2024-06' }
+              actual: { type: boolean }
+              tareas: { type: string }
+        referencias:
+          type: array
+          items:
+            type: object
+            required: [tipo, nombre]
+            properties:
+              tipo: { type: string, enum: [LABORAL, PERSONAL] }
+              nombre: { type: string, example: María Gómez }
+              relacion: { type: string, example: Encargada, Ferretería Central }
+              telefono: { type: string, example: '099333444' }
+              email: { type: string, format: email }
 
     SocioEdicion:
       type: object

@@ -56,8 +56,12 @@ export const ModelName = {
   NotificacionUsuario: 'NotificacionUsuario',
   Socio: 'Socio',
   Postulante: 'Postulante',
+  Estudio: 'Estudio',
+  ExperienciaLaboral: 'ExperienciaLaboral',
+  Referencia: 'Referencia',
   Cv: 'Cv',
   Categoria: 'Categoria',
+  PostulanteCategoria: 'PostulanteCategoria',
   Oferta: 'Oferta',
   OfertaCategoria: 'OfertaCategoria',
   Postulacion: 'Postulacion',
@@ -152,16 +156,65 @@ export const PostulanteScalarFieldEnum = {
   usuarioId: 'usuarioId',
   nombre: 'nombre',
   apellido: 'apellido',
-  telefono: 'telefono'
+  telefono: 'telefono',
+  direccion: 'direccion',
+  fechaNacimiento: 'fechaNacimiento',
+  otros: 'otros'
 } as const
 
 export type PostulanteScalarFieldEnum = (typeof PostulanteScalarFieldEnum)[keyof typeof PostulanteScalarFieldEnum]
+
+
+export const EstudioScalarFieldEnum = {
+  id: 'id',
+  postulanteId: 'postulanteId',
+  tipo: 'tipo',
+  institucion: 'institucion',
+  titulo: 'titulo',
+  fechaInicio: 'fechaInicio',
+  fechaFin: 'fechaFin',
+  enCurso: 'enCurso',
+  descripcion: 'descripcion',
+  orden: 'orden'
+} as const
+
+export type EstudioScalarFieldEnum = (typeof EstudioScalarFieldEnum)[keyof typeof EstudioScalarFieldEnum]
+
+
+export const ExperienciaLaboralScalarFieldEnum = {
+  id: 'id',
+  postulanteId: 'postulanteId',
+  empresa: 'empresa',
+  cargo: 'cargo',
+  fechaInicio: 'fechaInicio',
+  fechaFin: 'fechaFin',
+  actual: 'actual',
+  tareas: 'tareas',
+  orden: 'orden'
+} as const
+
+export type ExperienciaLaboralScalarFieldEnum = (typeof ExperienciaLaboralScalarFieldEnum)[keyof typeof ExperienciaLaboralScalarFieldEnum]
+
+
+export const ReferenciaScalarFieldEnum = {
+  id: 'id',
+  postulanteId: 'postulanteId',
+  tipo: 'tipo',
+  nombre: 'nombre',
+  relacion: 'relacion',
+  telefono: 'telefono',
+  email: 'email',
+  orden: 'orden'
+} as const
+
+export type ReferenciaScalarFieldEnum = (typeof ReferenciaScalarFieldEnum)[keyof typeof ReferenciaScalarFieldEnum]
 
 
 export const CvScalarFieldEnum = {
   id: 'id',
   postulanteId: 'postulanteId',
   archivoUrl: 'archivoUrl',
+  nombreArchivo: 'nombreArchivo',
   descripcion: 'descripcion',
   fechaActualizacion: 'fechaActualizacion'
 } as const
@@ -177,6 +230,14 @@ export const CategoriaScalarFieldEnum = {
 } as const
 
 export type CategoriaScalarFieldEnum = (typeof CategoriaScalarFieldEnum)[keyof typeof CategoriaScalarFieldEnum]
+
+
+export const PostulanteCategoriaScalarFieldEnum = {
+  postulanteId: 'postulanteId',
+  categoriaId: 'categoriaId'
+} as const
+
+export type PostulanteCategoriaScalarFieldEnum = (typeof PostulanteCategoriaScalarFieldEnum)[keyof typeof PostulanteCategoriaScalarFieldEnum]
 
 
 export const OfertaScalarFieldEnum = {

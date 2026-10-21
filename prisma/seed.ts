@@ -178,25 +178,82 @@ async function main() {
   // CV
   // =========================
 
-  // Un postulante puede tener varios CV.
-  // No hacemos upsert solo por postulanteId.
+  // El CV del formulario ("Mi CV"). No se siembran PDF: viven en Supabase
+  // Storage y una ruta inventada daría un enlace roto. Las listas se
+  // reemplazan, así el seed se puede correr varias veces.
 
-  const cvExistente = await prisma.cv.findFirst({
-    where: {
-      postulanteId: postulante.id,
-      archivoUrl: '/uploads/cv/juan-perez.pdf',
+  await prisma.postulante.update({
+    where: { id: postulante.id },
+    data: {
+      direccion: '18 de Julio 456, San José de Mayo',
+      fechaNacimiento: new Date('1998-04-12'),
+      otros:
+        'Libreta de conducir categoría A. Disponibilidad horaria completa.',
     },
   });
 
-  if (!cvExistente) {
-    await prisma.cv.create({
-      data: {
+  await prisma.estudio.deleteMany({ where: { postulanteId: postulante.id } });
+  await prisma.experienciaLaboral.deleteMany({
+    where: { postulanteId: postulante.id },
+  });
+  await prisma.referencia.deleteMany({
+    where: { postulanteId: postulante.id },
+  });
+
+  await prisma.estudio.createMany({
+    data: [
+      {
         postulanteId: postulante.id,
-        archivoUrl: '/uploads/cv/juan-perez.pdf',
-        descripcion: 'CV de prueba de Juan Pérez',
+        tipo: 'CURRICULAR',
+        institucion: 'Liceo N°1 de San José',
+        titulo: 'Bachillerato completo',
+        fechaInicio: new Date('2011-03-01'),
+        fechaFin: new Date('2016-12-01'),
+        orden: 0,
       },
-    });
-  }
+      {
+        postulanteId: postulante.id,
+        tipo: 'NO_CURRICULAR',
+        institucion: 'INEFOP',
+        titulo: 'Curso de atención al cliente',
+        fechaInicio: new Date('2019-05-01'),
+        fechaFin: new Date('2019-08-01'),
+        orden: 1,
+      },
+    ],
+  });
+
+  await prisma.experienciaLaboral.create({
+    data: {
+      postulanteId: postulante.id,
+      empresa: 'Supermercado El Centro',
+      cargo: 'Cajero',
+      fechaInicio: new Date('2020-02-01'),
+      fechaFin: new Date('2023-06-01'),
+      tareas: 'Atención en caja, reposición y cierre de caja diario.',
+    },
+  });
+
+  await prisma.referencia.createMany({
+    data: [
+      {
+        postulanteId: postulante.id,
+        tipo: 'LABORAL',
+        nombre: 'Laura Martínez',
+        relacion: 'Encargada, Supermercado El Centro',
+        telefono: '099555666',
+        orden: 0,
+      },
+      {
+        postulanteId: postulante.id,
+        tipo: 'PERSONAL',
+        nombre: 'Carlos Rodríguez',
+        relacion: 'Vecino',
+        telefono: '098777888',
+        orden: 1,
+      },
+    ],
+  });
 
   // =========================
   // CATEGORÍAS
@@ -224,7 +281,7 @@ async function main() {
     },
   });
 
-  await Promise.all([
+  const [tecnologia, , ventas] = await Promise.all([
     prisma.categoria.upsert({
       where: {
         nombre: 'Tecnología',
@@ -335,6 +392,55 @@ async function main() {
       },
     }),
   ]);
+
+  // =========================
+  // MÁS OFERTAS (para ver el filtro por rubro)
+  // =========================
+
+  const masOfertas = [
+    {
+      titulo: 'Técnico de soporte informático',
+      descripcion:
+        'Se busca técnico para soporte a usuarios, mantenimiento de equipos y redes en la empresa.',
+      modalidad: 'PRESENCIAL',
+      cantidadVacantes: 1,
+      categoriaId: tecnologia.id,
+    },
+    {
+      titulo: 'Desarrollador web',
+      descripcion:
+        'Desarrollo y mantenimiento de sitios y sistemas web. Se valora experiencia con JavaScript y bases de datos.',
+      modalidad: 'HIBRIDO',
+      cantidadVacantes: 1,
+      categoriaId: tecnologia.id,
+    },
+    {
+      titulo: 'Vendedor de mostrador',
+      descripcion:
+        'Atención al público, asesoramiento a clientes y manejo de caja.',
+      modalidad: 'PRESENCIAL',
+      cantidadVacantes: 2,
+      categoriaId: ventas.id,
+    },
+  ];
+
+  for (const { categoriaId, ...datos } of masOfertas) {
+    const existente = await prisma.oferta.findFirst({
+      where: { titulo: datos.titulo, socioId: socio.id },
+    });
+
+    if (existente) continue;
+
+    await prisma.oferta.create({
+      data: {
+        ...datos,
+        socioId: socio.id,
+        creadaPor: usuarioSocio.id,
+        ubicacion: 'San José de Mayo',
+        categorias: { create: { categoriaId } },
+      },
+    });
+  }
 
   // =========================
   // POSTULACIÓN

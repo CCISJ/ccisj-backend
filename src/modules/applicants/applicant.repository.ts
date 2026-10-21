@@ -30,6 +30,13 @@ export function findById(id: number) {
         },
       },
       cvs: true,
+      // Para saber si completó el CV en el formulario (ver postularse).
+      _count: {
+        select: {
+          estudios: true,
+          experiencias: true,
+        },
+      },
     },
   });
 }
@@ -71,7 +78,8 @@ export function createWithAccount(data: {
   passwordHash: string;
   nombre: string;
   apellido: string;
-  telefono?: string;
+  telefono: string;
+  categoriaIds: number[];
 }) {
   return prisma.$transaction(async (tx) => {
     const usuario = await tx.usuario.create({
@@ -93,6 +101,9 @@ export function createWithAccount(data: {
         nombre: data.nombre,
         apellido: data.apellido,
         telefono: data.telefono,
+        categorias: {
+          create: data.categoriaIds.map((categoriaId) => ({ categoriaId })),
+        },
       },
       select: {
         id: true,

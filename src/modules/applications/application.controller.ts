@@ -67,6 +67,24 @@ export async function getReceivedById(req: AuthRequest, res: Response) {
   }
 }
 
+export async function getReceivedCvFile(req: AuthRequest, res: Response) {
+  try {
+    const id = parseId(req.params.id);
+    const cvId = parseId(req.params.cvId);
+
+    if (!id || !cvId) return invalidId(res);
+
+    res.json(
+      await applicationService.getReceivedCvFileUrl(id, cvId, req.user!),
+    );
+  } catch (error) {
+    sendError(res, error, {
+      status: 500,
+      message: 'Error al obtener el CV',
+    });
+  }
+}
+
 export async function getById(req: AuthRequest, res: Response) {
   try {
     const id = parseId(req.params.id);

@@ -1,6 +1,7 @@
 import { Prisma } from '@/generated/prisma/client';
 import type { SessionUser } from '@/middlewares/auth.middleware';
 import * as applicantRepository from '@/modules/applicants/applicant.repository';
+import { getCvSignedUrl } from '@/modules/applicants/cv-storage.service';
 import * as offerRepository from '@/modules/offers/offer.repository';
 import {
   ApplicationStatus,
@@ -117,8 +118,15 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     throw new Error('Postulante no encontrado');
   }
 
-  if (applicant.cvs.length === 0) {
-    throw new Error('El postulante debe tener un CV cargado');
+  // Alcanza con un PDF o con el CV del formulario (al menos un estudio o una
+  // experiencia laboral).
+  const hasCv =
+    applicant.cvs.length > 0 ||
+    applicant._count.estudios > 0 ||
+    applicant._count.experiencias > 0;
+
+  if (!hasCv) {
+    throw new Error('Completá tu CV o subí uno en PDF antes de postularte');
   }
 
   const existingApplication =
@@ -179,6 +187,31 @@ export async function getReceivedById(id: number, actor: SessionUser) {
   }
 
   return application;
+}
+
+/**
+ * Enlace firmado y temporal a un PDF del postulante de una postulación
+ * recibida. Si la postulación no es de una oferta del socio, o el PDF no es
+ * de ese postulante, se responde como si no existiera.
+ */
+export async function getReceivedCvFileUrl(
+  applicationId: number,
+  cvId: number,
+  actor: SessionUser,
+) {
+  const file = actor.socioId
+    ? await applicationRepository.findReceivedCvFile(
+        applicationId,
+        actor.socioId,
+        cvId,
+      )
+    : null;
+
+  if (!file?.archivoUrl) {
+    throw new HttpError(404, 'CV no encontrado');
+  }
+
+  return { url: await getCvSignedUrl(file.archivoUrl) };
 }
 
 const STATUS_LABELS: Record<MemberApplicationStatus, string> = {

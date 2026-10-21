@@ -39,6 +39,20 @@ enum TipoUsuario {
   @@map("tipo_usuario")
 }
 
+enum TipoEstudio {
+  CURRICULAR
+  NO_CURRICULAR
+
+  @@map("tipo_estudio")
+}
+
+enum TipoReferencia {
+  LABORAL
+  PERSONAL
+
+  @@map("tipo_referencia")
+}
+
 enum TipoNotificacion {
   NORMAL
   EMERGENTE
@@ -165,17 +179,83 @@ model Postulante {
   apellido  String  @db.VarChar(100)
   telefono  String? @db.VarChar(50)
 
-  usuario       Usuario       @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
+  // Datos del CV que completa el postulante en "Mi CV".
+  direccion       String?   @db.VarChar(255)
+  fechaNacimiento DateTime? @map("fecha_nacimiento") @db.Date
+  otros           String?
+
+  usuario       Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
   cvs           Cv[]
+  estudios      Estudio[]
+  experiencias  ExperienciaLaboral[]
+  referencias   Referencia[]
+  // Categorías de las que quiere recibir ofertas. Ninguna = todas.
+  categorias    PostulanteCategoria[]
   postulaciones Postulacion[]
 
   @@map("postulante")
 }
 
+/// Estudio del CV: curricular (formal) o no curricular (cursos, talleres).
+model Estudio {
+  id           Int         @id @default(autoincrement())
+  postulanteId Int         @map("postulante_id")
+  tipo         TipoEstudio
+  institucion  String      @db.VarChar(150)
+  titulo       String      @db.VarChar(150)
+  fechaInicio  DateTime?   @map("fecha_inicio") @db.Date
+  fechaFin     DateTime?   @map("fecha_fin") @db.Date
+  enCurso      Boolean     @default(false) @map("en_curso")
+  descripcion  String?
+  orden        Int         @default(0)
+
+  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_estudio_postulante")
+
+  @@index([postulanteId], map: "idx_estudio_postulante")
+  @@map("estudio")
+}
+
+model ExperienciaLaboral {
+  id           Int       @id @default(autoincrement())
+  postulanteId Int       @map("postulante_id")
+  empresa      String    @db.VarChar(150)
+  cargo        String    @db.VarChar(150)
+  fechaInicio  DateTime? @map("fecha_inicio") @db.Date
+  fechaFin     DateTime? @map("fecha_fin") @db.Date
+  actual       Boolean   @default(false)
+  tareas       String?
+  orden        Int       @default(0)
+
+  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_experiencia_postulante")
+
+  @@index([postulanteId], map: "idx_experiencia_postulante")
+  @@map("experiencia_laboral")
+}
+
+model Referencia {
+  id           Int            @id @default(autoincrement())
+  postulanteId Int            @map("postulante_id")
+  tipo         TipoReferencia
+  nombre       String         @db.VarChar(150)
+  // Empresa y cargo (laboral) o vínculo (personal).
+  relacion     String?        @db.VarChar(150)
+  telefono     String?        @db.VarChar(50)
+  email        String?        @db.VarChar(255)
+  orden        Int            @default(0)
+
+  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_referencia_postulante")
+
+  @@index([postulanteId], map: "idx_referencia_postulante")
+  @@map("referencia")
+}
+
 model Cv {
   id                 Int      @id @default(autoincrement())
   postulanteId       Int      @map("postulante_id")
+  // Ruta del PDF dentro de Supabase Storage (no una URL pública).
   archivoUrl         String?  @map("archivo_url") @db.VarChar(500)
+  // Nombre con el que el postulante subió el archivo.
+  nombreArchivo      String?  @map("nombre_archivo") @db.VarChar(255)
   descripcion        String?
   fechaActualizacion DateTime @default(now()) @map("fecha_actualizacion") @db.Timestamp(6)
 
@@ -190,9 +270,22 @@ model Categoria {
   descripcion String? @db.VarChar(255)
   activa      Boolean @default(true)
 
-  ofertas OfertaCategoria[]
+  ofertas     OfertaCategoria[]
+  postulantes PostulanteCategoria[]
 
   @@map("categoria")
+}
+
+/// Categoría de ofertas que eligió un postulante. Sin filas = todas.
+model PostulanteCategoria {
+  postulanteId Int @map("postulante_id")
+  categoriaId  Int @map("categoria_id")
+
+  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_categoria_postulante")
+  categoria  Categoria  @relation(fields: [categoriaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_categoria_categoria")
+
+  @@id([postulanteId, categoriaId])
+  @@map("postulante_categoria")
 }
 
 model Oferta {

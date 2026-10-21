@@ -45,6 +45,22 @@ export const TipoUsuario = {
 export type TipoUsuario = (typeof TipoUsuario)[keyof typeof TipoUsuario]
 
 
+export const TipoEstudio = {
+  CURRICULAR: 'CURRICULAR',
+  NO_CURRICULAR: 'NO_CURRICULAR'
+} as const
+
+export type TipoEstudio = (typeof TipoEstudio)[keyof typeof TipoEstudio]
+
+
+export const TipoReferencia = {
+  LABORAL: 'LABORAL',
+  PERSONAL: 'PERSONAL'
+} as const
+
+export type TipoReferencia = (typeof TipoReferencia)[keyof typeof TipoReferencia]
+
+
 export const TipoNotificacion = {
   NORMAL: 'NORMAL',
   EMERGENTE: 'EMERGENTE'

@@ -7,6 +7,7 @@ import { HttpError } from '@/utils/http-error';
 import { assertPasswordPolicy } from '@/utils/password';
 
 import * as applicantRepository from './applicant.repository';
+import { parseCategoryPreferences } from './category-preferences';
 
 // Los mismos largos que la base (`VarChar(100)` y `VarChar(50)`): pasarse
 // terminaba en un error de Prisma en vez de un mensaje claro.
@@ -117,7 +118,13 @@ export async function register(body: unknown) {
 
   const { email: rawEmail, password } = body;
 
-  if (!rawEmail || !password || !body.nombre || !body.apellido) {
+  if (
+    !rawEmail ||
+    !password ||
+    !body.nombre ||
+    !body.apellido ||
+    !body.telefono
+  ) {
     throw new HttpError(400, 'Faltan datos obligatorios');
   }
 
@@ -135,14 +142,13 @@ export async function register(body: unknown) {
 
   const nombre = parseField('nombre', body.nombre);
   const apellido = parseField('apellido', body.apellido);
-  const telefono =
-    body.telefono === undefined || body.telefono === null
-      ? undefined
-      : parseField('telefono', body.telefono) || undefined;
+  const telefono = parseField('telefono', body.telefono);
 
-  if (!nombre || !apellido) {
+  if (!nombre || !apellido || !telefono) {
     throw new HttpError(400, 'Faltan datos obligatorios');
   }
+
+  const categoriaIds = await parseCategoryPreferences(body.categoriaIds);
 
   if (await usuarioRepository.findByEmail(email)) {
     throw new HttpError(409, 'Ya existe una cuenta con ese email');
@@ -154,6 +160,7 @@ export async function register(body: unknown) {
     nombre,
     apellido,
     telefono,
+    categoriaIds,
   });
 }
 

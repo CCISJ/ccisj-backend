@@ -209,6 +209,7 @@ export type CategoriaWhereInput = {
   descripcion?: Prisma.StringNullableFilter<"Categoria"> | string | null
   activa?: Prisma.BoolFilter<"Categoria"> | boolean
   ofertas?: Prisma.OfertaCategoriaListRelationFilter
+  postulantes?: Prisma.PostulanteCategoriaListRelationFilter
 }
 
 export type CategoriaOrderByWithRelationInput = {
@@ -217,6 +218,7 @@ export type CategoriaOrderByWithRelationInput = {
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   activa?: Prisma.SortOrder
   ofertas?: Prisma.OfertaCategoriaOrderByRelationAggregateInput
+  postulantes?: Prisma.PostulanteCategoriaOrderByRelationAggregateInput
 }
 
 export type CategoriaWhereUniqueInput = Prisma.AtLeast<{
@@ -228,6 +230,7 @@ export type CategoriaWhereUniqueInput = Prisma.AtLeast<{
   descripcion?: Prisma.StringNullableFilter<"Categoria"> | string | null
   activa?: Prisma.BoolFilter<"Categoria"> | boolean
   ofertas?: Prisma.OfertaCategoriaListRelationFilter
+  postulantes?: Prisma.PostulanteCategoriaListRelationFilter
 }, "id" | "nombre">
 
 export type CategoriaOrderByWithAggregationInput = {
@@ -257,6 +260,7 @@ export type CategoriaCreateInput = {
   descripcion?: string | null
   activa?: boolean
   ofertas?: Prisma.OfertaCategoriaCreateNestedManyWithoutCategoriaInput
+  postulantes?: Prisma.PostulanteCategoriaCreateNestedManyWithoutCategoriaInput
 }
 
 export type CategoriaUncheckedCreateInput = {
@@ -265,6 +269,7 @@ export type CategoriaUncheckedCreateInput = {
   descripcion?: string | null
   activa?: boolean
   ofertas?: Prisma.OfertaCategoriaUncheckedCreateNestedManyWithoutCategoriaInput
+  postulantes?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutCategoriaInput
 }
 
 export type CategoriaUpdateInput = {
@@ -272,6 +277,7 @@ export type CategoriaUpdateInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaCategoriaUpdateManyWithoutCategoriaNestedInput
+  postulantes?: Prisma.PostulanteCategoriaUpdateManyWithoutCategoriaNestedInput
 }
 
 export type CategoriaUncheckedUpdateInput = {
@@ -280,6 +286,7 @@ export type CategoriaUncheckedUpdateInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ofertas?: Prisma.OfertaCategoriaUncheckedUpdateManyWithoutCategoriaNestedInput
+  postulantes?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutCategoriaNestedInput
 }
 
 export type CategoriaCreateManyInput = {
@@ -336,6 +343,20 @@ export type CategoriaScalarRelationFilter = {
   isNot?: Prisma.CategoriaWhereInput
 }
 
+export type CategoriaCreateNestedOneWithoutPostulantesInput = {
+  create?: Prisma.XOR<Prisma.CategoriaCreateWithoutPostulantesInput, Prisma.CategoriaUncheckedCreateWithoutPostulantesInput>
+  connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutPostulantesInput
+  connect?: Prisma.CategoriaWhereUniqueInput
+}
+
+export type CategoriaUpdateOneRequiredWithoutPostulantesNestedInput = {
+  create?: Prisma.XOR<Prisma.CategoriaCreateWithoutPostulantesInput, Prisma.CategoriaUncheckedCreateWithoutPostulantesInput>
+  connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutPostulantesInput
+  upsert?: Prisma.CategoriaUpsertWithoutPostulantesInput
+  connect?: Prisma.CategoriaWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CategoriaUpdateToOneWithWhereWithoutPostulantesInput, Prisma.CategoriaUpdateWithoutPostulantesInput>, Prisma.CategoriaUncheckedUpdateWithoutPostulantesInput>
+}
+
 export type CategoriaCreateNestedOneWithoutOfertasInput = {
   create?: Prisma.XOR<Prisma.CategoriaCreateWithoutOfertasInput, Prisma.CategoriaUncheckedCreateWithoutOfertasInput>
   connectOrCreate?: Prisma.CategoriaCreateOrConnectWithoutOfertasInput
@@ -350,10 +371,57 @@ export type CategoriaUpdateOneRequiredWithoutOfertasNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CategoriaUpdateToOneWithWhereWithoutOfertasInput, Prisma.CategoriaUpdateWithoutOfertasInput>, Prisma.CategoriaUncheckedUpdateWithoutOfertasInput>
 }
 
+export type CategoriaCreateWithoutPostulantesInput = {
+  nombre: string
+  descripcion?: string | null
+  activa?: boolean
+  ofertas?: Prisma.OfertaCategoriaCreateNestedManyWithoutCategoriaInput
+}
+
+export type CategoriaUncheckedCreateWithoutPostulantesInput = {
+  id?: number
+  nombre: string
+  descripcion?: string | null
+  activa?: boolean
+  ofertas?: Prisma.OfertaCategoriaUncheckedCreateNestedManyWithoutCategoriaInput
+}
+
+export type CategoriaCreateOrConnectWithoutPostulantesInput = {
+  where: Prisma.CategoriaWhereUniqueInput
+  create: Prisma.XOR<Prisma.CategoriaCreateWithoutPostulantesInput, Prisma.CategoriaUncheckedCreateWithoutPostulantesInput>
+}
+
+export type CategoriaUpsertWithoutPostulantesInput = {
+  update: Prisma.XOR<Prisma.CategoriaUpdateWithoutPostulantesInput, Prisma.CategoriaUncheckedUpdateWithoutPostulantesInput>
+  create: Prisma.XOR<Prisma.CategoriaCreateWithoutPostulantesInput, Prisma.CategoriaUncheckedCreateWithoutPostulantesInput>
+  where?: Prisma.CategoriaWhereInput
+}
+
+export type CategoriaUpdateToOneWithWhereWithoutPostulantesInput = {
+  where?: Prisma.CategoriaWhereInput
+  data: Prisma.XOR<Prisma.CategoriaUpdateWithoutPostulantesInput, Prisma.CategoriaUncheckedUpdateWithoutPostulantesInput>
+}
+
+export type CategoriaUpdateWithoutPostulantesInput = {
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ofertas?: Prisma.OfertaCategoriaUpdateManyWithoutCategoriaNestedInput
+}
+
+export type CategoriaUncheckedUpdateWithoutPostulantesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  nombre?: Prisma.StringFieldUpdateOperationsInput | string
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ofertas?: Prisma.OfertaCategoriaUncheckedUpdateManyWithoutCategoriaNestedInput
+}
+
 export type CategoriaCreateWithoutOfertasInput = {
   nombre: string
   descripcion?: string | null
   activa?: boolean
+  postulantes?: Prisma.PostulanteCategoriaCreateNestedManyWithoutCategoriaInput
 }
 
 export type CategoriaUncheckedCreateWithoutOfertasInput = {
@@ -361,6 +429,7 @@ export type CategoriaUncheckedCreateWithoutOfertasInput = {
   nombre: string
   descripcion?: string | null
   activa?: boolean
+  postulantes?: Prisma.PostulanteCategoriaUncheckedCreateNestedManyWithoutCategoriaInput
 }
 
 export type CategoriaCreateOrConnectWithoutOfertasInput = {
@@ -383,6 +452,7 @@ export type CategoriaUpdateWithoutOfertasInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  postulantes?: Prisma.PostulanteCategoriaUpdateManyWithoutCategoriaNestedInput
 }
 
 export type CategoriaUncheckedUpdateWithoutOfertasInput = {
@@ -390,6 +460,7 @@ export type CategoriaUncheckedUpdateWithoutOfertasInput = {
   nombre?: Prisma.StringFieldUpdateOperationsInput | string
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  postulantes?: Prisma.PostulanteCategoriaUncheckedUpdateManyWithoutCategoriaNestedInput
 }
 
 
@@ -399,10 +470,12 @@ export type CategoriaUncheckedUpdateWithoutOfertasInput = {
 
 export type CategoriaCountOutputType = {
   ofertas: number
+  postulantes: number
 }
 
 export type CategoriaCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ofertas?: boolean | CategoriaCountOutputTypeCountOfertasArgs
+  postulantes?: boolean | CategoriaCountOutputTypeCountPostulantesArgs
 }
 
 /**
@@ -422,6 +495,13 @@ export type CategoriaCountOutputTypeCountOfertasArgs<ExtArgs extends runtime.Typ
   where?: Prisma.OfertaCategoriaWhereInput
 }
 
+/**
+ * CategoriaCountOutputType without action
+ */
+export type CategoriaCountOutputTypeCountPostulantesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PostulanteCategoriaWhereInput
+}
+
 
 export type CategoriaSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -429,6 +509,7 @@ export type CategoriaSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   descripcion?: boolean
   activa?: boolean
   ofertas?: boolean | Prisma.Categoria$ofertasArgs<ExtArgs>
+  postulantes?: boolean | Prisma.Categoria$postulantesArgs<ExtArgs>
   _count?: boolean | Prisma.CategoriaCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["categoria"]>
 
@@ -456,6 +537,7 @@ export type CategoriaSelectScalar = {
 export type CategoriaOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "nombre" | "descripcion" | "activa", ExtArgs["result"]["categoria"]>
 export type CategoriaInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   ofertas?: boolean | Prisma.Categoria$ofertasArgs<ExtArgs>
+  postulantes?: boolean | Prisma.Categoria$postulantesArgs<ExtArgs>
   _count?: boolean | Prisma.CategoriaCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CategoriaIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -465,6 +547,7 @@ export type $CategoriaPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   name: "Categoria"
   objects: {
     ofertas: Prisma.$OfertaCategoriaPayload<ExtArgs>[]
+    postulantes: Prisma.$PostulanteCategoriaPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -866,6 +949,7 @@ readonly fields: CategoriaFieldRefs;
 export interface Prisma__CategoriaClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   ofertas<T extends Prisma.Categoria$ofertasArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Categoria$ofertasArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OfertaCategoriaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  postulantes<T extends Prisma.Categoria$postulantesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Categoria$postulantesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostulanteCategoriaPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1313,6 +1397,30 @@ export type Categoria$ofertasArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.OfertaCategoriaScalarFieldEnum | Prisma.OfertaCategoriaScalarFieldEnum[]
+}
+
+/**
+ * Categoria.postulantes
+ */
+export type Categoria$postulantesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PostulanteCategoria
+   */
+  select?: Prisma.PostulanteCategoriaSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PostulanteCategoria
+   */
+  omit?: Prisma.PostulanteCategoriaOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostulanteCategoriaInclude<ExtArgs> | null
+  where?: Prisma.PostulanteCategoriaWhereInput
+  orderBy?: Prisma.PostulanteCategoriaOrderByWithRelationInput | Prisma.PostulanteCategoriaOrderByWithRelationInput[]
+  cursor?: Prisma.PostulanteCategoriaWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PostulanteCategoriaScalarFieldEnum | Prisma.PostulanteCategoriaScalarFieldEnum[]
 }
 
 /**
