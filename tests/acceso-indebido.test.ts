@@ -16,7 +16,7 @@
  * socios o postulaciones hay.
  */
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
@@ -29,6 +29,15 @@ import {
   uniqueSuffix,
 } from './session';
 
+// Supabase Storage se reemplaza por uno en memoria (ver storage-falso.ts).
+vi.mock('../src/config/supabase', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('../src/config/supabase')>();
+  const { supabaseFalso } = await import('./storage-falso.js');
+
+  return { ...original, getSupabase: () => supabaseFalso };
+});
+
 const creados: number[] = [];
 
 /** Lo que es de la víctima y el atacante va a intentar tocar. */
@@ -38,13 +47,19 @@ const ajeno = {
   ofertaId: 0,
   postulacionId: 0,
   notificacionId: 0,
+  cvId: 0,
 };
 
 const atacante = {
   postulante: [] as string[],
   socio: [] as string[],
   directivo: [] as string[],
+  /** Una postulación que el socio atacante sí recibió, en su propia oferta. */
+  postulacionPropiaId: 0,
 };
+
+/** La empresa víctima, para comprobar que lo suyo sí lo puede ver. */
+const duenio = { socio: [] as string[] };
 
 beforeAll(async () => {
   const [
@@ -75,6 +90,7 @@ beforeAll(async () => {
   atacante.postulante = atacantePostulante.cookie;
   atacante.socio = atacanteSocio.cookie;
   atacante.directivo = directivo.cookie;
+  duenio.socio = victimaSocio.cookie;
 
   // Una oferta de la empresa víctima, con una postulación de la otra víctima.
   const oferta = await prisma.oferta.create({
@@ -105,11 +121,46 @@ beforeAll(async () => {
     },
   });
 
+  // El CV en PDF de la víctima. createApplicant ya le crea uno; se le pone
+  // una ruta de Storage como la que deja la subida real.
+  const { id: cvId } = await prisma.cv.findFirstOrThrow({
+    where: { postulanteId: victimaPostulante.postulanteId },
+  });
+
+  const cv = await prisma.cv.update({
+    where: { id: cvId },
+    data: {
+      archivoUrl: `cvs/postulante-${victimaPostulante.postulanteId}/cv.pdf`,
+    },
+  });
+
+  // Y una postulación legítima en una oferta del socio atacante: la puerta
+  // por la que va a intentar colar el CV de la víctima.
+  const ofertaPropia = await prisma.oferta.create({
+    data: {
+      socioId: atacanteSocio.socioId,
+      creadaPor: atacanteSocio.userId,
+      titulo: `Oferta propia ${uniqueSuffix()}`,
+      descripcion: 'Oferta del atacante para probar accesos indebidos.',
+      cantidadVacantes: 1,
+    },
+  });
+
+  const postulacionPropia = await prisma.postulacion.create({
+    data: {
+      ofertaId: ofertaPropia.id,
+      postulanteId: atacantePostulante.postulanteId,
+      estado: 'ENVIADA',
+    },
+  });
+
   ajeno.postulanteId = victimaPostulante.postulanteId;
   ajeno.socioId = victimaSocio.socioId;
   ajeno.ofertaId = oferta.id;
   ajeno.postulacionId = postulacion.id;
   ajeno.notificacionId = notificacion.id;
+  ajeno.cvId = cv.id;
+  atacante.postulacionPropiaId = postulacionPropia.id;
 }, 60_000);
 
 afterAll(async () => {
@@ -220,6 +271,32 @@ describe('un socio contra los datos de otra empresa', () => {
   it('no puede ver una postulación recibida por otra empresa', async () => {
     const res = await request(app)
       .get(`/postulaciones/recibidas/${ajeno.postulacionId}`)
+      .set('Cookie', atacante.socio);
+
+    expect(res.status).toBe(404);
+  });
+
+  it('no puede abrir el CV de una postulación recibida por otra empresa', async () => {
+    // Control: la empresa de la oferta sí lo abre. Sin esto, un 404 podría
+    // ser un endpoint roto y no un acceso bloqueado.
+    const propio = await request(app)
+      .get(`/postulaciones/recibidas/${ajeno.postulacionId}/cv/${ajeno.cvId}`)
+      .set('Cookie', duenio.socio);
+
+    expect(propio.status).toBe(200);
+
+    const res = await request(app)
+      .get(`/postulaciones/recibidas/${ajeno.postulacionId}/cv/${ajeno.cvId}`)
+      .set('Cookie', atacante.socio);
+
+    expect(res.status).toBe(404);
+  });
+
+  it('no puede colar un CV ajeno en una postulación que sí recibió', async () => {
+    const res = await request(app)
+      .get(
+        `/postulaciones/recibidas/${atacante.postulacionPropiaId}/cv/${ajeno.cvId}`,
+      )
       .set('Cookie', atacante.socio);
 
     expect(res.status).toBe(404);
