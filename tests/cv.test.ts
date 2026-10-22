@@ -224,6 +224,61 @@ describe('Mi CV', () => {
     expect(response.status).toBe(400);
   });
 
+  it('responde 413 a un PDF de más de 5 MB y no sube nada', async () => {
+    const { cookie } = await applicant();
+
+    const big = Buffer.concat([PDF, Buffer.alloc(5 * 1024 * 1024)]);
+    const response = await uploadFiles(cookie, [big]);
+
+    expect(response.status).toBe(413);
+    expect(response.body.message).toBe('Cada CV no puede superar los 5 MB');
+    expect(storage.files.size).toBe(0);
+  });
+
+  it('rechaza un archivo que no se declara PDF', async () => {
+    const { cookie } = await applicant();
+
+    const response = await request(app)
+      .post('/postulantes/me/cv/archivos')
+      .set('Cookie', cookie)
+      .attach('archivos', PDF, {
+        filename: 'cv.docx',
+        contentType:
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe('Solo se permiten archivos PDF');
+    expect(storage.files.size).toBe(0);
+  });
+
+  it('no acepta más de 5 PDF en una misma subida', async () => {
+    const { cookie } = await applicant();
+
+    const response = await uploadFiles(cookie, Array(6).fill(PDF));
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'Se pueden subir hasta 5 PDF a la vez, en el campo "archivos"',
+    );
+    expect(storage.files.size).toBe(0);
+  });
+
+  it('no deja tener más de 10 CV cargados', async () => {
+    const { cookie } = await applicant();
+
+    expect((await uploadFiles(cookie, Array(5).fill(PDF))).status).toBe(201);
+    expect((await uploadFiles(cookie, Array(5).fill(PDF))).status).toBe(201);
+
+    const response = await uploadFiles(cookie, [PDF]);
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      'Podés tener hasta 10 CV cargados (ya tenés 10)',
+    );
+    expect(storage.files.size).toBe(10);
+  });
+
   it('da un enlace firmado y borra un PDF propio', async () => {
     const { cookie } = await applicant();
 
@@ -235,6 +290,8 @@ describe('Mi CV', () => {
 
     expect(link.status).toBe(200);
     expect(link.body.url).toMatch(/^https:\/\/storage\.test\/cvs\//);
+    // El enlace vence al minuto: si se filtra, deja de servir enseguida.
+    expect(link.body.url).toMatch(/\?expira=60$/);
 
     const deleted = await request(app)
       .delete(`/postulantes/me/cv/archivos/${file.id}`)
