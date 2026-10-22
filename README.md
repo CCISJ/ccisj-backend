@@ -27,11 +27,11 @@ El proyecto forma parte de una aplicación web compuesta por:
 
 ## Estructura general
 
-Se espera que los repositorios de frontend y backend estén ubicados como carpetas hermanas:
+Se espera que los repositorios de frontend y backend estén ubicados como carpetas hermanas, con los nombres que crea `git clone`:
 
 ```text
 CCISJ/
-├── backend/
+├── ccisj-backend/
 │   ├── database/
 │   │   ├── migrations/
 │   │   └── seeds/
@@ -42,12 +42,16 @@ CCISJ/
 │   ├── docker-compose.yml
 │   └── ...
 │
-└── frontend/
+└── ccisj-frontend/
     ├── Dockerfile
     └── ...
 ```
 
-El archivo `docker-compose.yml` se encuentra dentro del repositorio backend y utiliza también la carpeta `../frontend`.
+El archivo `docker-compose.yml` se encuentra dentro del repositorio backend y utiliza también la carpeta `../ccisj-frontend`. Si el frontend está en otra carpeta (por ejemplo `../frontend`), se indica con la variable `FRONTEND_DIR`, en el entorno o en el `.env` del backend:
+
+```bash
+FRONTEND_DIR=../frontend
+```
 
 ---
 
@@ -136,7 +140,7 @@ Para desarrollo estamos utilizando la conexión **Session Pooler** de Supabase.
 
 # Ejecutar con Docker
 
-Desde la carpeta `backend`:
+Desde la carpeta `ccisj-backend`:
 
 ```bash
 docker compose up --build

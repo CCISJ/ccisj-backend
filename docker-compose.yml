@@ -17,20 +17,22 @@ services:
     command: ./node_modules/.bin/tsx watch src/server.ts
     restart: unless-stopped
 
+  # La carpeta del frontend es la que crea `git clone` (ccisj-frontend). Si el
+  # repo está en otra, se indica con FRONTEND_DIR, en el entorno o en el .env.
   frontend:
     build:
-      context: ../frontend
+      context: ${FRONTEND_DIR:-../ccisj-frontend}
       dockerfile: Dockerfile
     container_name: ccisj-frontend
     env_file:
-      - ../frontend/.env
+      - ${FRONTEND_DIR:-../ccisj-frontend}/.env
     ports:
       - '5173:5173'
     environment:
       CHOKIDAR_USEPOLLING: 'true'
       CHOKIDAR_INTERVAL: '500'
     volumes:
-      - ../frontend/src:/app/src
+      - ${FRONTEND_DIR:-../ccisj-frontend}/src:/app/src
     command: ./node_modules/.bin/vite --host 0.0.0.0
     depends_on:
       - backend
