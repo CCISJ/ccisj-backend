@@ -49,6 +49,12 @@ CCISJ/
 
 El archivo `docker-compose.yml` se encuentra dentro del repositorio backend y utiliza también la carpeta `../frontend`.
 
+Si clonaste los repositorios con los nombres de GitHub (`ccisj-backend` y `ccisj-frontend`), no hace falta renombrar nada: agregá esta línea al `.env` del backend y `docker compose` va a buscar el frontend ahí.
+
+```bash
+FRONTEND_DIR=../ccisj-frontend
+```
+
 ---
 
 # Requisitos
