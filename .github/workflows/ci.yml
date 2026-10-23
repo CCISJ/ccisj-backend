@@ -82,5 +82,21 @@ jobs:
       - name: Preparar la base de pruebas (migraciones y seed)
         run: pnpm test:db:prepare
 
-      - name: Tests
-        run: pnpm test:run
+      - name: Tests (con cobertura)
+        run: pnpm test:coverage
+
+      # SonarCloud no puede mostrar la cobertura: su "Automatic Analysis" no
+      # ejecuta tests y recibirla desde acá exige un token. Así queda a la
+      # vista en cada corrida, en el resumen del job, sin ningún secreto.
+      - name: Resumen de cobertura
+        run: |
+          node -e "
+          const t = require('./coverage/coverage-summary.json').total;
+          const fila = (nombre, k) => '| ' + nombre + ' | ' + t[k].pct + ' % | ' + t[k].covered + ' de ' + t[k].total + ' |';
+          console.log([
+            '## Cobertura de los tests', '',
+            '| | % | Cubiertas |', '|---|---|---|',
+            fila('Sentencias', 'statements'), fila('Ramas', 'branches'),
+            fila('Funciones', 'functions'), fila('Líneas', 'lines'),
+          ].join('\n'));
+          " >> "$GITHUB_STEP_SUMMARY"
