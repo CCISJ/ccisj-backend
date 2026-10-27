@@ -38,32 +38,32 @@ export async function create(data: CreateNotificationData) {
       });
 
       if (data.tipo === 'EMERGENTE' && usuarios.length > 0) {
-  const destinatarios = await tx.usuario.findMany({
-    where: {
-      id: { in: usuarios.map((usuario) => usuario.id) },
-    },
-    select: {
-      id: true,
-      email: true,
-    },
-  });
+        const destinatarios = await tx.usuario.findMany({
+          where: {
+            id: { in: usuarios.map((usuario) => usuario.id) },
+          },
+          select: {
+            id: true,
+            email: true,
+          },
+        });
 
-  const template = emergencyNotificationTemplate(
-    data.titulo,
-    data.mensaje,
-  );
+        const template = emergencyNotificationTemplate(
+          data.titulo,
+          data.mensaje,
+        );
 
-  await tx.envioEmail.createMany({
-    data: destinatarios.map((usuario) => ({
-      notificacionId: notification.id,
-      usuarioId: usuario.id,
-      destinatario: usuario.email,
-      asunto: template.subject,
-      contenidoHtml: template.html,
-    })),
-    skipDuplicates: true,
-  });
-}
+        await tx.envioEmail.createMany({
+          data: destinatarios.map((usuario) => ({
+            notificacionId: notification.id,
+            usuarioId: usuario.id,
+            destinatario: usuario.email,
+            asunto: template.subject,
+            contenidoHtml: template.html,
+          })),
+          skipDuplicates: true,
+        });
+      }
     }
 
     return tx.notificacion.findUnique({
@@ -93,8 +93,6 @@ export async function create(data: CreateNotificationData) {
     });
   });
 }
-
-
 
 // Lo que envió la administración. Los avisos automáticos (por ejemplo, el de
 // una empresa que cambia el estado de una postulación) le llegan a su

@@ -13,10 +13,7 @@ export function findPending(limit = 50) {
   return prisma.envioEmail.findMany({
     where: {
       estado: 'PENDIENTE',
-      OR: [
-        { proximoIntento: null },
-        { proximoIntento: { lte: new Date() } },
-      ],
+      OR: [{ proximoIntento: null }, { proximoIntento: { lte: new Date() } }],
     },
     orderBy: {
       fechaCreacion: 'asc',
@@ -30,10 +27,7 @@ export async function claim(id: number) {
     where: {
       id,
       estado: 'PENDIENTE',
-      OR: [
-        { proximoIntento: null },
-        { proximoIntento: { lte: new Date() } },
-      ],
+      OR: [{ proximoIntento: null }, { proximoIntento: { lte: new Date() } }],
     },
     data: {
       estado: 'ENVIANDO',
@@ -68,10 +62,7 @@ export async function markAsFailed(
 
   const reintentar = intentos < maxIntentos;
 
-  const minutosEspera = Math.min(
-    2 ** intentos,
-    60,
-  );
+  const minutosEspera = Math.min(2 ** intentos, 60);
 
   return prisma.envioEmail.update({
     where: { id },
@@ -81,7 +72,7 @@ export async function markAsFailed(
       proximoIntento: reintentar
         ? new Date(Date.now() + minutosEspera * 60_000)
         : null,
-        fechaInicioEnvio: null,
+      fechaInicioEnvio: null,
     },
   });
 }

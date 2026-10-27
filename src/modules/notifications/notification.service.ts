@@ -1,4 +1,7 @@
-import { CreateNotificationInput, TipoNotificacion } from '@/types/notification.type';
+import {
+  CreateNotificationInput,
+  TipoNotificacion,
+} from '@/types/notification.type';
 import { HttpError } from '@/utils/http-error';
 
 import * as userRepository from '../users/user.repository';
@@ -46,12 +49,12 @@ export async function create(data: CreateNotificationInput) {
       break;
 
     case 'SOCIOS_DIRECTIVOS':
-        usuarios = await userRepository.findActiveMembersByCategory('DIRECTIVO');
-    break;
+      usuarios = await userRepository.findActiveMembersByCategory('DIRECTIVO');
+      break;
 
     case 'SOCIOS_COMUNES':
-        usuarios = await userRepository.findActiveMembersByCategory('COMUN');
-        break;
+      usuarios = await userRepository.findActiveMembersByCategory('COMUN');
+      break;
 
     case 'POSTULANTES':
       usuarios = await userRepository.findActiveUsersByType('POSTULANTE');

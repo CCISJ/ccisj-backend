@@ -174,9 +174,7 @@ export async function findActiveUsersByType(tipo: TipoUsuario) {
   });
 }
 
-export async function findActiveMembersByCategory(
-  tipo: 'COMUN' | 'DIRECTIVO',
-) {
+export async function findActiveMembersByCategory(tipo: 'COMUN' | 'DIRECTIVO') {
   return prisma.usuario.findMany({
     where: {
       activo: true,

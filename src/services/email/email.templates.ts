@@ -12,10 +12,7 @@ function escapeHtml(value: string): string {
   });
 }
 
-export function emergencyNotificationTemplate(
-  titulo: string,
-  mensaje: string,
-) {
+export function emergencyNotificationTemplate(titulo: string, mensaje: string) {
   return {
     subject: `CCISJ - ${titulo}`,
     html: `

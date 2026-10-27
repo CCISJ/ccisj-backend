@@ -4,16 +4,14 @@ import { emailService } from './email.service';
 export async function processPendingEmails(limit = 50) {
   const pendingEmails = await emailRepository.findPending(limit);
 
+  const testRecipient = process.env.EMAIL_TEST_RECIPIENT;
 
-const testRecipient = process.env.EMAIL_TEST_RECIPIENT;
-
-const emailsToProcess = testRecipient
-  ? pendingEmails.filter(
-      (email) =>
-        email.destinatario.toLowerCase() ===
-        testRecipient.toLowerCase(),
-    )
-  : pendingEmails;
+  const emailsToProcess = testRecipient
+    ? pendingEmails.filter(
+        (email) =>
+          email.destinatario.toLowerCase() === testRecipient.toLowerCase(),
+      )
+    : pendingEmails;
 
   let enviados = 0;
   let fallidos = 0;
@@ -26,16 +24,13 @@ const emailsToProcess = testRecipient
 
     try {
       const result = await emailService.send({
-  to: email.destinatario,
-  subject: email.asunto,
-  html: email.contenidoHtml,
-  idempotencyKey: `ccisj-email-${email.id}`,
-});
+        to: email.destinatario,
+        subject: email.asunto,
+        html: email.contenidoHtml,
+        idempotencyKey: `ccisj-email-${email.id}`,
+      });
 
-      await emailRepository.markAsSent(
-        email.id,
-        result?.id ?? null,
-      );
+      await emailRepository.markAsSent(email.id, result?.id ?? null);
 
       enviados++;
     } catch (error) {
@@ -44,18 +39,11 @@ const emailsToProcess = testRecipient
           ? error.message
           : 'Error desconocido al enviar correo';
 
-      await emailRepository.markAsFailed(
-  email.id,
-  message,
-  email.intentos + 1,
-    );
+      await emailRepository.markAsFailed(email.id, message, email.intentos + 1);
 
       fallidos++;
 
-      console.error(
-        `Error enviando correo ${email.id}:`,
-        message,
-      );
+      console.error(`Error enviando correo ${email.id}:`, message);
     }
   }
 

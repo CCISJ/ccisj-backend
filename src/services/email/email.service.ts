@@ -10,12 +10,7 @@ interface SendEmailOptions {
 }
 
 export const emailService = {
-  async send({
-    to,
-    subject,
-    html,
-    idempotencyKey,
-  }: SendEmailOptions) {
+  async send({ to, subject, html, idempotencyKey }: SendEmailOptions) {
     const { data, error } = await resend.emails.send(
       {
         from: process.env.EMAIL_FROM!,
@@ -23,9 +18,7 @@ export const emailService = {
         subject,
         html,
       },
-      idempotencyKey
-        ? { idempotencyKey }
-        : undefined,
+      idempotencyKey ? { idempotencyKey } : undefined,
     );
 
     if (error) {

@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
-import * as emailRepository from '../src/services/email/email.repository';
 import { processPendingEmails } from '../src/services/email/email.processor';
+import * as emailRepository from '../src/services/email/email.repository';
 
 async function main() {
   const email = await emailRepository.create({

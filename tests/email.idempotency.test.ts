@@ -1,4 +1,5 @@
 import 'dotenv/config';
+
 import { emailService } from '../src/services/email/email.service';
 
 async function main() {
@@ -17,10 +18,7 @@ async function main() {
   console.log('Primer envío:', primero?.id);
   console.log('Segundo envío:', segundo?.id);
 
-  console.log(
-    'Mismo ID:',
-    primero?.id === segundo?.id,
-  );
+  console.log('Mismo ID:', primero?.id === segundo?.id);
 }
 
 main().catch(console.error);

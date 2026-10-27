@@ -1,4 +1,5 @@
 import 'dotenv/config';
+
 import { emailService } from '../src/services/email/email.service';
 
 async function main() {
