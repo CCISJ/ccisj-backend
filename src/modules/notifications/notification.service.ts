@@ -84,10 +84,6 @@ export async function create(data: CreateNotificationInput) {
     creadoPorId: data.creadoPorId,
     usuarioIds: usuarios.map((usuario) => usuario.id),
   });
-
-  if (data.tipo === 'EMERGENTE') {
-  // Enviar correos a los destinatarios seleccionados.
-}
 }
 
 export async function getAll() {
