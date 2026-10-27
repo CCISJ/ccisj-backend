@@ -8,6 +8,7 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/EnvioEmail.js'
 export type * from './models/Usuario.js'
 export type * from './models/Notificacion.js'
 export type * from './models/NotificacionUsuario.js'

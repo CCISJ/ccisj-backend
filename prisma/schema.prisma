@@ -83,6 +83,41 @@ enum TipoMovimientoCaja {
   @@map("tipo_movimiento_caja")
 }
 
+enum EstadoEnvioEmail {
+  PENDIENTE
+  ENVIANDO
+  ENVIADO
+  FALLIDO
+}
+
+model EnvioEmail {
+  id             Int              @id @default(autoincrement())
+
+  destinatario   String           @db.VarChar(255)
+  asunto         String           @db.VarChar(255)
+  contenidoHtml  String           @map("contenido_html")
+
+  estado         EstadoEnvioEmail @default(PENDIENTE)
+  intentos       Int              @default(0)
+  ultimoError    String?          @map("ultimo_error")
+  resendId       String?          @map("resend_id")
+
+  fechaCreacion  DateTime         @default(now()) @map("fecha_creacion")
+  fechaEnvio     DateTime?        @map("fecha_envio")
+  proximoIntento DateTime?        @map("proximo_intento")
+  fechaInicioEnvio DateTime? @map("fecha_inicio_envio")
+
+  notificacionId Int?             @map("notificacion_id")
+  usuarioId      Int?             @map("usuario_id")
+
+  notificacion   Notificacion?    @relation(fields: [notificacionId], references: [id], onDelete: SetNull)
+  usuario        Usuario?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+
+  @@index([estado, proximoIntento])
+  @@index([notificacionId])
+  @@map("envio_email")
+}
+
 model Usuario {
   id                  Int         @id @default(autoincrement())
   email               String      @unique @db.VarChar(255)
@@ -105,6 +140,8 @@ model Usuario {
   movimientosCajaRegistrados MovimientoCaja[] @relation("MovimientoCajaRegistradoPor")
   movimientosCajaAnulados    MovimientoCaja[] @relation("MovimientoCajaAnuladoPor")
 
+  enviosEmail EnvioEmail[]
+
   @@map("usuario")
 }
 
@@ -120,6 +157,7 @@ model Notificacion {
   creadoPor   Usuario @relation("NotificacionCreadaPor", fields: [creadoPorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   destinatarios NotificacionUsuario[]
+  enviosEmail   EnvioEmail[]
 
   @@map("notificacion")
 }
@@ -184,7 +222,7 @@ model Postulante {
   fechaNacimiento DateTime? @map("fecha_nacimiento") @db.Date
   otros           String?
 
-  usuario       Usuario              @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
+  usuario       Usuario               @relation(fields: [usuarioId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulante_usuario")
   cvs           Cv[]
   estudios      Estudio[]
   experiencias  ExperienciaLaboral[]
@@ -394,8 +432,8 @@ model PagoCuota {
   importe   Decimal  @db.Decimal(10, 2)
   fechaPago DateTime @map("fecha_pago") @db.Timestamp(6)
 
-  medioPago      String  @map("medio_pago") @db.VarChar(50)
-  observaciones  String? @db.VarChar(500)
+  medioPago     String  @map("medio_pago") @db.VarChar(50)
+  observaciones String? @db.VarChar(500)
 
   fechaCreacion DateTime @default(now()) @map("fecha_creacion")
 

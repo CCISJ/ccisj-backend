@@ -560,14 +560,6 @@ export type EnumEstadoPostulacionFieldUpdateOperationsInput = {
   set?: $Enums.EstadoPostulacion
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type PostulacionCreateWithoutPostulanteInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion

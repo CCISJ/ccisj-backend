@@ -397,6 +397,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  EnvioEmail: 'EnvioEmail',
   Usuario: 'Usuario',
   Notificacion: 'Notificacion',
   NotificacionUsuario: 'NotificacionUsuario',
@@ -433,10 +434,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "usuario" | "notificacion" | "notificacionUsuario" | "socio" | "postulante" | "estudio" | "experienciaLaboral" | "referencia" | "cv" | "categoria" | "postulanteCategoria" | "oferta" | "ofertaCategoria" | "postulacion" | "configuracionCuota" | "ajusteCuotaSocio" | "cuota" | "pagoCuota" | "pagoCuotaDetalle" | "categoriaCaja" | "movimientoCaja"
+    modelProps: "envioEmail" | "usuario" | "notificacion" | "notificacionUsuario" | "socio" | "postulante" | "estudio" | "experienciaLaboral" | "referencia" | "cv" | "categoria" | "postulanteCategoria" | "oferta" | "ofertaCategoria" | "postulacion" | "configuracionCuota" | "ajusteCuotaSocio" | "cuota" | "pagoCuota" | "pagoCuotaDetalle" | "categoriaCaja" | "movimientoCaja"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    EnvioEmail: {
+      payload: Prisma.$EnvioEmailPayload<ExtArgs>
+      fields: Prisma.EnvioEmailFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.EnvioEmailFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.EnvioEmailFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>
+        }
+        findFirst: {
+          args: Prisma.EnvioEmailFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.EnvioEmailFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>
+        }
+        findMany: {
+          args: Prisma.EnvioEmailFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>[]
+        }
+        create: {
+          args: Prisma.EnvioEmailCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>
+        }
+        createMany: {
+          args: Prisma.EnvioEmailCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.EnvioEmailCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>[]
+        }
+        delete: {
+          args: Prisma.EnvioEmailDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>
+        }
+        update: {
+          args: Prisma.EnvioEmailUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>
+        }
+        deleteMany: {
+          args: Prisma.EnvioEmailDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.EnvioEmailUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.EnvioEmailUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>[]
+        }
+        upsert: {
+          args: Prisma.EnvioEmailUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$EnvioEmailPayload>
+        }
+        aggregate: {
+          args: Prisma.EnvioEmailAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateEnvioEmail>
+        }
+        groupBy: {
+          args: Prisma.EnvioEmailGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EnvioEmailGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.EnvioEmailCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.EnvioEmailCountAggregateOutputType> | number
+        }
+      }
+    }
     Usuario: {
       payload: Prisma.$UsuarioPayload<ExtArgs>
       fields: Prisma.UsuarioFieldRefs
@@ -2030,6 +2105,26 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const EnvioEmailScalarFieldEnum = {
+  id: 'id',
+  destinatario: 'destinatario',
+  asunto: 'asunto',
+  contenidoHtml: 'contenidoHtml',
+  estado: 'estado',
+  intentos: 'intentos',
+  ultimoError: 'ultimoError',
+  resendId: 'resendId',
+  fechaCreacion: 'fechaCreacion',
+  fechaEnvio: 'fechaEnvio',
+  proximoIntento: 'proximoIntento',
+  fechaInicioEnvio: 'fechaInicioEnvio',
+  notificacionId: 'notificacionId',
+  usuarioId: 'usuarioId'
+} as const
+
+export type EnvioEmailScalarFieldEnum = (typeof EnvioEmailScalarFieldEnum)[keyof typeof EnvioEmailScalarFieldEnum]
+
+
 export const UsuarioScalarFieldEnum = {
   id: 'id',
   email: 'email',
@@ -2377,6 +2472,34 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
+ * Reference to a field of type 'EstadoEnvioEmail'
+ */
+export type EnumEstadoEnvioEmailFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EstadoEnvioEmail'>
+    
+
+
+/**
+ * Reference to a field of type 'EstadoEnvioEmail[]'
+ */
+export type ListEnumEstadoEnvioEmailFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EstadoEnvioEmail[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
  * Reference to a field of type 'TipoUsuario'
  */
 export type EnumTipoUsuarioFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TipoUsuario'>
@@ -2394,20 +2517,6 @@ export type ListEnumTipoUsuarioFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime[]'
- */
-export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -2715,6 +2824,7 @@ export interface PrismaClientOptionsWithAdapter extends PrismaClientBaseOptions 
  */
 export type PrismaClientOptions = PrismaClientOptionsWithAccelerateUrl | PrismaClientOptionsWithAdapter
 export type GlobalOmitConfig = {
+  envioEmail?: Prisma.EnvioEmailOmit
   usuario?: Prisma.UsuarioOmit
   notificacion?: Prisma.NotificacionOmit
   notificacionUsuario?: Prisma.NotificacionUsuarioOmit

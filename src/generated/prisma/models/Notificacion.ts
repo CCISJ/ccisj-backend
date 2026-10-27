@@ -238,6 +238,7 @@ export type NotificacionWhereInput = {
   creadoPorId?: Prisma.IntFilter<"Notificacion"> | number
   creadoPor?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   destinatarios?: Prisma.NotificacionUsuarioListRelationFilter
+  enviosEmail?: Prisma.EnvioEmailListRelationFilter
 }
 
 export type NotificacionOrderByWithRelationInput = {
@@ -250,6 +251,7 @@ export type NotificacionOrderByWithRelationInput = {
   creadoPorId?: Prisma.SortOrder
   creadoPor?: Prisma.UsuarioOrderByWithRelationInput
   destinatarios?: Prisma.NotificacionUsuarioOrderByRelationAggregateInput
+  enviosEmail?: Prisma.EnvioEmailOrderByRelationAggregateInput
 }
 
 export type NotificacionWhereUniqueInput = Prisma.AtLeast<{
@@ -265,6 +267,7 @@ export type NotificacionWhereUniqueInput = Prisma.AtLeast<{
   creadoPorId?: Prisma.IntFilter<"Notificacion"> | number
   creadoPor?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   destinatarios?: Prisma.NotificacionUsuarioListRelationFilter
+  enviosEmail?: Prisma.EnvioEmailListRelationFilter
 }, "id">
 
 export type NotificacionOrderByWithAggregationInput = {
@@ -303,6 +306,7 @@ export type NotificacionCreateInput = {
   activa?: boolean
   creadoPor: Prisma.UsuarioCreateNestedOneWithoutNotificacionesCreadasInput
   destinatarios?: Prisma.NotificacionUsuarioCreateNestedManyWithoutNotificacionInput
+  enviosEmail?: Prisma.EnvioEmailCreateNestedManyWithoutNotificacionInput
 }
 
 export type NotificacionUncheckedCreateInput = {
@@ -314,6 +318,7 @@ export type NotificacionUncheckedCreateInput = {
   activa?: boolean
   creadoPorId: number
   destinatarios?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutNotificacionInput
+  enviosEmail?: Prisma.EnvioEmailUncheckedCreateNestedManyWithoutNotificacionInput
 }
 
 export type NotificacionUpdateInput = {
@@ -324,6 +329,7 @@ export type NotificacionUpdateInput = {
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creadoPor?: Prisma.UsuarioUpdateOneRequiredWithoutNotificacionesCreadasNestedInput
   destinatarios?: Prisma.NotificacionUsuarioUpdateManyWithoutNotificacionNestedInput
+  enviosEmail?: Prisma.EnvioEmailUpdateManyWithoutNotificacionNestedInput
 }
 
 export type NotificacionUncheckedUpdateInput = {
@@ -335,6 +341,7 @@ export type NotificacionUncheckedUpdateInput = {
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creadoPorId?: Prisma.IntFieldUpdateOperationsInput | number
   destinatarios?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutNotificacionNestedInput
+  enviosEmail?: Prisma.EnvioEmailUncheckedUpdateManyWithoutNotificacionNestedInput
 }
 
 export type NotificacionCreateManyInput = {
@@ -363,6 +370,11 @@ export type NotificacionUncheckedUpdateManyInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creadoPorId?: Prisma.IntFieldUpdateOperationsInput | number
+}
+
+export type NotificacionNullableScalarRelationFilter = {
+  is?: Prisma.NotificacionWhereInput | null
+  isNot?: Prisma.NotificacionWhereInput | null
 }
 
 export type NotificacionListRelationFilter = {
@@ -418,6 +430,22 @@ export type NotificacionSumOrderByAggregateInput = {
 export type NotificacionScalarRelationFilter = {
   is?: Prisma.NotificacionWhereInput
   isNot?: Prisma.NotificacionWhereInput
+}
+
+export type NotificacionCreateNestedOneWithoutEnviosEmailInput = {
+  create?: Prisma.XOR<Prisma.NotificacionCreateWithoutEnviosEmailInput, Prisma.NotificacionUncheckedCreateWithoutEnviosEmailInput>
+  connectOrCreate?: Prisma.NotificacionCreateOrConnectWithoutEnviosEmailInput
+  connect?: Prisma.NotificacionWhereUniqueInput
+}
+
+export type NotificacionUpdateOneWithoutEnviosEmailNestedInput = {
+  create?: Prisma.XOR<Prisma.NotificacionCreateWithoutEnviosEmailInput, Prisma.NotificacionUncheckedCreateWithoutEnviosEmailInput>
+  connectOrCreate?: Prisma.NotificacionCreateOrConnectWithoutEnviosEmailInput
+  upsert?: Prisma.NotificacionUpsertWithoutEnviosEmailInput
+  disconnect?: Prisma.NotificacionWhereInput | boolean
+  delete?: Prisma.NotificacionWhereInput | boolean
+  connect?: Prisma.NotificacionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.NotificacionUpdateToOneWithWhereWithoutEnviosEmailInput, Prisma.NotificacionUpdateWithoutEnviosEmailInput>, Prisma.NotificacionUncheckedUpdateWithoutEnviosEmailInput>
 }
 
 export type NotificacionCreateNestedManyWithoutCreadoPorInput = {
@@ -480,6 +508,64 @@ export type NotificacionUpdateOneRequiredWithoutDestinatariosNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.NotificacionUpdateToOneWithWhereWithoutDestinatariosInput, Prisma.NotificacionUpdateWithoutDestinatariosInput>, Prisma.NotificacionUncheckedUpdateWithoutDestinatariosInput>
 }
 
+export type NotificacionCreateWithoutEnviosEmailInput = {
+  titulo: string
+  mensaje: string
+  tipo?: $Enums.TipoNotificacion
+  fechaCreacion?: Date | string
+  activa?: boolean
+  creadoPor: Prisma.UsuarioCreateNestedOneWithoutNotificacionesCreadasInput
+  destinatarios?: Prisma.NotificacionUsuarioCreateNestedManyWithoutNotificacionInput
+}
+
+export type NotificacionUncheckedCreateWithoutEnviosEmailInput = {
+  id?: number
+  titulo: string
+  mensaje: string
+  tipo?: $Enums.TipoNotificacion
+  fechaCreacion?: Date | string
+  activa?: boolean
+  creadoPorId: number
+  destinatarios?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutNotificacionInput
+}
+
+export type NotificacionCreateOrConnectWithoutEnviosEmailInput = {
+  where: Prisma.NotificacionWhereUniqueInput
+  create: Prisma.XOR<Prisma.NotificacionCreateWithoutEnviosEmailInput, Prisma.NotificacionUncheckedCreateWithoutEnviosEmailInput>
+}
+
+export type NotificacionUpsertWithoutEnviosEmailInput = {
+  update: Prisma.XOR<Prisma.NotificacionUpdateWithoutEnviosEmailInput, Prisma.NotificacionUncheckedUpdateWithoutEnviosEmailInput>
+  create: Prisma.XOR<Prisma.NotificacionCreateWithoutEnviosEmailInput, Prisma.NotificacionUncheckedCreateWithoutEnviosEmailInput>
+  where?: Prisma.NotificacionWhereInput
+}
+
+export type NotificacionUpdateToOneWithWhereWithoutEnviosEmailInput = {
+  where?: Prisma.NotificacionWhereInput
+  data: Prisma.XOR<Prisma.NotificacionUpdateWithoutEnviosEmailInput, Prisma.NotificacionUncheckedUpdateWithoutEnviosEmailInput>
+}
+
+export type NotificacionUpdateWithoutEnviosEmailInput = {
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  mensaje?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoNotificacionFieldUpdateOperationsInput | $Enums.TipoNotificacion
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creadoPor?: Prisma.UsuarioUpdateOneRequiredWithoutNotificacionesCreadasNestedInput
+  destinatarios?: Prisma.NotificacionUsuarioUpdateManyWithoutNotificacionNestedInput
+}
+
+export type NotificacionUncheckedUpdateWithoutEnviosEmailInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  titulo?: Prisma.StringFieldUpdateOperationsInput | string
+  mensaje?: Prisma.StringFieldUpdateOperationsInput | string
+  tipo?: Prisma.EnumTipoNotificacionFieldUpdateOperationsInput | $Enums.TipoNotificacion
+  fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  creadoPorId?: Prisma.IntFieldUpdateOperationsInput | number
+  destinatarios?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutNotificacionNestedInput
+}
+
 export type NotificacionCreateWithoutCreadoPorInput = {
   titulo: string
   mensaje: string
@@ -487,6 +573,7 @@ export type NotificacionCreateWithoutCreadoPorInput = {
   fechaCreacion?: Date | string
   activa?: boolean
   destinatarios?: Prisma.NotificacionUsuarioCreateNestedManyWithoutNotificacionInput
+  enviosEmail?: Prisma.EnvioEmailCreateNestedManyWithoutNotificacionInput
 }
 
 export type NotificacionUncheckedCreateWithoutCreadoPorInput = {
@@ -497,6 +584,7 @@ export type NotificacionUncheckedCreateWithoutCreadoPorInput = {
   fechaCreacion?: Date | string
   activa?: boolean
   destinatarios?: Prisma.NotificacionUsuarioUncheckedCreateNestedManyWithoutNotificacionInput
+  enviosEmail?: Prisma.EnvioEmailUncheckedCreateNestedManyWithoutNotificacionInput
 }
 
 export type NotificacionCreateOrConnectWithoutCreadoPorInput = {
@@ -545,6 +633,7 @@ export type NotificacionCreateWithoutDestinatariosInput = {
   fechaCreacion?: Date | string
   activa?: boolean
   creadoPor: Prisma.UsuarioCreateNestedOneWithoutNotificacionesCreadasInput
+  enviosEmail?: Prisma.EnvioEmailCreateNestedManyWithoutNotificacionInput
 }
 
 export type NotificacionUncheckedCreateWithoutDestinatariosInput = {
@@ -555,6 +644,7 @@ export type NotificacionUncheckedCreateWithoutDestinatariosInput = {
   fechaCreacion?: Date | string
   activa?: boolean
   creadoPorId: number
+  enviosEmail?: Prisma.EnvioEmailUncheckedCreateNestedManyWithoutNotificacionInput
 }
 
 export type NotificacionCreateOrConnectWithoutDestinatariosInput = {
@@ -580,6 +670,7 @@ export type NotificacionUpdateWithoutDestinatariosInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creadoPor?: Prisma.UsuarioUpdateOneRequiredWithoutNotificacionesCreadasNestedInput
+  enviosEmail?: Prisma.EnvioEmailUpdateManyWithoutNotificacionNestedInput
 }
 
 export type NotificacionUncheckedUpdateWithoutDestinatariosInput = {
@@ -590,6 +681,7 @@ export type NotificacionUncheckedUpdateWithoutDestinatariosInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creadoPorId?: Prisma.IntFieldUpdateOperationsInput | number
+  enviosEmail?: Prisma.EnvioEmailUncheckedUpdateManyWithoutNotificacionNestedInput
 }
 
 export type NotificacionCreateManyCreadoPorInput = {
@@ -608,6 +700,7 @@ export type NotificacionUpdateWithoutCreadoPorInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   destinatarios?: Prisma.NotificacionUsuarioUpdateManyWithoutNotificacionNestedInput
+  enviosEmail?: Prisma.EnvioEmailUpdateManyWithoutNotificacionNestedInput
 }
 
 export type NotificacionUncheckedUpdateWithoutCreadoPorInput = {
@@ -618,6 +711,7 @@ export type NotificacionUncheckedUpdateWithoutCreadoPorInput = {
   fechaCreacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   activa?: Prisma.BoolFieldUpdateOperationsInput | boolean
   destinatarios?: Prisma.NotificacionUsuarioUncheckedUpdateManyWithoutNotificacionNestedInput
+  enviosEmail?: Prisma.EnvioEmailUncheckedUpdateManyWithoutNotificacionNestedInput
 }
 
 export type NotificacionUncheckedUpdateManyWithoutCreadoPorInput = {
@@ -636,10 +730,12 @@ export type NotificacionUncheckedUpdateManyWithoutCreadoPorInput = {
 
 export type NotificacionCountOutputType = {
   destinatarios: number
+  enviosEmail: number
 }
 
 export type NotificacionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   destinatarios?: boolean | NotificacionCountOutputTypeCountDestinatariosArgs
+  enviosEmail?: boolean | NotificacionCountOutputTypeCountEnviosEmailArgs
 }
 
 /**
@@ -659,6 +755,13 @@ export type NotificacionCountOutputTypeCountDestinatariosArgs<ExtArgs extends ru
   where?: Prisma.NotificacionUsuarioWhereInput
 }
 
+/**
+ * NotificacionCountOutputType without action
+ */
+export type NotificacionCountOutputTypeCountEnviosEmailArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EnvioEmailWhereInput
+}
+
 
 export type NotificacionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -670,6 +773,7 @@ export type NotificacionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   creadoPorId?: boolean
   creadoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   destinatarios?: boolean | Prisma.Notificacion$destinatariosArgs<ExtArgs>
+  enviosEmail?: boolean | Prisma.Notificacion$enviosEmailArgs<ExtArgs>
   _count?: boolean | Prisma.NotificacionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["notificacion"]>
 
@@ -709,6 +813,7 @@ export type NotificacionOmit<ExtArgs extends runtime.Types.Extensions.InternalAr
 export type NotificacionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   creadoPor?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   destinatarios?: boolean | Prisma.Notificacion$destinatariosArgs<ExtArgs>
+  enviosEmail?: boolean | Prisma.Notificacion$enviosEmailArgs<ExtArgs>
   _count?: boolean | Prisma.NotificacionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type NotificacionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -723,6 +828,7 @@ export type $NotificacionPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     creadoPor: Prisma.$UsuarioPayload<ExtArgs>
     destinatarios: Prisma.$NotificacionUsuarioPayload<ExtArgs>[]
+    enviosEmail: Prisma.$EnvioEmailPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1128,6 +1234,7 @@ export interface Prisma__NotificacionClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   creadoPor<T extends Prisma.UsuarioDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UsuarioDefaultArgs<ExtArgs>>): Prisma.Prisma__UsuarioClient<runtime.Types.Result.GetResult<Prisma.$UsuarioPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   destinatarios<T extends Prisma.Notificacion$destinatariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notificacion$destinatariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificacionUsuarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  enviosEmail<T extends Prisma.Notificacion$enviosEmailArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Notificacion$enviosEmailArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EnvioEmailPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1586,6 +1693,30 @@ export type Notificacion$destinatariosArgs<ExtArgs extends runtime.Types.Extensi
   take?: number
   skip?: number
   distinct?: Prisma.NotificacionUsuarioScalarFieldEnum | Prisma.NotificacionUsuarioScalarFieldEnum[]
+}
+
+/**
+ * Notificacion.enviosEmail
+ */
+export type Notificacion$enviosEmailArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EnvioEmail
+   */
+  select?: Prisma.EnvioEmailSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EnvioEmail
+   */
+  omit?: Prisma.EnvioEmailOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EnvioEmailInclude<ExtArgs> | null
+  where?: Prisma.EnvioEmailWhereInput
+  orderBy?: Prisma.EnvioEmailOrderByWithRelationInput | Prisma.EnvioEmailOrderByWithRelationInput[]
+  cursor?: Prisma.EnvioEmailWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EnvioEmailScalarFieldEnum | Prisma.EnvioEmailScalarFieldEnum[]
 }
 
 /**
