@@ -2211,7 +2211,8 @@ export const PostulacionScalarFieldEnum = {
   postulanteId: 'postulanteId',
   fechaPostulacion: 'fechaPostulacion',
   estado: 'estado',
-  observaciones: 'observaciones'
+  observaciones: 'observaciones',
+  cvId: 'cvId'
 } as const
 
 export type PostulacionScalarFieldEnum = (typeof PostulacionScalarFieldEnum)[keyof typeof PostulacionScalarFieldEnum]

@@ -30,12 +30,14 @@ export type PostulacionAvgAggregateOutputType = {
   id: number | null
   ofertaId: number | null
   postulanteId: number | null
+  cvId: number | null
 }
 
 export type PostulacionSumAggregateOutputType = {
   id: number | null
   ofertaId: number | null
   postulanteId: number | null
+  cvId: number | null
 }
 
 export type PostulacionMinAggregateOutputType = {
@@ -45,6 +47,7 @@ export type PostulacionMinAggregateOutputType = {
   fechaPostulacion: Date | null
   estado: $Enums.EstadoPostulacion | null
   observaciones: string | null
+  cvId: number | null
 }
 
 export type PostulacionMaxAggregateOutputType = {
@@ -54,6 +57,7 @@ export type PostulacionMaxAggregateOutputType = {
   fechaPostulacion: Date | null
   estado: $Enums.EstadoPostulacion | null
   observaciones: string | null
+  cvId: number | null
 }
 
 export type PostulacionCountAggregateOutputType = {
@@ -63,6 +67,7 @@ export type PostulacionCountAggregateOutputType = {
   fechaPostulacion: number
   estado: number
   observaciones: number
+  cvId: number
   _all: number
 }
 
@@ -71,12 +76,14 @@ export type PostulacionAvgAggregateInputType = {
   id?: true
   ofertaId?: true
   postulanteId?: true
+  cvId?: true
 }
 
 export type PostulacionSumAggregateInputType = {
   id?: true
   ofertaId?: true
   postulanteId?: true
+  cvId?: true
 }
 
 export type PostulacionMinAggregateInputType = {
@@ -86,6 +93,7 @@ export type PostulacionMinAggregateInputType = {
   fechaPostulacion?: true
   estado?: true
   observaciones?: true
+  cvId?: true
 }
 
 export type PostulacionMaxAggregateInputType = {
@@ -95,6 +103,7 @@ export type PostulacionMaxAggregateInputType = {
   fechaPostulacion?: true
   estado?: true
   observaciones?: true
+  cvId?: true
 }
 
 export type PostulacionCountAggregateInputType = {
@@ -104,6 +113,7 @@ export type PostulacionCountAggregateInputType = {
   fechaPostulacion?: true
   estado?: true
   observaciones?: true
+  cvId?: true
   _all?: true
 }
 
@@ -200,6 +210,7 @@ export type PostulacionGroupByOutputType = {
   fechaPostulacion: Date
   estado: $Enums.EstadoPostulacion
   observaciones: string | null
+  cvId: number | null
   _count: PostulacionCountAggregateOutputType | null
   _avg: PostulacionAvgAggregateOutputType | null
   _sum: PostulacionSumAggregateOutputType | null
@@ -232,7 +243,9 @@ export type PostulacionWhereInput = {
   fechaPostulacion?: Prisma.DateTimeFilter<"Postulacion"> | Date | string
   estado?: Prisma.EnumEstadoPostulacionFilter<"Postulacion"> | $Enums.EstadoPostulacion
   observaciones?: Prisma.StringNullableFilter<"Postulacion"> | string | null
+  cvId?: Prisma.IntNullableFilter<"Postulacion"> | number | null
   oferta?: Prisma.XOR<Prisma.OfertaScalarRelationFilter, Prisma.OfertaWhereInput>
+  cv?: Prisma.XOR<Prisma.CvNullableScalarRelationFilter, Prisma.CvWhereInput> | null
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
 }
 
@@ -243,7 +256,9 @@ export type PostulacionOrderByWithRelationInput = {
   fechaPostulacion?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
+  cvId?: Prisma.SortOrderInput | Prisma.SortOrder
   oferta?: Prisma.OfertaOrderByWithRelationInput
+  cv?: Prisma.CvOrderByWithRelationInput
   postulante?: Prisma.PostulanteOrderByWithRelationInput
 }
 
@@ -258,7 +273,9 @@ export type PostulacionWhereUniqueInput = Prisma.AtLeast<{
   fechaPostulacion?: Prisma.DateTimeFilter<"Postulacion"> | Date | string
   estado?: Prisma.EnumEstadoPostulacionFilter<"Postulacion"> | $Enums.EstadoPostulacion
   observaciones?: Prisma.StringNullableFilter<"Postulacion"> | string | null
+  cvId?: Prisma.IntNullableFilter<"Postulacion"> | number | null
   oferta?: Prisma.XOR<Prisma.OfertaScalarRelationFilter, Prisma.OfertaWhereInput>
+  cv?: Prisma.XOR<Prisma.CvNullableScalarRelationFilter, Prisma.CvWhereInput> | null
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
 }, "id" | "ofertaId_postulanteId">
 
@@ -269,6 +286,7 @@ export type PostulacionOrderByWithAggregationInput = {
   fechaPostulacion?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   observaciones?: Prisma.SortOrderInput | Prisma.SortOrder
+  cvId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.PostulacionCountOrderByAggregateInput
   _avg?: Prisma.PostulacionAvgOrderByAggregateInput
   _max?: Prisma.PostulacionMaxOrderByAggregateInput
@@ -286,6 +304,7 @@ export type PostulacionScalarWhereWithAggregatesInput = {
   fechaPostulacion?: Prisma.DateTimeWithAggregatesFilter<"Postulacion"> | Date | string
   estado?: Prisma.EnumEstadoPostulacionWithAggregatesFilter<"Postulacion"> | $Enums.EstadoPostulacion
   observaciones?: Prisma.StringNullableWithAggregatesFilter<"Postulacion"> | string | null
+  cvId?: Prisma.IntNullableWithAggregatesFilter<"Postulacion"> | number | null
 }
 
 export type PostulacionCreateInput = {
@@ -293,6 +312,7 @@ export type PostulacionCreateInput = {
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
   oferta: Prisma.OfertaCreateNestedOneWithoutPostulacionesInput
+  cv?: Prisma.CvCreateNestedOneWithoutPostulacionesInput
   postulante: Prisma.PostulanteCreateNestedOneWithoutPostulacionesInput
 }
 
@@ -303,6 +323,7 @@ export type PostulacionUncheckedCreateInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cvId?: number | null
 }
 
 export type PostulacionUpdateInput = {
@@ -310,6 +331,7 @@ export type PostulacionUpdateInput = {
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oferta?: Prisma.OfertaUpdateOneRequiredWithoutPostulacionesNestedInput
+  cv?: Prisma.CvUpdateOneWithoutPostulacionesNestedInput
   postulante?: Prisma.PostulanteUpdateOneRequiredWithoutPostulacionesNestedInput
 }
 
@@ -320,6 +342,7 @@ export type PostulacionUncheckedUpdateInput = {
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type PostulacionCreateManyInput = {
@@ -329,6 +352,7 @@ export type PostulacionCreateManyInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cvId?: number | null
 }
 
 export type PostulacionUpdateManyMutationInput = {
@@ -344,6 +368,7 @@ export type PostulacionUncheckedUpdateManyInput = {
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type PostulacionListRelationFilter = {
@@ -368,12 +393,14 @@ export type PostulacionCountOrderByAggregateInput = {
   fechaPostulacion?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
+  cvId?: Prisma.SortOrder
 }
 
 export type PostulacionAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ofertaId?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
+  cvId?: Prisma.SortOrder
 }
 
 export type PostulacionMaxOrderByAggregateInput = {
@@ -383,6 +410,7 @@ export type PostulacionMaxOrderByAggregateInput = {
   fechaPostulacion?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
+  cvId?: Prisma.SortOrder
 }
 
 export type PostulacionMinOrderByAggregateInput = {
@@ -392,12 +420,14 @@ export type PostulacionMinOrderByAggregateInput = {
   fechaPostulacion?: Prisma.SortOrder
   estado?: Prisma.SortOrder
   observaciones?: Prisma.SortOrder
+  cvId?: Prisma.SortOrder
 }
 
 export type PostulacionSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   ofertaId?: Prisma.SortOrder
   postulanteId?: Prisma.SortOrder
+  cvId?: Prisma.SortOrder
 }
 
 export type PostulacionCreateNestedManyWithoutPostulanteInput = {
@@ -439,6 +469,48 @@ export type PostulacionUncheckedUpdateManyWithoutPostulanteNestedInput = {
   connect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
   update?: Prisma.PostulacionUpdateWithWhereUniqueWithoutPostulanteInput | Prisma.PostulacionUpdateWithWhereUniqueWithoutPostulanteInput[]
   updateMany?: Prisma.PostulacionUpdateManyWithWhereWithoutPostulanteInput | Prisma.PostulacionUpdateManyWithWhereWithoutPostulanteInput[]
+  deleteMany?: Prisma.PostulacionScalarWhereInput | Prisma.PostulacionScalarWhereInput[]
+}
+
+export type PostulacionCreateNestedManyWithoutCvInput = {
+  create?: Prisma.XOR<Prisma.PostulacionCreateWithoutCvInput, Prisma.PostulacionUncheckedCreateWithoutCvInput> | Prisma.PostulacionCreateWithoutCvInput[] | Prisma.PostulacionUncheckedCreateWithoutCvInput[]
+  connectOrCreate?: Prisma.PostulacionCreateOrConnectWithoutCvInput | Prisma.PostulacionCreateOrConnectWithoutCvInput[]
+  createMany?: Prisma.PostulacionCreateManyCvInputEnvelope
+  connect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+}
+
+export type PostulacionUncheckedCreateNestedManyWithoutCvInput = {
+  create?: Prisma.XOR<Prisma.PostulacionCreateWithoutCvInput, Prisma.PostulacionUncheckedCreateWithoutCvInput> | Prisma.PostulacionCreateWithoutCvInput[] | Prisma.PostulacionUncheckedCreateWithoutCvInput[]
+  connectOrCreate?: Prisma.PostulacionCreateOrConnectWithoutCvInput | Prisma.PostulacionCreateOrConnectWithoutCvInput[]
+  createMany?: Prisma.PostulacionCreateManyCvInputEnvelope
+  connect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+}
+
+export type PostulacionUpdateManyWithoutCvNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulacionCreateWithoutCvInput, Prisma.PostulacionUncheckedCreateWithoutCvInput> | Prisma.PostulacionCreateWithoutCvInput[] | Prisma.PostulacionUncheckedCreateWithoutCvInput[]
+  connectOrCreate?: Prisma.PostulacionCreateOrConnectWithoutCvInput | Prisma.PostulacionCreateOrConnectWithoutCvInput[]
+  upsert?: Prisma.PostulacionUpsertWithWhereUniqueWithoutCvInput | Prisma.PostulacionUpsertWithWhereUniqueWithoutCvInput[]
+  createMany?: Prisma.PostulacionCreateManyCvInputEnvelope
+  set?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  disconnect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  delete?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  connect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  update?: Prisma.PostulacionUpdateWithWhereUniqueWithoutCvInput | Prisma.PostulacionUpdateWithWhereUniqueWithoutCvInput[]
+  updateMany?: Prisma.PostulacionUpdateManyWithWhereWithoutCvInput | Prisma.PostulacionUpdateManyWithWhereWithoutCvInput[]
+  deleteMany?: Prisma.PostulacionScalarWhereInput | Prisma.PostulacionScalarWhereInput[]
+}
+
+export type PostulacionUncheckedUpdateManyWithoutCvNestedInput = {
+  create?: Prisma.XOR<Prisma.PostulacionCreateWithoutCvInput, Prisma.PostulacionUncheckedCreateWithoutCvInput> | Prisma.PostulacionCreateWithoutCvInput[] | Prisma.PostulacionUncheckedCreateWithoutCvInput[]
+  connectOrCreate?: Prisma.PostulacionCreateOrConnectWithoutCvInput | Prisma.PostulacionCreateOrConnectWithoutCvInput[]
+  upsert?: Prisma.PostulacionUpsertWithWhereUniqueWithoutCvInput | Prisma.PostulacionUpsertWithWhereUniqueWithoutCvInput[]
+  createMany?: Prisma.PostulacionCreateManyCvInputEnvelope
+  set?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  disconnect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  delete?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  connect?: Prisma.PostulacionWhereUniqueInput | Prisma.PostulacionWhereUniqueInput[]
+  update?: Prisma.PostulacionUpdateWithWhereUniqueWithoutCvInput | Prisma.PostulacionUpdateWithWhereUniqueWithoutCvInput[]
+  updateMany?: Prisma.PostulacionUpdateManyWithWhereWithoutCvInput | Prisma.PostulacionUpdateManyWithWhereWithoutCvInput[]
   deleteMany?: Prisma.PostulacionScalarWhereInput | Prisma.PostulacionScalarWhereInput[]
 }
 
@@ -488,11 +560,20 @@ export type EnumEstadoPostulacionFieldUpdateOperationsInput = {
   set?: $Enums.EstadoPostulacion
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type PostulacionCreateWithoutPostulanteInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
   oferta: Prisma.OfertaCreateNestedOneWithoutPostulacionesInput
+  cv?: Prisma.CvCreateNestedOneWithoutPostulacionesInput
 }
 
 export type PostulacionUncheckedCreateWithoutPostulanteInput = {
@@ -501,6 +582,7 @@ export type PostulacionUncheckedCreateWithoutPostulanteInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cvId?: number | null
 }
 
 export type PostulacionCreateOrConnectWithoutPostulanteInput = {
@@ -539,12 +621,57 @@ export type PostulacionScalarWhereInput = {
   fechaPostulacion?: Prisma.DateTimeFilter<"Postulacion"> | Date | string
   estado?: Prisma.EnumEstadoPostulacionFilter<"Postulacion"> | $Enums.EstadoPostulacion
   observaciones?: Prisma.StringNullableFilter<"Postulacion"> | string | null
+  cvId?: Prisma.IntNullableFilter<"Postulacion"> | number | null
+}
+
+export type PostulacionCreateWithoutCvInput = {
+  fechaPostulacion?: Date | string
+  estado?: $Enums.EstadoPostulacion
+  observaciones?: string | null
+  oferta: Prisma.OfertaCreateNestedOneWithoutPostulacionesInput
+  postulante: Prisma.PostulanteCreateNestedOneWithoutPostulacionesInput
+}
+
+export type PostulacionUncheckedCreateWithoutCvInput = {
+  id?: number
+  ofertaId: number
+  postulanteId: number
+  fechaPostulacion?: Date | string
+  estado?: $Enums.EstadoPostulacion
+  observaciones?: string | null
+}
+
+export type PostulacionCreateOrConnectWithoutCvInput = {
+  where: Prisma.PostulacionWhereUniqueInput
+  create: Prisma.XOR<Prisma.PostulacionCreateWithoutCvInput, Prisma.PostulacionUncheckedCreateWithoutCvInput>
+}
+
+export type PostulacionCreateManyCvInputEnvelope = {
+  data: Prisma.PostulacionCreateManyCvInput | Prisma.PostulacionCreateManyCvInput[]
+  skipDuplicates?: boolean
+}
+
+export type PostulacionUpsertWithWhereUniqueWithoutCvInput = {
+  where: Prisma.PostulacionWhereUniqueInput
+  update: Prisma.XOR<Prisma.PostulacionUpdateWithoutCvInput, Prisma.PostulacionUncheckedUpdateWithoutCvInput>
+  create: Prisma.XOR<Prisma.PostulacionCreateWithoutCvInput, Prisma.PostulacionUncheckedCreateWithoutCvInput>
+}
+
+export type PostulacionUpdateWithWhereUniqueWithoutCvInput = {
+  where: Prisma.PostulacionWhereUniqueInput
+  data: Prisma.XOR<Prisma.PostulacionUpdateWithoutCvInput, Prisma.PostulacionUncheckedUpdateWithoutCvInput>
+}
+
+export type PostulacionUpdateManyWithWhereWithoutCvInput = {
+  where: Prisma.PostulacionScalarWhereInput
+  data: Prisma.XOR<Prisma.PostulacionUpdateManyMutationInput, Prisma.PostulacionUncheckedUpdateManyWithoutCvInput>
 }
 
 export type PostulacionCreateWithoutOfertaInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cv?: Prisma.CvCreateNestedOneWithoutPostulacionesInput
   postulante: Prisma.PostulanteCreateNestedOneWithoutPostulacionesInput
 }
 
@@ -554,6 +681,7 @@ export type PostulacionUncheckedCreateWithoutOfertaInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cvId?: number | null
 }
 
 export type PostulacionCreateOrConnectWithoutOfertaInput = {
@@ -588,6 +716,7 @@ export type PostulacionCreateManyPostulanteInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cvId?: number | null
 }
 
 export type PostulacionUpdateWithoutPostulanteInput = {
@@ -595,6 +724,7 @@ export type PostulacionUpdateWithoutPostulanteInput = {
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   oferta?: Prisma.OfertaUpdateOneRequiredWithoutPostulacionesNestedInput
+  cv?: Prisma.CvUpdateOneWithoutPostulacionesNestedInput
 }
 
 export type PostulacionUncheckedUpdateWithoutPostulanteInput = {
@@ -603,11 +733,48 @@ export type PostulacionUncheckedUpdateWithoutPostulanteInput = {
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type PostulacionUncheckedUpdateManyWithoutPostulanteInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   ofertaId?: Prisma.IntFieldUpdateOperationsInput | number
+  fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type PostulacionCreateManyCvInput = {
+  id?: number
+  ofertaId: number
+  postulanteId: number
+  fechaPostulacion?: Date | string
+  estado?: $Enums.EstadoPostulacion
+  observaciones?: string | null
+}
+
+export type PostulacionUpdateWithoutCvInput = {
+  fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  oferta?: Prisma.OfertaUpdateOneRequiredWithoutPostulacionesNestedInput
+  postulante?: Prisma.PostulanteUpdateOneRequiredWithoutPostulacionesNestedInput
+}
+
+export type PostulacionUncheckedUpdateWithoutCvInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  ofertaId?: Prisma.IntFieldUpdateOperationsInput | number
+  postulanteId?: Prisma.IntFieldUpdateOperationsInput | number
+  fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
+  observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
+export type PostulacionUncheckedUpdateManyWithoutCvInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  ofertaId?: Prisma.IntFieldUpdateOperationsInput | number
+  postulanteId?: Prisma.IntFieldUpdateOperationsInput | number
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -619,12 +786,14 @@ export type PostulacionCreateManyOfertaInput = {
   fechaPostulacion?: Date | string
   estado?: $Enums.EstadoPostulacion
   observaciones?: string | null
+  cvId?: number | null
 }
 
 export type PostulacionUpdateWithoutOfertaInput = {
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cv?: Prisma.CvUpdateOneWithoutPostulacionesNestedInput
   postulante?: Prisma.PostulanteUpdateOneRequiredWithoutPostulacionesNestedInput
 }
 
@@ -634,6 +803,7 @@ export type PostulacionUncheckedUpdateWithoutOfertaInput = {
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type PostulacionUncheckedUpdateManyWithoutOfertaInput = {
@@ -642,6 +812,7 @@ export type PostulacionUncheckedUpdateManyWithoutOfertaInput = {
   fechaPostulacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   estado?: Prisma.EnumEstadoPostulacionFieldUpdateOperationsInput | $Enums.EstadoPostulacion
   observaciones?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cvId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -653,7 +824,9 @@ export type PostulacionSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   fechaPostulacion?: boolean
   estado?: boolean
   observaciones?: boolean
+  cvId?: boolean
   oferta?: boolean | Prisma.OfertaDefaultArgs<ExtArgs>
+  cv?: boolean | Prisma.Postulacion$cvArgs<ExtArgs>
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulacion"]>
 
@@ -664,7 +837,9 @@ export type PostulacionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   fechaPostulacion?: boolean
   estado?: boolean
   observaciones?: boolean
+  cvId?: boolean
   oferta?: boolean | Prisma.OfertaDefaultArgs<ExtArgs>
+  cv?: boolean | Prisma.Postulacion$cvArgs<ExtArgs>
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulacion"]>
 
@@ -675,7 +850,9 @@ export type PostulacionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   fechaPostulacion?: boolean
   estado?: boolean
   observaciones?: boolean
+  cvId?: boolean
   oferta?: boolean | Prisma.OfertaDefaultArgs<ExtArgs>
+  cv?: boolean | Prisma.Postulacion$cvArgs<ExtArgs>
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulacion"]>
 
@@ -686,19 +863,23 @@ export type PostulacionSelectScalar = {
   fechaPostulacion?: boolean
   estado?: boolean
   observaciones?: boolean
+  cvId?: boolean
 }
 
-export type PostulacionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ofertaId" | "postulanteId" | "fechaPostulacion" | "estado" | "observaciones", ExtArgs["result"]["postulacion"]>
+export type PostulacionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ofertaId" | "postulanteId" | "fechaPostulacion" | "estado" | "observaciones" | "cvId", ExtArgs["result"]["postulacion"]>
 export type PostulacionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   oferta?: boolean | Prisma.OfertaDefaultArgs<ExtArgs>
+  cv?: boolean | Prisma.Postulacion$cvArgs<ExtArgs>
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }
 export type PostulacionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   oferta?: boolean | Prisma.OfertaDefaultArgs<ExtArgs>
+  cv?: boolean | Prisma.Postulacion$cvArgs<ExtArgs>
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }
 export type PostulacionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   oferta?: boolean | Prisma.OfertaDefaultArgs<ExtArgs>
+  cv?: boolean | Prisma.Postulacion$cvArgs<ExtArgs>
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
 }
 
@@ -706,6 +887,7 @@ export type $PostulacionPayload<ExtArgs extends runtime.Types.Extensions.Interna
   name: "Postulacion"
   objects: {
     oferta: Prisma.$OfertaPayload<ExtArgs>
+    cv: Prisma.$CvPayload<ExtArgs> | null
     postulante: Prisma.$PostulantePayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -715,6 +897,7 @@ export type $PostulacionPayload<ExtArgs extends runtime.Types.Extensions.Interna
     fechaPostulacion: Date
     estado: $Enums.EstadoPostulacion
     observaciones: string | null
+    cvId: number | null
   }, ExtArgs["result"]["postulacion"]>
   composites: {}
 }
@@ -1110,6 +1293,7 @@ readonly fields: PostulacionFieldRefs;
 export interface Prisma__PostulacionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   oferta<T extends Prisma.OfertaDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OfertaDefaultArgs<ExtArgs>>): Prisma.Prisma__OfertaClient<runtime.Types.Result.GetResult<Prisma.$OfertaPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  cv<T extends Prisma.Postulacion$cvArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Postulacion$cvArgs<ExtArgs>>): Prisma.Prisma__CvClient<runtime.Types.Result.GetResult<Prisma.$CvPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   postulante<T extends Prisma.PostulanteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PostulanteDefaultArgs<ExtArgs>>): Prisma.Prisma__PostulanteClient<runtime.Types.Result.GetResult<Prisma.$PostulantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1146,6 +1330,7 @@ export interface PostulacionFieldRefs {
   readonly fechaPostulacion: Prisma.FieldRef<"Postulacion", 'DateTime'>
   readonly estado: Prisma.FieldRef<"Postulacion", 'EstadoPostulacion'>
   readonly observaciones: Prisma.FieldRef<"Postulacion", 'String'>
+  readonly cvId: Prisma.FieldRef<"Postulacion", 'Int'>
 }
     
 
@@ -1544,6 +1729,25 @@ export type PostulacionDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Limit how many Postulacions to delete.
    */
   limit?: number
+}
+
+/**
+ * Postulacion.cv
+ */
+export type Postulacion$cvArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Cv
+   */
+  select?: Prisma.CvSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Cv
+   */
+  omit?: Prisma.CvOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.CvInclude<ExtArgs> | null
+  where?: Prisma.CvWhereInput
 }
 
 /**

@@ -97,6 +97,12 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
     );
   }
 
+  const cvId = data.cvId ?? undefined;
+
+  if (cvId !== undefined && (!Number.isInteger(cvId) || cvId <= 0)) {
+    throw new Error('El CV elegido no es válido');
+  }
+
   const offer = await offerRepository.findById(data.ofertaId);
 
   if (!offer) {
@@ -116,6 +122,11 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
 
   if (!applicant) {
     throw new Error('Postulante no encontrado');
+  }
+
+  // El PDF elegido tiene que ser uno del propio postulante.
+  if (cvId !== undefined && !applicant.cvs.some((cv) => cv.id === cvId)) {
+    throw new Error('El CV elegido no es válido');
   }
 
   // Alcanza con un PDF o con el CV del formulario (al menos un estudio o una
@@ -144,6 +155,7 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
       ofertaId: data.ofertaId,
       postulanteId,
       observaciones: data.observaciones?.trim(),
+      cvId,
     });
   } catch (error) {
     // Dos envíos a la vez (doble clic): la verificación de arriba no alcanza

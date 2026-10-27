@@ -229,6 +229,7 @@ export type CvWhereInput = {
   descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
+  postulaciones?: Prisma.PostulacionListRelationFilter
 }
 
 export type CvOrderByWithRelationInput = {
@@ -239,6 +240,7 @@ export type CvOrderByWithRelationInput = {
   descripcion?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaActualizacion?: Prisma.SortOrder
   postulante?: Prisma.PostulanteOrderByWithRelationInput
+  postulaciones?: Prisma.PostulacionOrderByRelationAggregateInput
 }
 
 export type CvWhereUniqueInput = Prisma.AtLeast<{
@@ -252,6 +254,7 @@ export type CvWhereUniqueInput = Prisma.AtLeast<{
   descripcion?: Prisma.StringNullableFilter<"Cv"> | string | null
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
   postulante?: Prisma.XOR<Prisma.PostulanteScalarRelationFilter, Prisma.PostulanteWhereInput>
+  postulaciones?: Prisma.PostulacionListRelationFilter
 }, "id">
 
 export type CvOrderByWithAggregationInput = {
@@ -286,6 +289,7 @@ export type CvCreateInput = {
   descripcion?: string | null
   fechaActualizacion?: Date | string
   postulante: Prisma.PostulanteCreateNestedOneWithoutCvsInput
+  postulaciones?: Prisma.PostulacionCreateNestedManyWithoutCvInput
 }
 
 export type CvUncheckedCreateInput = {
@@ -295,6 +299,7 @@ export type CvUncheckedCreateInput = {
   nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
+  postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutCvInput
 }
 
 export type CvUpdateInput = {
@@ -303,6 +308,7 @@ export type CvUpdateInput = {
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   postulante?: Prisma.PostulanteUpdateOneRequiredWithoutCvsNestedInput
+  postulaciones?: Prisma.PostulacionUpdateManyWithoutCvNestedInput
 }
 
 export type CvUncheckedUpdateInput = {
@@ -312,6 +318,7 @@ export type CvUncheckedUpdateInput = {
   nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutCvNestedInput
 }
 
 export type CvCreateManyInput = {
@@ -386,6 +393,11 @@ export type CvSumOrderByAggregateInput = {
   postulanteId?: Prisma.SortOrder
 }
 
+export type CvNullableScalarRelationFilter = {
+  is?: Prisma.CvWhereInput | null
+  isNot?: Prisma.CvWhereInput | null
+}
+
 export type CvCreateNestedManyWithoutPostulanteInput = {
   create?: Prisma.XOR<Prisma.CvCreateWithoutPostulanteInput, Prisma.CvUncheckedCreateWithoutPostulanteInput> | Prisma.CvCreateWithoutPostulanteInput[] | Prisma.CvUncheckedCreateWithoutPostulanteInput[]
   connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulanteInput | Prisma.CvCreateOrConnectWithoutPostulanteInput[]
@@ -428,11 +440,28 @@ export type CvUncheckedUpdateManyWithoutPostulanteNestedInput = {
   deleteMany?: Prisma.CvScalarWhereInput | Prisma.CvScalarWhereInput[]
 }
 
+export type CvCreateNestedOneWithoutPostulacionesInput = {
+  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulacionesInput, Prisma.CvUncheckedCreateWithoutPostulacionesInput>
+  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulacionesInput
+  connect?: Prisma.CvWhereUniqueInput
+}
+
+export type CvUpdateOneWithoutPostulacionesNestedInput = {
+  create?: Prisma.XOR<Prisma.CvCreateWithoutPostulacionesInput, Prisma.CvUncheckedCreateWithoutPostulacionesInput>
+  connectOrCreate?: Prisma.CvCreateOrConnectWithoutPostulacionesInput
+  upsert?: Prisma.CvUpsertWithoutPostulacionesInput
+  disconnect?: Prisma.CvWhereInput | boolean
+  delete?: Prisma.CvWhereInput | boolean
+  connect?: Prisma.CvWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CvUpdateToOneWithWhereWithoutPostulacionesInput, Prisma.CvUpdateWithoutPostulacionesInput>, Prisma.CvUncheckedUpdateWithoutPostulacionesInput>
+}
+
 export type CvCreateWithoutPostulanteInput = {
   archivoUrl?: string | null
   nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
+  postulaciones?: Prisma.PostulacionCreateNestedManyWithoutCvInput
 }
 
 export type CvUncheckedCreateWithoutPostulanteInput = {
@@ -441,6 +470,7 @@ export type CvUncheckedCreateWithoutPostulanteInput = {
   nombreArchivo?: string | null
   descripcion?: string | null
   fechaActualizacion?: Date | string
+  postulaciones?: Prisma.PostulacionUncheckedCreateNestedManyWithoutCvInput
 }
 
 export type CvCreateOrConnectWithoutPostulanteInput = {
@@ -481,6 +511,56 @@ export type CvScalarWhereInput = {
   fechaActualizacion?: Prisma.DateTimeFilter<"Cv"> | Date | string
 }
 
+export type CvCreateWithoutPostulacionesInput = {
+  archivoUrl?: string | null
+  nombreArchivo?: string | null
+  descripcion?: string | null
+  fechaActualizacion?: Date | string
+  postulante: Prisma.PostulanteCreateNestedOneWithoutCvsInput
+}
+
+export type CvUncheckedCreateWithoutPostulacionesInput = {
+  id?: number
+  postulanteId: number
+  archivoUrl?: string | null
+  nombreArchivo?: string | null
+  descripcion?: string | null
+  fechaActualizacion?: Date | string
+}
+
+export type CvCreateOrConnectWithoutPostulacionesInput = {
+  where: Prisma.CvWhereUniqueInput
+  create: Prisma.XOR<Prisma.CvCreateWithoutPostulacionesInput, Prisma.CvUncheckedCreateWithoutPostulacionesInput>
+}
+
+export type CvUpsertWithoutPostulacionesInput = {
+  update: Prisma.XOR<Prisma.CvUpdateWithoutPostulacionesInput, Prisma.CvUncheckedUpdateWithoutPostulacionesInput>
+  create: Prisma.XOR<Prisma.CvCreateWithoutPostulacionesInput, Prisma.CvUncheckedCreateWithoutPostulacionesInput>
+  where?: Prisma.CvWhereInput
+}
+
+export type CvUpdateToOneWithWhereWithoutPostulacionesInput = {
+  where?: Prisma.CvWhereInput
+  data: Prisma.XOR<Prisma.CvUpdateWithoutPostulacionesInput, Prisma.CvUncheckedUpdateWithoutPostulacionesInput>
+}
+
+export type CvUpdateWithoutPostulacionesInput = {
+  archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  postulante?: Prisma.PostulanteUpdateOneRequiredWithoutCvsNestedInput
+}
+
+export type CvUncheckedUpdateWithoutPostulacionesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  postulanteId?: Prisma.IntFieldUpdateOperationsInput | number
+  archivoUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type CvCreateManyPostulanteInput = {
   id?: number
   archivoUrl?: string | null
@@ -494,6 +574,7 @@ export type CvUpdateWithoutPostulanteInput = {
   nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  postulaciones?: Prisma.PostulacionUpdateManyWithoutCvNestedInput
 }
 
 export type CvUncheckedUpdateWithoutPostulanteInput = {
@@ -502,6 +583,7 @@ export type CvUncheckedUpdateWithoutPostulanteInput = {
   nombreArchivo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   descripcion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaActualizacion?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  postulaciones?: Prisma.PostulacionUncheckedUpdateManyWithoutCvNestedInput
 }
 
 export type CvUncheckedUpdateManyWithoutPostulanteInput = {
@@ -513,6 +595,35 @@ export type CvUncheckedUpdateManyWithoutPostulanteInput = {
 }
 
 
+/**
+ * Count Type CvCountOutputType
+ */
+
+export type CvCountOutputType = {
+  postulaciones: number
+}
+
+export type CvCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  postulaciones?: boolean | CvCountOutputTypeCountPostulacionesArgs
+}
+
+/**
+ * CvCountOutputType without action
+ */
+export type CvCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CvCountOutputType
+   */
+  select?: Prisma.CvCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CvCountOutputType without action
+ */
+export type CvCountOutputTypeCountPostulacionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PostulacionWhereInput
+}
+
 
 export type CvSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -522,6 +633,8 @@ export type CvSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
   descripcion?: boolean
   fechaActualizacion?: boolean
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
+  postulaciones?: boolean | Prisma.Cv$postulacionesArgs<ExtArgs>
+  _count?: boolean | Prisma.CvCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["cv"]>
 
 export type CvSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -556,6 +669,8 @@ export type CvSelectScalar = {
 export type CvOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "postulanteId" | "archivoUrl" | "nombreArchivo" | "descripcion" | "fechaActualizacion", ExtArgs["result"]["cv"]>
 export type CvInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
+  postulaciones?: boolean | Prisma.Cv$postulacionesArgs<ExtArgs>
+  _count?: boolean | Prisma.CvCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CvIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   postulante?: boolean | Prisma.PostulanteDefaultArgs<ExtArgs>
@@ -568,6 +683,7 @@ export type $CvPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   name: "Cv"
   objects: {
     postulante: Prisma.$PostulantePayload<ExtArgs>
+    postulaciones: Prisma.$PostulacionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -971,6 +1087,7 @@ readonly fields: CvFieldRefs;
 export interface Prisma__CvClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   postulante<T extends Prisma.PostulanteDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PostulanteDefaultArgs<ExtArgs>>): Prisma.Prisma__PostulanteClient<runtime.Types.Result.GetResult<Prisma.$PostulantePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  postulaciones<T extends Prisma.Cv$postulacionesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Cv$postulacionesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostulacionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1404,6 +1521,30 @@ export type CvDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
    * Limit how many Cvs to delete.
    */
   limit?: number
+}
+
+/**
+ * Cv.postulaciones
+ */
+export type Cv$postulacionesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Postulacion
+   */
+  select?: Prisma.PostulacionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Postulacion
+   */
+  omit?: Prisma.PostulacionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostulacionInclude<ExtArgs> | null
+  where?: Prisma.PostulacionWhereInput
+  orderBy?: Prisma.PostulacionOrderByWithRelationInput | Prisma.PostulacionOrderByWithRelationInput[]
+  cursor?: Prisma.PostulacionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PostulacionScalarFieldEnum | Prisma.PostulacionScalarFieldEnum[]
 }
 
 /**

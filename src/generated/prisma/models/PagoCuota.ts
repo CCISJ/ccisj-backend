@@ -690,14 +690,6 @@ export type PagoCuotaUncheckedUpdateManyWithoutSocioNestedInput = {
   deleteMany?: Prisma.PagoCuotaScalarWhereInput | Prisma.PagoCuotaScalarWhereInput[]
 }
 
-export type NullableIntFieldUpdateOperationsInput = {
-  set?: number | null
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type PagoCuotaCreateNestedOneWithoutDetallesInput = {
   create?: Prisma.XOR<Prisma.PagoCuotaCreateWithoutDetallesInput, Prisma.PagoCuotaUncheckedCreateWithoutDetallesInput>
   connectOrCreate?: Prisma.PagoCuotaCreateOrConnectWithoutDetallesInput

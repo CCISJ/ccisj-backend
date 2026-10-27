@@ -389,4 +389,59 @@ describe('Mi CV', () => {
 
     await prisma.categoria.delete({ where: { id: category.id } });
   });
+
+  it('al postularse elige un PDF y la empresa ve solo ese', async () => {
+    const { cookie } = await applicant();
+    const other = await applicant();
+    const member = await createMember();
+    createdUserIds.push(member.userId);
+
+    const offer = await prisma.oferta.create({
+      data: {
+        socioId: member.socioId,
+        creadaPor: member.userId,
+        titulo: 'Oferta para elegir CV',
+        descripcion: 'Descripción',
+        estado: 'ACTIVA',
+      },
+    });
+
+    const [first, second] = (await uploadFiles(cookie, [PDF, PDF])).body;
+    const [ajeno] = (await uploadFiles(other.cookie, [PDF])).body;
+
+    // Un PDF de otro postulante no se puede mandar.
+    const robado = await request(app)
+      .post('/postulaciones')
+      .set('Cookie', cookie)
+      .send({ ofertaId: offer.id, cvId: ajeno.id });
+
+    expect(robado.status).toBe(400);
+
+    const applied = await request(app)
+      .post('/postulaciones')
+      .set('Cookie', cookie)
+      .send({ ofertaId: offer.id, cvId: second.id });
+
+    expect(applied.status).toBe(201);
+
+    const received = await request(app)
+      .get(`/postulaciones/recibidas/${applied.body.id}`)
+      .set('Cookie', member.cookie);
+
+    expect(received.status).toBe(200);
+    expect(received.body.cv).toMatchObject({ id: second.id });
+    expect(received.body.postulante).not.toHaveProperty('cvs');
+
+    const elegido = await request(app)
+      .get(`/postulaciones/recibidas/${applied.body.id}/cv/${second.id}`)
+      .set('Cookie', member.cookie);
+    const noElegido = await request(app)
+      .get(`/postulaciones/recibidas/${applied.body.id}/cv/${first.id}`)
+      .set('Cookie', member.cookie);
+
+    expect(elegido.status).toBe(200);
+    expect(noElegido.status).toBe(404);
+
+    await prisma.oferta.delete({ where: { id: offer.id } });
+  });
 });
