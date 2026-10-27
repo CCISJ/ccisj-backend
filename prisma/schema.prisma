@@ -259,7 +259,8 @@ model Cv {
   descripcion        String?
   fechaActualizacion DateTime @default(now()) @map("fecha_actualizacion") @db.Timestamp(6)
 
-  postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_cv_postulante")
+  postulante    Postulante    @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_cv_postulante")
+  postulaciones Postulacion[]
 
   @@map("cv")
 }
@@ -327,8 +328,12 @@ model Postulacion {
   fechaPostulacion DateTime          @default(now()) @map("fecha_postulacion") @db.Timestamp(6)
   estado           EstadoPostulacion @default(ENVIADA)
   observaciones    String?
+  // El PDF que eligió el postulante para esta oferta. Null = solo el CV del
+  // formulario (o el PDF se borró después).
+  cvId             Int?              @map("cv_id")
 
   oferta     Oferta     @relation(fields: [ofertaId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulacion_oferta")
+  cv         Cv?        @relation(fields: [cvId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "fk_postulacion_cv")
   postulante Postulante @relation(fields: [postulanteId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_postulacion_postulante")
 
   @@unique([ofertaId, postulanteId], map: "uq_postulacion")

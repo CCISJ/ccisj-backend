@@ -715,6 +715,10 @@ paths:
                 ofertaId: { type: integer, example: 1, x-fixture: oferta }
                 observaciones:
                   { type: string, example: Disponibilidad inmediata. }
+                cvId:
+                  type: integer
+                  nullable: true
+                  description: El PDF propio que se manda. Sin él, va solo el CV del formulario.
       responses:
         '201': { description: Postulación creada. }
         '400': { $ref: '#/components/responses/DatosInvalidos' }

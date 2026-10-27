@@ -1,5 +1,5 @@
 import { prisma } from '@/config/prisma';
-import { cvSelect } from '@/modules/applicants/cv.repository';
+import { cvDataSelect, fileSelect } from '@/modules/applicants/cv.repository';
 import type { ApplicationStatus } from '@/types/application.type';
 
 const applicationInclude = {
@@ -59,6 +59,7 @@ export function create(data: {
   ofertaId: number;
   postulanteId: number;
   observaciones?: string;
+  cvId?: number;
 }) {
   return prisma.postulacion.create({
     data,
@@ -91,10 +92,10 @@ export function remove(id: number) {
   });
 }
 
-// Lo que ve la empresa de cada postulación a sus ofertas: datos de contacto y
-// CV del postulante (el formulario y los PDF), sin el resto de su cuenta. Los
-// PDF van sin su ruta interna: se abren con un enlace firmado
-// (`GET /postulaciones/recibidas/:id/cv/:cvId`).
+// Lo que ve la empresa de cada postulación a sus ofertas: datos de contacto,
+// el CV del formulario y SOLO el PDF que el postulante eligió para esa oferta
+// (no todos los que tiene). Va sin su ruta interna: se abre con un enlace
+// firmado (`GET /postulaciones/recibidas/:id/cv/:cvId`).
 const receivedApplicationSelect = {
   id: true,
   fechaPostulacion: true,
@@ -107,8 +108,11 @@ const receivedApplicationSelect = {
       estado: true,
     },
   },
+  cv: {
+    select: fileSelect,
+  },
   postulante: {
-    select: cvSelect,
+    select: cvDataSelect,
   },
 } as const;
 
@@ -156,7 +160,10 @@ const ownApplicationSelect = {
   },
 } as const;
 
-/** El PDF de un CV, si es del postulante de una postulación del socio. */
+/**
+ * El PDF de una postulación a una oferta del socio, solo si es el que el
+ * postulante eligió mandar a esa postulación.
+ */
 export function findReceivedCvFile(
   applicationId: number,
   socioId: number,
@@ -165,10 +172,8 @@ export function findReceivedCvFile(
   return prisma.cv.findFirst({
     where: {
       id: cvId,
-      postulante: {
-        postulaciones: {
-          some: { id: applicationId, oferta: { socioId } },
-        },
+      postulaciones: {
+        some: { id: applicationId, oferta: { socioId } },
       },
     },
     select: { archivoUrl: true },

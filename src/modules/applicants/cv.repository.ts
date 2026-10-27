@@ -41,7 +41,7 @@ export type CvInput = {
   categoriaIds?: number[];
 };
 
-const fileSelect = {
+export const fileSelect = {
   id: true,
   nombreArchivo: true,
   descripcion: true,
@@ -53,7 +53,7 @@ const fileSelect = {
  * lectura, la empresa que recibió su postulación: por eso no lleva datos de
  * la cuenta salvo el email, ni la ruta interna de los archivos.
  */
-export const cvSelect = {
+export const cvDataSelect = {
   id: true,
   nombre: true,
   apellido: true,
@@ -101,6 +101,11 @@ export const cvSelect = {
   categorias: {
     select: { categoria: { select: { id: true, nombre: true } } },
   },
+} as const;
+
+/** El CV completo del postulante, con todos sus PDF. */
+export const cvSelect = {
+  ...cvDataSelect,
   cvs: {
     select: fileSelect,
     orderBy: { fechaActualizacion: 'desc' },

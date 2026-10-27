@@ -17,6 +17,8 @@ export type MemberApplicationStatus =
 export type CreateApplicationData = {
   ofertaId: number;
   observaciones?: string;
+  // El PDF que elige mandar; opcional (puede postularse con el formulario).
+  cvId?: number | null;
 };
 
 export type UpdateApplicationData = {

@@ -514,12 +514,10 @@ describe('Applications', () => {
         },
       });
 
-      expect(received.postulante.cvs).toHaveLength(1);
-      expect(received.postulante.cvs[0]).toMatchObject({
-        descripcion: 'CV de prueba',
-      });
-      // La ruta interna del PDF no viaja: se abre con un enlace firmado.
-      expect(received.postulante.cvs[0]).not.toHaveProperty('archivoUrl');
+      // Se postuló sin elegir PDF: la empresa no ve ninguno, y nunca la
+      // lista completa de PDF del postulante.
+      expect(received.cv).toBeNull();
+      expect(received.postulante).not.toHaveProperty('cvs');
 
       // De la cuenta del postulante solo viaja el email.
       expect(received.postulante).not.toHaveProperty('usuarioId');

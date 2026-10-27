@@ -134,6 +134,12 @@ beforeAll(async () => {
     },
   });
 
+  // La víctima mandó ese PDF en su postulación.
+  await prisma.postulacion.update({
+    where: { id: postulacion.id },
+    data: { cvId: cv.id },
+  });
+
   // Y una postulación legítima en una oferta del socio atacante: la puerta
   // por la que va a intentar colar el CV de la víctima.
   const ofertaPropia = await prisma.oferta.create({
