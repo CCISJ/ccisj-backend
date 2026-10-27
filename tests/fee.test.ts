@@ -12,6 +12,7 @@ import {
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
 import {
+    addFeeAdjustment,
   cancelMemberFeePayment,
   generateMonthlyFee,
   generateMonthlyFees,
@@ -576,6 +577,103 @@ describe('Cuotas', () => {
       });
 
       expect(payments).toBe(0);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: {
+          socioId: member.socioId,
+        },
+      });
+
+      await deleteUsers([member.userId]);
+    }
+  });
+
+  it('impide registrar dos pagos simultáneos sobre la misma deuda', async () => {
+    const member = await createMember();
+
+    try {
+      const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+      const paymentData = {
+        socioId: member.socioId,
+        registradoPorId: member.userId,
+        importe: 760,
+        fechaPago: new Date('2026-07-15'),
+        medioPago: 'EFECTIVO',
+      };
+
+      // Las dos solicitudes intentan pagar la misma deuda.
+      const results = await Promise.allSettled([
+        registerFeePayment(paymentData),
+        registerFeePayment(paymentData),
+      ]);
+
+      const successful = results.filter(
+        (result) => result.status === 'fulfilled',
+      );
+
+      const failed = results.filter((result) => result.status === 'rejected');
+
+
+      expect(successful).toHaveLength(1);
+      expect(failed).toHaveLength(1);
+
+      // El segundo pago debe rechazarse porque la deuda ya fue cubierta.
+      const rejection = failed[0];
+
+      expect(rejection?.status).toBe('rejected');
+
+      const reason =
+        rejection?.status === 'rejected' ? rejection.reason : undefined;
+
+      expect(reason).toBeInstanceOf(Error);
+      expect((reason as Error).message).toBe(
+        'El socio no tiene cuotas pendientes',
+      );
+
+      // Solo debe existir un pago válido.
+      const payments = await prisma.pagoCuota.findMany({
+        where: {
+          socioId: member.socioId,
+        },
+        include: {
+          detalles: true,
+          movimientoCaja: true,
+        },
+      });
+
+      expect(payments).toHaveLength(1);
+      expect(Number(payments[0].importe)).toBe(760);
+      expect(payments[0].anulado).toBe(false);
+
+      // El importe aplicado no puede superar la deuda.
+      expect(payments[0].detalles).toHaveLength(1);
+      expect(payments[0].detalles[0].cuotaId).toBe(fee.id);
+      expect(Number(payments[0].detalles[0].importeAplicado)).toBe(760);
+
+      // Debe existir un único movimiento de caja asociado.
+      expect(payments[0].movimientoCaja).not.toBeNull();
+      expect(Number(payments[0].movimientoCaja!.importe)).toBe(760);
+      expect(payments[0].movimientoCaja!.anulado).toBe(false);
+
+      const cashMovements = await prisma.movimientoCaja.count({
+        where: {
+          pagoCuotaId: payments[0].id,
+        },
+      });
+
+      expect(cashMovements).toBe(1);
+
+      // La cuota debe quedar completamente pagada.
+      const updatedFee = await prisma.cuota.findUnique({
+        where: {
+          id: fee.id,
+        },
+      });
+
+      expect(updatedFee?.estado).toBe('PAGADA');
     } finally {
       await deleteMemberPayments([member.socioId]);
 
@@ -1391,6 +1489,123 @@ it('al eliminar un ajuste conserva las cuotas pagadas y recalcula las pendientes
       where: {
         socioId: member.socioId,
       },
+    });
+
+    await deleteUsers([member.userId]);
+  }
+});
+
+it('revierte la creación del ajuste si el recálculo falla', async () => {
+  const member = await createMember();
+
+  try {
+    const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+    const adjustmentsBefore = await prisma.ajusteCuotaSocio.count({
+      where: { socioId: member.socioId },
+    });
+
+    await expect(
+      addFeeAdjustment({
+        socioId: member.socioId,
+        tipo: 'DESCUENTO',
+        importe: 1000,
+        fechaDesde: new Date(Date.UTC(2026, 6, 1)),
+        fechaHasta: new Date(Date.UTC(2026, 6, 31)),
+        motivo: 'Prueba de rollback',
+      }),
+    ).rejects.toThrow(
+      'Los ajustes no pueden generar una cuota con importe negativo',
+    );
+
+    const adjustmentsAfter = await prisma.ajusteCuotaSocio.count({
+      where: { socioId: member.socioId },
+    });
+
+    const updatedFee = await prisma.cuota.findUniqueOrThrow({
+      where: { id: fee.id },
+    });
+
+    expect(adjustmentsAfter).toBe(adjustmentsBefore);
+    expect(Number(updatedFee.importeTotal)).toBe(760);
+    expect(Number(updatedFee.importeAjustes)).toBe(0);
+    expect(updatedFee.estado).toBe('PENDIENTE');
+  } finally {
+    await deleteMemberPayments([member.socioId]);
+    await prisma.ajusteCuotaSocio.deleteMany({
+      where: { socioId: member.socioId },
+    });
+    await prisma.cuota.deleteMany({
+      where: { socioId: member.socioId },
+    });
+    await deleteUsers([member.userId]);
+  }
+});
+
+it('revierte la eliminación de un ajuste si el recálculo falla', async () => {
+  const member = await createMember();
+
+  try {
+    // La cuota base es de $760.
+    // Creamos dos ajustes: +$500 y -$1000.
+    // El total resultante es $260.
+    const additional = await prisma.ajusteCuotaSocio.create({
+      data: {
+        socioId: member.socioId,
+        tipo: 'ADICIONAL',
+        importe: 500,
+        fechaDesde: new Date(Date.UTC(2026, 6, 1)),
+        fechaHasta: new Date(Date.UTC(2026, 6, 31)),
+        motivo: 'Adicional de prueba',
+      },
+    });
+
+    await prisma.ajusteCuotaSocio.create({
+      data: {
+        socioId: member.socioId,
+        tipo: 'DESCUENTO',
+        importe: 1000,
+        fechaDesde: new Date(Date.UTC(2026, 6, 1)),
+        fechaHasta: new Date(Date.UTC(2026, 6, 31)),
+        motivo: 'Descuento de prueba',
+      },
+    });
+
+    const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+    expect(Number(fee.importeTotal)).toBe(260);
+
+    // Al eliminar el adicional, el total sería:
+    // 760 - 1000 = -240. La operación debe fallar.
+    await expect(removeFeeAdjustment(additional.id)).rejects.toThrow(
+      'Los ajustes no pueden generar una cuota con importe negativo',
+    );
+
+    // El ajuste debe seguir activo porque la transacción hizo rollback.
+    const updatedAdjustment =
+      await prisma.ajusteCuotaSocio.findUniqueOrThrow({
+        where: { id: additional.id },
+      });
+
+    expect(updatedAdjustment.activo).toBe(true);
+
+    // La cuota tampoco debe haber cambiado.
+    const updatedFee = await prisma.cuota.findUniqueOrThrow({
+      where: { id: fee.id },
+    });
+
+    expect(Number(updatedFee.importeTotal)).toBe(260);
+    expect(Number(updatedFee.importeAjustes)).toBe(-500);
+    expect(updatedFee.estado).toBe('PENDIENTE');
+  } finally {
+    await deleteMemberPayments([member.socioId]);
+
+    await prisma.ajusteCuotaSocio.deleteMany({
+      where: { socioId: member.socioId },
+    });
+
+    await prisma.cuota.deleteMany({
+      where: { socioId: member.socioId },
     });
 
     await deleteUsers([member.userId]);

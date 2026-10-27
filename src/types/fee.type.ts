@@ -49,7 +49,6 @@ export type CreateFeePaymentData = {
    */
   comprobanteUrl?: string;
   observaciones?: string;
-  detalles: PaymentDetailData[];
 };
 
 export type AddFeeAdjustmentData = {

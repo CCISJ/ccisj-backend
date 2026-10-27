@@ -5,6 +5,10 @@ import {
   CreateFeePaymentData,
 } from '@/types/fee.type';
 
+type TransactionClient = Parameters<
+  Parameters<typeof prisma.$transaction>[0]
+>[0];
+
 export async function findCurrentFeeConfiguration() {
   return prisma.configuracionCuota.findFirst({
     where: {
@@ -178,6 +182,15 @@ const PAYMENT_CASH_MOVEMENT = {
   },
 } as const;
 
+async function lockMemberForPayment(tx: TransactionClient, socioId: number) {
+  await tx.$queryRaw`
+    SELECT id
+    FROM "Socio"
+    WHERE id = ${socioId}
+    FOR UPDATE
+  `;
+}
+
 export async function createFeePayment(data: CreateFeePaymentData) {
   const {
     socioId,
@@ -187,10 +200,89 @@ export async function createFeePayment(data: CreateFeePaymentData) {
     medioPago,
     comprobanteUrl,
     observaciones,
-    detalles,
   } = data;
 
   return prisma.$transaction(async (tx) => {
+    // Bloqueamos al socio para evitar pagos concurrentes.
+    await lockMemberForPayment(tx, socioId);
+
+    // Consultamos las cuotas dentro de la transacción.
+    const fees = await tx.cuota.findMany({
+      where: {
+        socioId,
+        estado: {
+          not: 'ANULADA',
+        },
+      },
+      include: {
+        pagos: {
+          where: {
+            pago: {
+              anulado: false,
+            },
+          },
+        },
+      },
+      orderBy: {
+        periodoDesde: 'asc',
+      },
+    });
+
+    // Calculamos cuánto queda pendiente por cuota.
+    const pendingFees = fees
+      .map((fee) => {
+        const paid = fee.pagos.reduce(
+          (total, payment) => total + Number(payment.importeAplicado),
+          0,
+        );
+
+        return {
+          fee,
+          balance: Number(fee.importeTotal) - paid,
+        };
+      })
+      .filter(({ balance }) => balance > 0);
+
+    if (pendingFees.length === 0) {
+      throw new Error('El socio no tiene cuotas pendientes');
+    }
+
+    const totalDebt = pendingFees.reduce(
+      (total, { balance }) => total + balance,
+      0,
+    );
+
+    if (importe > totalDebt) {
+      throw new Error(
+        'El importe del pago no puede superar la deuda pendiente',
+      );
+    }
+
+    // Distribuimos el pago entre las cuotas más antiguas.
+    let remaining = importe;
+
+    const detalles: {
+      cuotaId: number;
+      importeAplicado: number;
+      estadoResultante: 'PARCIAL' | 'PAGADA';
+    }[] = [];
+
+    for (const { fee, balance } of pendingFees) {
+      if (remaining <= 0) break;
+
+      const applied = Math.min(remaining, balance);
+      const newBalance = balance - applied;
+
+      detalles.push({
+        cuotaId: fee.id,
+        importeAplicado: applied,
+        estadoResultante: newBalance <= 0 ? 'PAGADA' : 'PARCIAL',
+      });
+
+      remaining -= applied;
+    }
+
+    // Creamos el pago.
     const payment = await tx.pagoCuota.create({
       data: {
         socioId,
@@ -202,6 +294,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
       },
     });
 
+    // Buscamos la categoría de caja correspondiente.
     const cashCategory = await tx.categoriaCaja.findUnique({
       where: {
         nombre_tipo: {
@@ -215,6 +308,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
       throw new Error('No existe la categoría de caja para cuotas de socios');
     }
 
+    // Registramos la distribución del pago.
     await tx.pagoCuotaDetalle.createMany({
       data: detalles.map((detail) => ({
         pagoId: payment.id,
@@ -223,6 +317,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
       })),
     });
 
+    // Actualizamos los estados de las cuotas afectadas.
     for (const detail of detalles) {
       await tx.cuota.update({
         where: {
@@ -234,6 +329,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
       });
     }
 
+    // Registramos el ingreso en caja.
     await tx.movimientoCaja.create({
       data: {
         tipo: 'INGRESO',
@@ -248,6 +344,7 @@ export async function createFeePayment(data: CreateFeePaymentData) {
       },
     });
 
+    // Devolvemos el pago con sus detalles y comprobante.
     return tx.pagoCuota.findUnique({
       where: {
         id: payment.id,
@@ -265,7 +362,21 @@ export async function cancelFeePayment(
   anuladoPorId: number,
   motivoAnulacion: string,
 ) {
+  // Solo obtenemos el socio al que pertenece el pago.
+  const paymentOwner = await prisma.pagoCuota.findUnique({
+    where: { id: pagoId },
+    select: { socioId: true },
+  });
+
+  if (!paymentOwner) {
+    throw new Error('El pago no existe');
+  }
+
   return prisma.$transaction(async (tx) => {
+    // Mismo bloqueo utilizado al registrar pagos.
+    await lockMemberForPayment(tx, paymentOwner.socioId);
+
+    // Consultamos nuevamente el pago dentro de la transacción.
     const payment = await tx.pagoCuota.findUnique({
       where: {
         id: pagoId,
@@ -284,11 +395,13 @@ export async function cancelFeePayment(
       throw new Error('El pago ya está anulado');
     }
 
-    const affectedFeeIds = payment.detalles.map((detail) => detail.cuotaId);
+    const affectedFeeIds = [
+      ...new Set(payment.detalles.map((detail) => detail.cuotaId)),
+    ];
 
     const cancellationDate = new Date();
 
-    // Anulamos el pago, pero conservamos todo su historial.
+    // Anulamos el pago conservando su historial.
     await tx.pagoCuota.update({
       where: {
         id: pagoId,
@@ -301,8 +414,7 @@ export async function cancelFeePayment(
       },
     });
 
-    // El ingreso de caja generado por este pago también deja de ser válido.
-    // No se elimina: queda registrado como anulado.
+    // Anulamos también el movimiento de caja asociado.
     if (payment.movimientoCaja) {
       await tx.movimientoCaja.update({
         where: {
@@ -317,7 +429,7 @@ export async function cancelFeePayment(
       });
     }
 
-    // Recalculamos el estado de todas las cuotas afectadas.
+    // Recalculamos las cuotas afectadas usando los pagos no anulados.
     for (const cuotaId of affectedFeeIds) {
       const fee = await tx.cuota.findUnique({
         where: {
@@ -491,5 +603,162 @@ export async function deactivateFeeAdjustment(id: number) {
     data: {
       activo: false,
     },
+  });
+}
+
+export async function lockMemberFees(
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0],
+  socioId: number,
+) {
+  await tx.$queryRaw`
+    SELECT id
+    FROM socio
+    WHERE id = ${socioId}
+    FOR UPDATE
+  `;
+}
+
+async function recalculateAdjustedFees(
+  tx: TransactionClient,
+  socioId: number,
+  fechaDesde: Date,
+  fechaHasta: Date | null,
+) {
+  const fees = await tx.cuota.findMany({
+    where: {
+      socioId,
+      estado: { in: ['PENDIENTE', 'PARCIAL'] },
+      periodoHasta: { gte: fechaDesde },
+      ...(fechaHasta ? { periodoDesde: { lte: fechaHasta } } : {}),
+    },
+    include: {
+      pagos: {
+        where: { pago: { anulado: false } },
+      },
+    },
+  });
+
+  for (const fee of fees) {
+    const adjustments = await tx.ajusteCuotaSocio.findMany({
+      where: {
+        socioId,
+        activo: true,
+        fechaDesde: { lte: fee.periodoHasta },
+        OR: [{ fechaHasta: null }, { fechaHasta: { gte: fee.periodoDesde } }],
+      },
+    });
+
+    const importeAjustes = adjustments.reduce(
+      (total, adjustment) =>
+        total +
+        (adjustment.tipo === 'ADICIONAL' ? 1 : -1) * Number(adjustment.importe),
+      0,
+    );
+
+    const importeTotal = Number(fee.importeBase) + importeAjustes;
+
+    if (importeTotal < 0) {
+      throw new Error(
+        'Los ajustes no pueden generar una cuota con importe negativo',
+      );
+    }
+
+    const totalPaid = fee.pagos.reduce(
+      (total, payment) => total + Number(payment.importeAplicado),
+      0,
+    );
+
+    if (importeTotal < totalPaid) {
+      throw new Error(
+        'Los ajustes no pueden dejar una cuota por debajo del importe ya pagado',
+      );
+    }
+
+    await tx.cuota.update({
+      where: { id: fee.id },
+      data: {
+        importeAjustes,
+        importeTotal,
+        estado:
+          totalPaid === 0
+            ? 'PENDIENTE'
+            : totalPaid >= importeTotal
+              ? 'PAGADA'
+              : 'PARCIAL',
+      },
+    });
+  }
+}
+
+export async function createFeeAdjustmentWithRecalculation(
+  data: CreateFeeAdjustmentData,
+) {
+  return prisma.$transaction(async (tx) => {
+    await lockMemberForPayment(tx, data.socioId);
+
+    const adjustment = await tx.ajusteCuotaSocio.create({ data });
+
+    await recalculateAdjustedFees(
+      tx,
+      data.socioId,
+      data.fechaDesde,
+      data.fechaHasta ?? null,
+    );
+
+    return adjustment;
+  });
+}
+
+export async function deactivateFeeAdjustmentWithRecalculation(
+  adjustmentId: number,
+) {
+  return prisma.$transaction(async (tx) => {
+    const adjustmentInfo = await tx.ajusteCuotaSocio.findUnique({
+      where: { id: adjustmentId },
+      select: { socioId: true },
+    });
+
+    if (!adjustmentInfo) {
+      throw new Error('El ajuste no existe');
+    }
+
+    await lockMemberForPayment(tx, adjustmentInfo.socioId);
+
+    const adjustment = await tx.ajusteCuotaSocio.findUnique({
+      where: { id: adjustmentId },
+    });
+
+    if (!adjustment || !adjustment.activo) {
+      throw new Error('El ajuste ya está inactivo');
+    }
+
+    const paidFees = await tx.cuota.count({
+      where: {
+        socioId: adjustment.socioId,
+        estado: 'PAGADA',
+        periodoHasta: { gte: adjustment.fechaDesde },
+        ...(adjustment.fechaHasta
+          ? { periodoDesde: { lte: adjustment.fechaHasta } }
+          : {}),
+      },
+    });
+
+    await tx.ajusteCuotaSocio.update({
+      where: { id: adjustmentId },
+      data: { activo: false },
+    });
+
+    await recalculateAdjustedFees(
+      tx,
+      adjustment.socioId,
+      adjustment.fechaDesde,
+      adjustment.fechaHasta,
+    );
+
+    return {
+      id: adjustmentId,
+      activo: false,
+      cuotasPagadasNoModificadas: paidFees,
+    };
   });
 }
