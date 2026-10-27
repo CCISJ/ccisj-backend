@@ -1,5 +1,6 @@
 import { prisma } from '@/config/prisma';
 import { Prisma } from '@/generated/prisma/client';
+import { emergencyNotificationTemplate } from '@/services/email/email.templates';
 import type { TipoNotificacion } from '@/types/notification.type';
 
 type CreateNotificationData = {
@@ -22,13 +23,6 @@ export async function create(data: CreateNotificationData) {
     });
 
     if (data.usuarioIds.length > 0) {
-      // Los destinatarios los eligió el service con una consulta anterior, y
-      // entre esa consulta y este insert alguno puede haberse borrado: la
-      // clave foránea fallaba y la notificación no se creaba para nadie.
-      // Se vuelven a leer acá con FOR KEY SHARE: los que ya no existen quedan
-      // afuera, y un borrado que esté en curso espera a que esta transacción
-      // termine (y al confirmarse se lleva sus filas por el `onDelete:
-      // Cascade`).
       const usuarios = await tx.$queryRaw<{ id: number }[]>`
         SELECT id FROM usuario
         WHERE id IN (${Prisma.join(data.usuarioIds)})
@@ -42,6 +36,34 @@ export async function create(data: CreateNotificationData) {
         })),
         skipDuplicates: true,
       });
+
+      if (data.tipo === 'EMERGENTE' && usuarios.length > 0) {
+        const destinatarios = await tx.usuario.findMany({
+          where: {
+            id: { in: usuarios.map((usuario) => usuario.id) },
+          },
+          select: {
+            id: true,
+            email: true,
+          },
+        });
+
+        const template = emergencyNotificationTemplate(
+          data.titulo,
+          data.mensaje,
+        );
+
+        await tx.envioEmail.createMany({
+          data: destinatarios.map((usuario) => ({
+            notificacionId: notification.id,
+            usuarioId: usuario.id,
+            destinatario: usuario.email,
+            asunto: template.subject,
+            contenidoHtml: template.html,
+          })),
+          skipDuplicates: true,
+        });
+      }
     }
 
     return tx.notificacion.findUnique({

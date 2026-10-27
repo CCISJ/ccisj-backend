@@ -51,6 +51,7 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  EnvioEmail: 'EnvioEmail',
   Usuario: 'Usuario',
   Notificacion: 'Notificacion',
   NotificacionUsuario: 'NotificacionUsuario',
@@ -88,6 +89,26 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const EnvioEmailScalarFieldEnum = {
+  id: 'id',
+  destinatario: 'destinatario',
+  asunto: 'asunto',
+  contenidoHtml: 'contenidoHtml',
+  estado: 'estado',
+  intentos: 'intentos',
+  ultimoError: 'ultimoError',
+  resendId: 'resendId',
+  fechaCreacion: 'fechaCreacion',
+  fechaEnvio: 'fechaEnvio',
+  proximoIntento: 'proximoIntento',
+  fechaInicioEnvio: 'fechaInicioEnvio',
+  notificacionId: 'notificacionId',
+  usuarioId: 'usuarioId'
+} as const
+
+export type EnvioEmailScalarFieldEnum = (typeof EnvioEmailScalarFieldEnum)[keyof typeof EnvioEmailScalarFieldEnum]
 
 
 export const UsuarioScalarFieldEnum = {

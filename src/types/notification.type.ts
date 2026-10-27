@@ -1,6 +1,12 @@
 export type TipoNotificacion = 'NORMAL' | 'EMERGENTE';
 
-export type DestinatarioTipo = 'TODOS' | 'SOCIOS' | 'POSTULANTES' | 'USUARIOS';
+export type DestinatarioTipo =
+  | 'TODOS'
+  | 'SOCIOS'
+  | 'POSTULANTES'
+  | 'USUARIOS'
+  | 'SOCIOS_DIRECTIVOS'
+  | 'SOCIOS_COMUNES';
 
 export type CreateNotificationData = {
   titulo: string;

@@ -93,3 +93,13 @@ export const TipoMovimientoCaja = {
 } as const
 
 export type TipoMovimientoCaja = (typeof TipoMovimientoCaja)[keyof typeof TipoMovimientoCaja]
+
+
+export const EstadoEnvioEmail = {
+  PENDIENTE: 'PENDIENTE',
+  ENVIANDO: 'ENVIANDO',
+  ENVIADO: 'ENVIADO',
+  FALLIDO: 'FALLIDO'
+} as const
+
+export type EstadoEnvioEmail = (typeof EstadoEnvioEmail)[keyof typeof EstadoEnvioEmail]

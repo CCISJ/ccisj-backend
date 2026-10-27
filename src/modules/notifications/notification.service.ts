@@ -1,19 +1,11 @@
-import { TipoNotificacion } from '@/types/notification.type';
+import {
+  CreateNotificationInput,
+  TipoNotificacion,
+} from '@/types/notification.type';
 import { HttpError } from '@/utils/http-error';
 
 import * as userRepository from '../users/user.repository';
 import * as notificationRepository from './notification.repository';
-
-type DestinatarioTipo = 'TODOS' | 'SOCIOS' | 'POSTULANTES' | 'USUARIOS';
-
-type CreateNotificationInput = {
-  titulo: string;
-  mensaje: string;
-  tipo: TipoNotificacion;
-  creadoPorId: number;
-  destinatarioTipo: DestinatarioTipo;
-  usuarioIds?: number[];
-};
 
 const NOTIFICATION_TYPES: TipoNotificacion[] = ['NORMAL', 'EMERGENTE'];
 
@@ -54,6 +46,14 @@ export async function create(data: CreateNotificationInput) {
 
     case 'SOCIOS':
       usuarios = await userRepository.findActiveUsersByType('SOCIO');
+      break;
+
+    case 'SOCIOS_DIRECTIVOS':
+      usuarios = await userRepository.findActiveMembersByCategory('DIRECTIVO');
+      break;
+
+    case 'SOCIOS_COMUNES':
+      usuarios = await userRepository.findActiveMembersByCategory('COMUN');
       break;
 
     case 'POSTULANTES':

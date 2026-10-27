@@ -670,10 +670,6 @@ export type EnumTipoSocioFieldUpdateOperationsInput = {
   set?: $Enums.TipoSocio
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type SocioCreateNestedOneWithoutOfertasInput = {
   create?: Prisma.XOR<Prisma.SocioCreateWithoutOfertasInput, Prisma.SocioUncheckedCreateWithoutOfertasInput>
   connectOrCreate?: Prisma.SocioCreateOrConnectWithoutOfertasInput

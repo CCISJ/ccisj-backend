@@ -174,6 +174,23 @@ export async function findActiveUsersByType(tipo: TipoUsuario) {
   });
 }
 
+export async function findActiveMembersByCategory(tipo: 'COMUN' | 'DIRECTIVO') {
+  return prisma.usuario.findMany({
+    where: {
+      activo: true,
+      tipo: 'SOCIO',
+      socio: {
+        is: {
+          tipo,
+        },
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
 export async function findUsersByIds(usuarioIds: number[]) {
   return prisma.usuario.findMany({
     where: {
