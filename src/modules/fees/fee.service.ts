@@ -508,6 +508,22 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     throw new Error('El comprobante es obligatorio para pagos con tarjeta');
   }
 
+  // Los mismos largos que la base (`VarChar(50)` y `VarChar(500)`), como en
+  // los movimientos de caja. Sin esto llegaban a la base, que los rechazaba
+  // con el 400 genérico "Uno de los datos es demasiado largo". Van antes de
+  // subir el comprobante: un pago inválido no deja archivos en Storage.
+  if (medioPago.trim().length > 50) {
+    throw new Error('El medio de pago no puede superar los 50 caracteres');
+  }
+
+  if (observaciones !== undefined && typeof observaciones !== 'string') {
+    throw new Error('Las observaciones no son válidas');
+  }
+
+  if (observaciones && observaciones.trim().length > 500) {
+    throw new Error('Las observaciones no pueden superar los 500 caracteres');
+  }
+
   // El comprobante se sube recién acá, con todas las validaciones pasadas, y
   // antes de grabar: así el pago y su movimiento de caja se crean ya con él
   // en la misma transacción, y un pago con tarjeta nunca queda sin
