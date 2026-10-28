@@ -510,6 +510,19 @@ describe('Movimientos de caja', () => {
     }
   });
 
+  it('anular un movimiento que no existe responde 404', async () => {
+    const admin = await createAdmin();
+    createdUserIds.push(admin.userId);
+
+    const response = await request(app)
+      .patch('/caja/movimientos/2000000000/anular')
+      .set('Cookie', admin.cookie)
+      .send({ motivo: 'No existe' });
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('El movimiento no existe');
+  });
+
   it('solo un administrador puede anular movimientos mediante la API', async () => {
     const admin = await createAdmin();
     const member = await createMember();
