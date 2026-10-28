@@ -53,6 +53,27 @@ export function markAsSent(id: number, resendId: string | null) {
   });
 }
 
+/**
+ * Los que el worker no manda por estar en modo de prueba: quedan FALLIDO con
+ * el motivo, para que nadie los mande después. Solo toca los que siguen
+ * PENDIENTE (otro proceso pudo haber tomado alguno). Devuelve cuántos marcó.
+ */
+export async function markAsSkipped(ids: number[]) {
+  if (ids.length === 0) return 0;
+
+  const result = await prisma.envioEmail.updateMany({
+    where: { id: { in: ids }, estado: 'PENDIENTE' },
+    data: {
+      estado: 'FALLIDO',
+      ultimoError:
+        'No se envió: el worker estaba en modo de prueba (EMAIL_TEST_RECIPIENT).',
+      proximoIntento: null,
+    },
+  });
+
+  return result.count;
+}
+
 export async function markAsFailed(
   id: number,
   error: string,

@@ -13,6 +13,18 @@ export async function processPendingEmails(limit = 50) {
       )
     : pendingEmails;
 
+  // En modo de prueba, los que no son para la dirección de prueba no se
+  // mandan nunca. Si quedaran pendientes, el primer worker que arrancara sin
+  // EMAIL_TEST_RECIPIENT (otro integrante o producción sobre la misma base)
+  // los mandaría todos juntos a destinatarios reales.
+  const omitidos = testRecipient
+    ? await emailRepository.markAsSkipped(
+        pendingEmails
+          .filter((email) => !emailsToProcess.includes(email))
+          .map((email) => email.id),
+      )
+    : 0;
+
   let enviados = 0;
   let fallidos = 0;
 
@@ -51,5 +63,6 @@ export async function processPendingEmails(limit = 50) {
     procesados: enviados + fallidos,
     enviados,
     fallidos,
+    omitidos,
   };
 }

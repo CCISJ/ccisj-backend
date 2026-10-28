@@ -29,7 +29,7 @@ async function main() {
 
       const resultado = await processPendingEmails(20);
 
-      if (resultado.procesados > 0) {
+      if (resultado.procesados > 0 || resultado.omitidos > 0) {
         console.log('Emails procesados:', resultado);
       }
     } catch (error) {
