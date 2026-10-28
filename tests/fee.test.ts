@@ -12,7 +12,7 @@ import {
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
 import {
-    addFeeAdjustment,
+  addFeeAdjustment,
   cancelMemberFeePayment,
   generateMonthlyFee,
   generateMonthlyFees,
@@ -615,7 +615,6 @@ describe('Cuotas', () => {
       );
 
       const failed = results.filter((result) => result.status === 'rejected');
-
 
       expect(successful).toHaveLength(1);
       expect(failed).toHaveLength(1);
@@ -1582,10 +1581,9 @@ it('revierte la eliminación de un ajuste si el recálculo falla', async () => {
     );
 
     // El ajuste debe seguir activo porque la transacción hizo rollback.
-    const updatedAdjustment =
-      await prisma.ajusteCuotaSocio.findUniqueOrThrow({
-        where: { id: additional.id },
-      });
+    const updatedAdjustment = await prisma.ajusteCuotaSocio.findUniqueOrThrow({
+      where: { id: additional.id },
+    });
 
     expect(updatedAdjustment.activo).toBe(true);
 
