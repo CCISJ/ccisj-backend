@@ -14,6 +14,7 @@ import app from '../src/app';
 import { prisma } from '../src/config/prisma';
 import * as notificationRepository from '../src/modules/notifications/notification.repository';
 import { processPendingEmails } from '../src/services/email/email.processor';
+import * as emailRepository from '../src/services/email/email.repository';
 import {
   createAdmin,
   createApplicant,
@@ -630,6 +631,136 @@ describe('Notificaciones', () => {
       expect(send).not.toHaveBeenCalledWith(
         expect.objectContaining({ to: paraOtro!.destinatario }),
       );
+    });
+  });
+
+  // El worker reintenta los correos que fallan, con una espera que crece, y
+  // recupera los que quedaron a medio mandar. Si esto falla, un correo puede
+  // salir dos veces o reintentarse para siempre.
+  describe('reintentos de los correos', () => {
+    const creados: number[] = [];
+
+    beforeEach(() => {
+      // Solo se procesan los correos de este bloque: el resto de la base
+      // (otros archivos de test) no se toca.
+      process.env.EMAIL_TEST_RECIPIENT = postulante.email;
+    });
+
+    afterEach(() => {
+      delete process.env.EMAIL_TEST_RECIPIENT;
+      send.mockReset();
+      send.mockResolvedValue({ id: 'resend-falso' });
+    });
+
+    afterAll(async () => {
+      await prisma.envioEmail.deleteMany({ where: { id: { in: creados } } });
+    });
+
+    async function queue(
+      data: Partial<
+        Parameters<typeof prisma.envioEmail.create>[0]['data']
+      > = {},
+    ) {
+      const email = await prisma.envioEmail.create({
+        data: {
+          destinatario: postulante.email,
+          asunto: 'Aviso',
+          contenidoHtml: '<p>Aviso</p>',
+          usuarioId: postulante.userId,
+          ...data,
+        },
+      });
+      creados.push(email.id);
+
+      return email;
+    }
+
+    function reload(id: number) {
+      return prisma.envioEmail.findUniqueOrThrow({ where: { id } });
+    }
+
+    it('si Resend falla, vuelve a pendiente con una espera y el error anotado', async () => {
+      const email = await queue();
+      send.mockRejectedValueOnce(new Error('Resend caído'));
+
+      const antes = Date.now();
+      await processPendingEmails(500);
+
+      const despues = await reload(email.id);
+
+      expect(despues.estado).toBe('PENDIENTE');
+      expect(despues.intentos).toBe(1);
+      expect(despues.ultimoError).toBe('Resend caído');
+      // Primer reintento: 2 minutos.
+      expect(despues.proximoIntento!.getTime()).toBeGreaterThanOrEqual(
+        antes + 2 * 60_000,
+      );
+
+      // Mientras no llega la hora, la próxima corrida no lo vuelve a mandar.
+      send.mockClear();
+      await processPendingEmails(500);
+
+      expect(send).not.toHaveBeenCalled();
+      expect((await reload(email.id)).intentos).toBe(1);
+    });
+
+    it('al quinto intento fallido deja de reintentar', async () => {
+      const email = await queue({ intentos: 4 });
+      send.mockRejectedValueOnce(new Error('Resend caído'));
+
+      await processPendingEmails(500);
+
+      const despues = await reload(email.id);
+
+      expect(despues.estado).toBe('FALLIDO');
+      expect(despues.intentos).toBe(5);
+      expect(despues.proximoIntento).toBeNull();
+    });
+
+    it('dos workers a la vez no mandan dos veces el mismo correo', async () => {
+      const email = await queue();
+
+      await Promise.all([processPendingEmails(500), processPendingEmails(500)]);
+
+      const envios = send.mock.calls.filter(
+        ([options]) => options.to === postulante.email,
+      );
+
+      expect(envios).toHaveLength(1);
+      expect((await reload(email.id)).estado).toBe('ENVIADO');
+    });
+
+    it('un correo trabado a medio mandar se recupera, salvo que ya no le queden intentos', async () => {
+      // Un worker que se cortó mientras mandaba deja el correo en ENVIANDO.
+      const haceUnaHora = new Date(Date.now() - 60 * 60_000);
+      const recuperable = await queue({
+        estado: 'ENVIANDO',
+        intentos: 2,
+        fechaInicioEnvio: haceUnaHora,
+      });
+      const agotado = await queue({
+        estado: 'ENVIANDO',
+        intentos: 5,
+        fechaInicioEnvio: haceUnaHora,
+      });
+      const reciente = await queue({
+        estado: 'ENVIANDO',
+        intentos: 1,
+        fechaInicioEnvio: new Date(),
+      });
+
+      await emailRepository.markStuckEmailsForReview();
+      await emailRepository.recoverStuckEmails();
+
+      expect((await reload(recuperable.id)).estado).toBe('PENDIENTE');
+
+      // Sin intentos, no se reintenta: no se sabe si llegó a salir.
+      const revisar = await reload(agotado.id);
+      expect(revisar.estado).toBe('FALLIDO');
+      expect(revisar.ultimoError).toContain('revisión manual');
+
+      // Uno que empezó recién puede estar mandándose ahora mismo.
+      expect((await reload(reciente.id)).estado).toBe('ENVIANDO');
     });
   });
 });
