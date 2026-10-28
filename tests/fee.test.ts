@@ -403,6 +403,51 @@ describe('Cuotas', () => {
     }
   });
 
+  it.each([
+    [
+      { medioPago: 'E'.repeat(51) },
+      'El medio de pago no puede superar los 50 caracteres',
+    ],
+    [
+      { observaciones: 'x'.repeat(501) },
+      'Las observaciones no pueden superar los 500 caracteres',
+    ],
+    [{ observaciones: 123 }, 'Las observaciones no son válidas'],
+  ])('rechaza un pago con datos de más: %j', async (extra, message) => {
+    const member = await createMember();
+
+    try {
+      await generateMonthlyFee(member.socioId, 2026, 7);
+
+      await expect(
+        registerFeePayment({
+          socioId: member.socioId,
+          registradoPorId: member.userId,
+          importe: 300,
+          fechaPago: new Date('2026-07-15'),
+          medioPago: 'EFECTIVO',
+          ...(extra as object),
+        }),
+      ).rejects.toThrow(message);
+
+      const payments = await prisma.pagoCuota.count({
+        where: { socioId: member.socioId },
+      });
+
+      expect(payments).toBe(0);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: {
+          socioId: member.socioId,
+        },
+      });
+
+      await deleteUsers([member.userId]);
+    }
+  });
+
   it('permite realizar un pago parcial', async () => {
     const member = await createMember();
 
@@ -1991,21 +2036,21 @@ describe('Comprobante del pago de cuota', () => {
   });
 
   it('borra el comprobante subido si después falla la grabación del pago', async () => {
-    // Para que falle la transacción con el archivo ya subido se usa un límite
-    // de la base: `observaciones` es VARCHAR(500) y el service no lo valida,
-    // así que 501 caracteres hacen fallar el insert del pago (Prisma P2000,
-    // que `sendError` responde como 400).
-    const member = await memberWithFee();
+    // Para que falle la transacción con el archivo ya subido: un socio sin
+    // cuotas. Esa regla se comprueba dentro de la transacción, después de
+    // subir el comprobante. (Antes se usaban 501 caracteres de observaciones,
+    // que fallaban en la base; ahora el service los rechaza antes de subir.)
+    const member = await createMember();
+    members.push(member);
 
-    const response = await pay(
-      member.socioId,
-      { ...cardPayment, observaciones: 'x'.repeat(501) },
-      { content: PDF, ...pdf },
-    );
+    const response = await pay(member.socioId, cardPayment, {
+      content: PDF,
+      ...pdf,
+    });
 
     expect(response.status).toBe(400);
     expect(response.body).toEqual({
-      message: 'Uno de los datos es demasiado largo',
+      message: 'El socio no tiene cuotas pendientes',
     });
     expect(storageFalso.files.size).toBe(0);
     expect(await paymentsOf(member.socioId)).toHaveLength(0);
