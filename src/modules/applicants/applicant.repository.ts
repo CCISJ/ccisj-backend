@@ -1,6 +1,7 @@
 import { prisma } from '@/config/prisma';
 import type { Prisma } from '@/generated/prisma/client';
 import { CandidateSearchFilters } from '@/types/application.type';
+import { escapeLike } from '@/utils/like';
 
 export function findAll() {
   return prisma.postulante.findMany({
@@ -150,15 +151,19 @@ export async function searchCandidates(filters: CandidateSearchFilters) {
   const { search, categoriaId, conEstudios, conExperiencia, page, limit } =
     filters;
 
+  // Prisma arma `contains` con ILIKE sin escapar: sin esto, buscar `%` o `_`
+  // devolvía a todos (ver utils/like.ts).
+  const text = search ? escapeLike(search) : undefined;
+
   const where: Prisma.PostulanteWhereInput = {
     usuario: {
       activo: true,
     },
 
-    ...(search && {
+    ...(text && {
       OR: [
-        { nombre: { contains: search, mode: 'insensitive' as const } },
-        { apellido: { contains: search, mode: 'insensitive' as const } },
+        { nombre: { contains: text, mode: 'insensitive' as const } },
+        { apellido: { contains: text, mode: 'insensitive' as const } },
       ],
     }),
 
