@@ -1,4 +1,5 @@
 import type { TipoMovimientoCaja } from '@/generated/prisma/enums';
+import { HttpError } from '@/utils/http-error';
 
 import {
   createCashCategory,
@@ -53,8 +54,9 @@ export async function removeCashCategory(id: number) {
 
   const category = await findCashCategoryById(id);
 
+  // El id viene de la URL: que no exista es un 404, como en el resto de la API.
   if (!category) {
-    throw new Error('La categoría no existe');
+    throw new HttpError(404, 'La categoría no existe');
   }
 
   if (!category.activa) {

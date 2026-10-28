@@ -166,8 +166,10 @@ export async function cancelManualCashMovement(
 
   const movement = await findCashMovementById(id);
 
+  // El id viene de la URL: que no exista es un 404, como al subir o ver su
+  // comprobante.
   if (!movement) {
-    throw new Error('El movimiento no existe');
+    throw new HttpError(404, 'El movimiento no existe');
   }
 
   if (movement.anulado) {

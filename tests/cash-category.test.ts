@@ -162,6 +162,15 @@ describe('Categorías de Caja', () => {
     );
   });
 
+  it('eliminar una categoría que no existe responde 404', async () => {
+    const response = await request(app)
+      .delete('/caja/categorias/2000000000')
+      .set('Cookie', admin.cookie);
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe('La categoría no existe');
+  });
+
   it('SOCIO no puede administrar categorías de caja', async () => {
     const getResponse = await request(app)
       .get('/caja/categorias')
