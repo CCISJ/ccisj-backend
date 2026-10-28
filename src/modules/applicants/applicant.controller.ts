@@ -104,3 +104,56 @@ export async function remove(req: Request, res: Response) {
     });
   }
 }
+
+export async function searchCandidates(req: AuthRequest, res: Response) {
+  try {
+    const result = await applicantService.searchCandidates(req.query);
+
+    res.json(result);
+  } catch (error) {
+    sendError(res, error, {
+      status: 400,
+      message: 'Error al buscar candidatos',
+    });
+  }
+}
+
+export async function getCandidateById(req: AuthRequest, res: Response) {
+  try {
+    const id = parseId(req.params.id);
+
+    if (!id) return invalidId(res);
+
+    const candidate = await applicantService.getCandidateById(id);
+
+    res.json(candidate);
+  } catch (error) {
+    sendError(res, error, {
+      status: 404,
+      message: 'Error al obtener el candidato',
+    });
+  }
+}
+
+export async function getCandidateCvFileUrl(req: AuthRequest, res: Response) {
+  try {
+    const candidateId = parseId(req.params.id);
+    const cvId = parseId(req.params.cvId);
+
+    if (!candidateId || !cvId) {
+      return invalidId(res);
+    }
+
+    const result = await applicantService.getCandidateCvFileUrl(
+      candidateId,
+      cvId,
+    );
+
+    res.json(result);
+  } catch (error) {
+    sendError(res, error, {
+      status: 404,
+      message: 'Error al obtener el archivo del CV',
+    });
+  }
+}

@@ -1,13 +1,20 @@
 import { Router } from 'express';
 
-import { requireAuth, requireRole } from '@/middlewares/auth.middleware';
+import {
+  requireAdminOrDirectivo,
+  requireAuth,
+  requireRole,
+} from '@/middlewares/auth.middleware';
 import { uploadCvFiles } from '@/middlewares/upload-cv.middleware';
 
 import {
   create,
   getAll,
   getById,
+  getCandidateById,
+  getCandidateCvFileUrl,
   remove,
+  searchCandidates,
   update,
 } from './applicant.controller';
 import {
@@ -28,6 +35,10 @@ router.use(requireAuth);
 // postulante puede ver y editar solo su propio perfil.
 router.get('/', requireRole('ADMIN'), getAll);
 
+// Bolsa de candidatos: todos los postulantes activos.
+// Accesible únicamente para ADMIN y socios DIRECTIVOS.
+router.get('/candidatos', requireAdminOrDirectivo, searchCandidates);
+
 // "Mi CV" del postulante de la sesión: datos, estudios, experiencia,
 // referencias y los PDF que subió. Van antes de /:id para que 'me' no se tome
 // como un ID.
@@ -46,6 +57,14 @@ router.delete(
   '/me/cv/archivos/:cvId',
   requireRole('POSTULANTE'),
   deleteMyCvFile,
+);
+
+router.get('/candidatos/:id', requireAdminOrDirectivo, getCandidateById);
+
+router.get(
+  '/candidatos/:id/cvs/:cvId/archivo',
+  requireAdminOrDirectivo,
+  getCandidateCvFileUrl,
 );
 
 router.get('/:id', requireRole('ADMIN', 'POSTULANTE'), getById);
