@@ -1,9 +1,19 @@
 import request from 'supertest';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
 import * as notificationRepository from '../src/modules/notifications/notification.repository';
+import { processPendingEmails } from '../src/services/email/email.processor';
 import {
   createAdmin,
   createApplicant,
@@ -11,6 +21,18 @@ import {
   deleteNotificationsCreatedBy,
   deleteUsers,
 } from './session';
+
+// Resend es un servicio externo: en los tests no se manda ningún correo de
+// verdad. Las pruebas manuales contra Resend están en scripts/.
+const send = vi.hoisted(() =>
+  vi.fn<(options: { to: string | string[] }) => Promise<{ id: string }>>(
+    async () => ({ id: 'resend-falso' }),
+  ),
+);
+
+vi.mock('../src/services/email/email.service', () => ({
+  emailService: { send },
+}));
 
 describe('Notificaciones', () => {
   let admin: Awaited<ReturnType<typeof createAdmin>>;
@@ -518,6 +540,96 @@ describe('Notificaciones', () => {
 
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('ID inválido');
+    });
+  });
+
+  describe('correos de las notificaciones emergentes', () => {
+    let otro: Awaited<ReturnType<typeof createApplicant>>;
+
+    beforeAll(async () => {
+      otro = await createApplicant();
+    });
+
+    afterEach(() => {
+      delete process.env.EMAIL_TEST_RECIPIENT;
+      send.mockClear();
+    });
+
+    afterAll(async () => {
+      await prisma.envioEmail.deleteMany({
+        where: { usuarioId: { in: [postulante.userId, otro.userId] } },
+      });
+      await deleteUsers([otro.userId]);
+    });
+
+    async function notify(tipo: 'NORMAL' | 'EMERGENTE', titulo = 'Aviso') {
+      const response = await request(app)
+        .post('/notificaciones')
+        .set('Cookie', admin.cookie)
+        .send({
+          titulo,
+          mensaje: 'Hola <script>alert(1)</script>',
+          tipo,
+          destinatarioTipo: 'USUARIOS',
+          usuarioIds: [postulante.userId, otro.userId],
+        });
+
+      expect(response.status).toBe(201);
+
+      return prisma.envioEmail.findMany({
+        where: { notificacionId: response.body.id },
+        orderBy: { id: 'asc' },
+      });
+    }
+
+    it('una emergente deja un correo por destinatario, con el texto escapado', async () => {
+      const emails = await notify('EMERGENTE');
+
+      expect(emails.map((email) => email.destinatario).sort()).toEqual(
+        [postulante.email, otro.email].sort(),
+      );
+      expect(emails.every((email) => email.estado === 'PENDIENTE')).toBe(true);
+      expect(emails[0]!.contenidoHtml).toContain(
+        'Hola &lt;script&gt;alert(1)&lt;/script&gt;',
+      );
+      expect(emails[0]!.contenidoHtml).not.toContain('<script>');
+    });
+
+    it('una normal no manda correos', async () => {
+      const emails = await notify('NORMAL');
+
+      expect(emails).toHaveLength(0);
+    });
+
+    it('en modo de prueba los demás no quedan pendientes para salir después', async () => {
+      const emails = await notify('EMERGENTE', 'Modo de prueba');
+      const paraOtro = emails.find(
+        (email) => email.destinatario === otro.email,
+      );
+
+      process.env.EMAIL_TEST_RECIPIENT = postulante.email;
+      await processPendingEmails(500);
+
+      const despues = await prisma.envioEmail.findMany({
+        where: { id: { in: emails.map((email) => email.id) } },
+      });
+      const estado = (destinatario: string) =>
+        despues.find((email) => email.destinatario === destinatario);
+
+      expect(estado(postulante.email)!.estado).toBe('ENVIADO');
+      expect(estado(otro.email)!.estado).toBe('FALLIDO');
+      expect(estado(otro.email)!.ultimoError).toContain('modo de prueba');
+
+      // Lo que importa: un worker que arranca después SIN la dirección de
+      // prueba (otro integrante, o producción sobre la misma base) no le
+      // manda nada a quien no debía recibirlo.
+      delete process.env.EMAIL_TEST_RECIPIENT;
+      send.mockClear();
+      await processPendingEmails(500);
+
+      expect(send).not.toHaveBeenCalledWith(
+        expect.objectContaining({ to: paraOtro!.destinatario }),
+      );
     });
   });
 });
