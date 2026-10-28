@@ -12,15 +12,14 @@ import {
 import {
   cancelFeePayment,
   createFee,
-  createFeeAdjustment,
+  createFeeAdjustmentWithRecalculation,
   createFeeConfiguration,
   createFeePayment,
-  deactivateFeeAdjustment,
+  deactivateFeeAdjustmentWithRecalculation,
   findActiveFeeAdjustments,
   findAllFeesWithPayments,
   findConfigurationByEffectiveDate,
   findCurrentFeeConfiguration,
-  findFeeAdjustmentById,
   findFeeByMemberAndPeriod,
   findFeeConfigurationById,
   findFeeConfigurationForDate,
@@ -31,9 +30,13 @@ import {
   findMemberFeesWithPayments,
   findPaymentsByDateRange,
   getRecentPayments,
-  updateFeeAmounts,
   updateFeeConfiguration,
 } from './fee.repository';
+
+type FeeAdjustmentForCalculation = {
+  tipo: 'ADICIONAL' | 'DESCUENTO';
+  importe: { toString(): string };
+};
 
 export async function getCurrentFeeConfiguration() {
   const configuration = await findCurrentFeeConfiguration();
@@ -303,18 +306,10 @@ export async function addFeeConfiguration(
   return createFeeConfiguration(importeBase, vigenciaDesde);
 }
 
-async function calculateFeeAmounts(
-  socioId: number,
-  periodoDesde: Date,
-  periodoHasta: Date,
+export function calculateFeeTotals(
   importeBase: number,
+  adjustments: FeeAdjustmentForCalculation[],
 ) {
-  const adjustments = await findActiveFeeAdjustments(
-    socioId,
-    periodoDesde,
-    periodoHasta,
-  );
-
   const importeAjustes = adjustments.reduce((total, adjustment) => {
     const importe = Number(adjustment.importe);
 
@@ -333,6 +328,21 @@ async function calculateFeeAmounts(
     importeAjustes,
     importeTotal,
   };
+}
+
+async function calculateFeeAmounts(
+  socioId: number,
+  periodoDesde: Date,
+  periodoHasta: Date,
+  importeBase: number,
+) {
+  const adjustments = await findActiveFeeAdjustments(
+    socioId,
+    periodoDesde,
+    periodoHasta,
+  );
+
+  return calculateFeeTotals(importeBase, adjustments);
 }
 
 export async function generateMonthlyFee(
@@ -453,7 +463,7 @@ export async function addFeeAdjustment(data: AddFeeAdjustmentData) {
     );
   }
 
-  const adjustment = await createFeeAdjustment({
+  return createFeeAdjustmentWithRecalculation({
     socioId,
     tipo,
     importe,
@@ -461,34 +471,6 @@ export async function addFeeAdjustment(data: AddFeeAdjustmentData) {
     fechaHasta,
     motivo: motivo?.trim() || undefined,
   });
-
-  const fees = await findMemberFees(socioId);
-
-  const affectedFees = fees.filter((fee) => {
-    if (fee.estado === 'PAGADA' || fee.estado === 'ANULADA') {
-      return false;
-    }
-
-    const overlapsStart = fee.periodoHasta >= fechaDesde;
-    const overlapsEnd = !fechaHasta || fee.periodoDesde <= fechaHasta;
-
-    return overlapsStart && overlapsEnd;
-  });
-
-  for (const fee of affectedFees) {
-    const importeBase = Number(fee.importeBase);
-
-    const { importeAjustes, importeTotal } = await calculateFeeAmounts(
-      socioId,
-      fee.periodoDesde,
-      fee.periodoHasta,
-      importeBase,
-    );
-
-    await updateFeeAmounts(fee.id, importeAjustes, importeTotal);
-  }
-
-  return adjustment;
 }
 
 export async function registerFeePayment(data: RegisterFeePaymentData) {
@@ -526,68 +508,11 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     throw new Error('El comprobante es obligatorio para pagos con tarjeta');
   }
 
-  const fees = await findMemberFeesWithPayments(socioId);
-
-  const pendingFees = fees
-    .map((fee) => {
-      const paid = fee.pagos.reduce(
-        (total, payment) => total + Number(payment.importeAplicado),
-        0,
-      );
-
-      const balance = Number(fee.importeTotal) - paid;
-
-      return {
-        fee,
-        balance,
-      };
-    })
-    .filter(({ fee, balance }) => {
-      return fee.estado !== 'ANULADA' && balance > 0;
-    });
-
-  if (pendingFees.length === 0) {
-    throw new Error('El socio no tiene cuotas pendientes');
-  }
-
-  const totalDebt = pendingFees.reduce(
-    (total, { balance }) => total + balance,
-    0,
-  );
-
-  if (importe > totalDebt) {
-    throw new Error('El importe del pago no puede superar la deuda pendiente');
-  }
-
-  let remaining = importe;
-
-  const details: {
-    cuotaId: number;
-    importeAplicado: number;
-    estadoResultante: 'PARCIAL' | 'PAGADA';
-  }[] = [];
-
-  for (const { fee, balance } of pendingFees) {
-    if (remaining <= 0) break;
-
-    const applied = Math.min(remaining, balance);
-
-    const newBalance = balance - applied;
-
-    details.push({
-      cuotaId: fee.id,
-      importeAplicado: applied,
-      estadoResultante: newBalance <= 0 ? 'PAGADA' : 'PARCIAL',
-    });
-
-    remaining -= applied;
-  }
-
   // El comprobante se sube recién acá, con todas las validaciones pasadas, y
   // antes de grabar: así el pago y su movimiento de caja se crean ya con él
   // en la misma transacción, y un pago con tarjeta nunca queda sin
   // comprobante. Si la transacción falla, se borra el archivo para que no
-  // quede huérfano en Storage (lo mismo que hace caja al reemplazar uno).
+  // quede huérfano en Storage.
   const comprobanteUrl = comprobante
     ? await uploadFeePaymentReceiptToStorage(socioId, comprobante)
     : undefined;
@@ -601,7 +526,6 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
       medioPago: medioPago.trim(),
       comprobanteUrl,
       observaciones: observaciones?.trim() || undefined,
-      detalles: details,
     });
   } catch (error) {
     if (comprobanteUrl) {
@@ -690,49 +614,5 @@ export async function removeFeeAdjustment(adjustmentId: number) {
     throw new Error('El ajuste no es válido');
   }
 
-  const adjustment = await findFeeAdjustmentById(adjustmentId);
-
-  if (!adjustment) {
-    throw new Error('El ajuste no existe');
-  }
-
-  if (!adjustment.activo) {
-    throw new Error('El ajuste ya está inactivo');
-  }
-
-  const fees = await findMemberFees(adjustment.socioId);
-
-  const affectedFees = fees.filter((fee) => {
-    const overlapsStart = fee.periodoHasta >= adjustment.fechaDesde;
-
-    const overlapsEnd =
-      !adjustment.fechaHasta || fee.periodoDesde <= adjustment.fechaHasta;
-
-    return overlapsStart && overlapsEnd;
-  });
-
-  const paidFees = affectedFees.filter((fee) => fee.estado === 'PAGADA');
-
-  await deactivateFeeAdjustment(adjustmentId);
-
-  for (const fee of affectedFees) {
-    if (fee.estado !== 'PENDIENTE' && fee.estado !== 'PARCIAL') {
-      continue;
-    }
-
-    const { importeAjustes, importeTotal } = await calculateFeeAmounts(
-      adjustment.socioId,
-      fee.periodoDesde,
-      fee.periodoHasta,
-      Number(fee.importeBase),
-    );
-
-    await updateFeeAmounts(fee.id, importeAjustes, importeTotal);
-  }
-
-  return {
-    id: adjustmentId,
-    activo: false,
-    cuotasPagadasNoModificadas: paidFees.length,
-  };
+  return deactivateFeeAdjustmentWithRecalculation(adjustmentId);
 }

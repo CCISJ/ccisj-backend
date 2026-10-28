@@ -14,18 +14,19 @@
 name: CI
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 # Solo lee el código: no puede escribir en el repo ni comentar en los PR.
 permissions:
   contents: read
-
-# Si se sube otro commit al mismo PR, se cancela la corrida anterior.
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   verificar:
