@@ -1,0 +1,5 @@
+# El cliente de Prisma (src/generated) lo escribe "prisma generate" con fines
+# de línea LF. Con core.autocrlf=true (lo normal en Windows) git lo sacaba con
+# CRLF, y cada "prisma generate" dejaba 18 archivos modificados sin ningún
+# cambio real. Así se sacan con LF, igual que como los escribe Prisma.
+src/generated/** text eol=lf
