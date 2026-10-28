@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
@@ -8,7 +8,18 @@ import {
   createApplicant,
   createMember,
   deleteUsers,
+  uniqueSuffix,
 } from './session';
+
+// Supabase Storage se reemplaza por uno en memoria (ver storage-falso.ts):
+// lo usa el enlace al PDF de un candidato.
+vi.mock('../src/config/supabase', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('../src/config/supabase')>();
+  const { supabaseFalso } = await import('./storage-falso.js');
+
+  return { ...original, getSupabase: () => supabaseFalso };
+});
 
 describe('Applicants', () => {
   let admin: Awaited<ReturnType<typeof createAdmin>>;
@@ -386,6 +397,137 @@ describe('Applicants', () => {
 
       expect(list.status).toBe(403);
       expect(detail.status).toBe(403);
+    });
+  });
+
+  // Los permisos por rol (solo administración y directivos) los prueba la
+  // matriz de autorización. Esto prueba qué devuelve a quien sí puede entrar.
+  describe('buscador de candidatos', () => {
+    const suffix = uniqueSuffix();
+    let directivo: Awaited<ReturnType<typeof createMember>>;
+    let candidato: Awaited<ReturnType<typeof createApplicant>>;
+    let otro: Awaited<ReturnType<typeof createApplicant>>;
+    let inactivo: Awaited<ReturnType<typeof createApplicant>>;
+    let cvDeOtro = 0;
+    let cvPropio = 0;
+
+    beforeAll(async () => {
+      [directivo, candidato, otro, inactivo] = await Promise.all([
+        createMember('DIRECTIVO'),
+        createApplicant(),
+        createApplicant(),
+        createApplicant(),
+      ]);
+
+      // Un apellido propio de este archivo: los demás corren en paralelo y
+      // también crean postulantes.
+      await prisma.postulante.update({
+        where: { id: candidato.postulanteId },
+        data: { apellido: `Candidato ${suffix}` },
+      });
+      await prisma.postulante.update({
+        where: { id: inactivo.postulanteId },
+        data: { apellido: `Inactivo ${suffix}` },
+      });
+      await prisma.usuario.update({
+        where: { id: inactivo.userId },
+        data: { activo: false },
+      });
+
+      const [propio, ajeno] = await Promise.all([
+        prisma.cv.findFirstOrThrow({
+          where: { postulanteId: candidato.postulanteId },
+        }),
+        prisma.cv.findFirstOrThrow({
+          where: { postulanteId: otro.postulanteId },
+        }),
+      ]);
+      await prisma.cv.update({
+        where: { id: propio.id },
+        data: { archivoUrl: `cvs/postulante-${candidato.postulanteId}/cv.pdf` },
+      });
+      cvPropio = propio.id;
+      cvDeOtro = ajeno.id;
+    });
+
+    afterAll(async () => {
+      await deleteUsers([
+        directivo.userId,
+        candidato.userId,
+        otro.userId,
+        inactivo.userId,
+      ]);
+    });
+
+    function search(query: string) {
+      return request(app)
+        .get(`/postulantes/candidatos?${query}`)
+        .set('Cookie', directivo.cookie);
+    }
+
+    it('encuentra por apellido', async () => {
+      const response = await search(`search=${suffix}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.total).toBe(1);
+      expect(response.body.items[0].id).toBe(candidato.postulanteId);
+    });
+
+    it('no muestra a un postulante con la cuenta desactivada', async () => {
+      const list = await search(
+        `search=${encodeURIComponent(`Inactivo ${suffix}`)}`,
+      );
+      const detail = await request(app)
+        .get(`/postulantes/candidatos/${inactivo.postulanteId}`)
+        .set('Cookie', directivo.cookie);
+
+      expect(list.body.total).toBe(0);
+      expect(detail.status).toBe(404);
+    });
+
+    it.each([
+      ['%', `%${suffix}`],
+      ['_', `Candidat_ ${suffix}`],
+    ])(
+      'un %s en la búsqueda se compara literal, no como comodín',
+      async (_, texto) => {
+        // Sin escapar, `%` y `_` son comodines de LIKE y estas dos búsquedas
+        // encontraban al candidato.
+        const response = await search(`search=${encodeURIComponent(texto)}`);
+
+        expect(response.status).toBe(200);
+        expect(response.body.total).toBe(0);
+      },
+    );
+
+    it.each(['limit=51', 'limit=0', 'page=0', 'conEstudios=si'])(
+      'rechaza parámetros fuera de rango: %s',
+      async (query) => {
+        const response = await search(query);
+
+        expect(response.status).toBe(400);
+      },
+    );
+
+    it('entrega el PDF del candidato con un enlace que vence', async () => {
+      const response = await request(app)
+        .get(
+          `/postulantes/candidatos/${candidato.postulanteId}/cvs/${cvPropio}/archivo`,
+        )
+        .set('Cookie', directivo.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.url).toMatch(/\?expira=60$/);
+    });
+
+    it('no entrega el PDF de otro postulante cambiando el id del CV', async () => {
+      const response = await request(app)
+        .get(
+          `/postulantes/candidatos/${candidato.postulanteId}/cvs/${cvDeOtro}/archivo`,
+        )
+        .set('Cookie', directivo.cookie);
+
+      expect(response.status).toBe(404);
     });
   });
 });
