@@ -25,3 +25,12 @@ export type UpdateApplicationData = {
   estado?: ApplicationStatus;
   observaciones?: string;
 };
+
+export type CandidateSearchFilters = {
+  search?: string;
+  categoriaId?: number;
+  conEstudios?: boolean;
+  conExperiencia?: boolean;
+  page: number;
+  limit: number;
+};

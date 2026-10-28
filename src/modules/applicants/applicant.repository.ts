@@ -1,4 +1,6 @@
 import { prisma } from '@/config/prisma';
+import type { Prisma } from '@/generated/prisma/client';
+import { CandidateSearchFilters } from '@/types/application.type';
 
 export function findAll() {
   return prisma.postulante.findMany({
@@ -141,5 +143,153 @@ export function update(
 export function remove(id: number) {
   return prisma.postulante.delete({
     where: { id },
+  });
+}
+
+export async function searchCandidates(filters: CandidateSearchFilters) {
+  const { search, categoriaId, conEstudios, conExperiencia, page, limit } =
+    filters;
+
+  const where: Prisma.PostulanteWhereInput = {
+    usuario: {
+      activo: true,
+    },
+
+    ...(search && {
+      OR: [
+        { nombre: { contains: search, mode: 'insensitive' as const } },
+        { apellido: { contains: search, mode: 'insensitive' as const } },
+      ],
+    }),
+
+    ...(categoriaId && {
+      categorias: {
+        some: { categoriaId },
+      },
+    }),
+
+    ...(conEstudios && {
+      estudios: { some: {} },
+    }),
+
+    ...(conExperiencia && {
+      experiencias: { some: {} },
+    }),
+  };
+
+  const [items, total] = await prisma.$transaction([
+    prisma.postulante.findMany({
+      where,
+      select: {
+        id: true,
+        nombre: true,
+        apellido: true,
+        direccion: true,
+        categorias: {
+          select: {
+            categoria: {
+              select: {
+                id: true,
+                nombre: true,
+              },
+            },
+          },
+        },
+        estudios: {
+          select: {
+            titulo: true,
+            institucion: true,
+          },
+          orderBy: { orden: 'asc' },
+          take: 2,
+        },
+        experiencias: {
+          select: {
+            cargo: true,
+            empresa: true,
+          },
+          orderBy: { orden: 'asc' },
+          take: 2,
+        },
+        _count: {
+          select: {
+            estudios: true,
+            experiencias: true,
+            cvs: true,
+          },
+        },
+      },
+      orderBy: [{ apellido: 'asc' }, { nombre: 'asc' }, { id: 'asc' }],
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+
+    prisma.postulante.count({ where }),
+  ]);
+
+  return {
+    items,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+export function findCandidateById(id: number) {
+  return prisma.postulante.findFirst({
+    where: {
+      id,
+      usuario: { activo: true },
+    },
+    select: {
+      id: true,
+      nombre: true,
+      apellido: true,
+      direccion: true,
+      otros: true,
+      estudios: {
+        orderBy: [{ orden: 'asc' }, { id: 'asc' }],
+      },
+      experiencias: {
+        orderBy: [{ orden: 'asc' }, { id: 'asc' }],
+      },
+      referencias: {
+        orderBy: [{ orden: 'asc' }, { id: 'asc' }],
+      },
+      categorias: {
+        select: {
+          categoria: {
+            select: {
+              id: true,
+              nombre: true,
+            },
+          },
+        },
+      },
+      cvs: {
+        select: {
+          id: true,
+          nombreArchivo: true,
+          descripcion: true,
+          fechaActualizacion: true,
+        },
+      },
+    },
+  });
+}
+
+export function findCandidateCvFile(candidateId: number, cvId: number) {
+  return prisma.cv.findFirst({
+    where: {
+      id: cvId,
+      postulanteId: candidateId,
+      postulante: {
+        usuario: { activo: true },
+      },
+    },
+    select: {
+      archivoUrl: true,
+    },
   });
 }

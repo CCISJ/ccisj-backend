@@ -384,6 +384,70 @@ paths:
         '201': { description: Perfil creado. }
         '400': { $ref: '#/components/responses/DatosInvalidos' }
 
+  /postulantes/candidatos:
+    get:
+      tags: [Postulantes]
+      summary: Busca candidatos registrados para administración y socios directivos.
+      description: Lista paginada de postulantes activos, con filtros opcionales.
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string, example: Ana }
+        - name: categoriaId
+          in: query
+          schema: { type: integer, example: 1 }
+          x-fixture: categoria
+        - name: conEstudios
+          in: query
+          schema: { type: boolean, example: true }
+        - name: conExperiencia
+          in: query
+          schema: { type: boolean, example: true }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, example: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, example: 10 }
+      responses:
+        '200': { description: Listado paginado de candidatos. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+
+  /postulantes/candidatos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PostulanteId'
+    get:
+      tags: [Postulantes]
+      summary: Consulta el CV completo de un candidato.
+      description: Disponible para administración y socios directivos.
+      responses:
+        '200':
+          {
+            description: Datos personales,
+            estudios,
+            experiencias,
+            referencias y CV.,
+          }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /postulantes/candidatos/{id}/cvs/{cvId}/archivo:
+    parameters:
+      - $ref: '#/components/parameters/PostulanteId'
+      - $ref: '#/components/parameters/CvId'
+    get:
+      tags: [Postulantes]
+      summary: Obtiene un enlace temporal al PDF de un candidato.
+      description: Disponible para administración y socios directivos.
+      responses:
+        '200': { description: URL firmada y temporal del archivo PDF. }
+        '401': { $ref: '#/components/responses/NoAutenticado' }
+        '403': { $ref: '#/components/responses/SinPermiso' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
   /postulantes/{id}:
     parameters:
       - $ref: '#/components/parameters/PostulanteId'

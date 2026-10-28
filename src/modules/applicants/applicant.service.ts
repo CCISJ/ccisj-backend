@@ -1,6 +1,7 @@
 import argon2 from 'argon2';
 
 import * as usuarioRepository from '@/modules/users/user.repository';
+import { CandidateSearchFilters } from '@/types/application.type';
 import { UpdateApplicantData } from '@/types/user.type';
 import { EMAIL_MAX, EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
@@ -8,6 +9,7 @@ import { assertPasswordPolicy } from '@/utils/password';
 
 import * as applicantRepository from './applicant.repository';
 import { parseCategoryPreferences } from './category-preferences';
+import { getCvSignedUrl } from './cv-storage.service';
 
 // Los mismos largos que la base (`VarChar(100)` y `VarChar(50)`): pasarse
 // terminaba en un error de Prisma en vez de un mensaje claro.
@@ -190,4 +192,74 @@ export async function remove(id: number) {
   await findExisting(id);
 
   return applicantRepository.remove(id);
+}
+
+export async function searchCandidates(query: Record<string, unknown>) {
+  const search = query.search;
+
+  if (
+    search !== undefined &&
+    (typeof search !== 'string' || search.trim().length > 100)
+  ) {
+    throw new HttpError(400, 'La búsqueda no es válida');
+  }
+
+  const parsePositiveInt = (value: unknown, fallback?: number) => {
+    if (value === undefined) return fallback;
+
+    if (
+      typeof value !== 'string' ||
+      !/^[1-9]\d*$/.test(value) ||
+      !Number.isSafeInteger(Number(value))
+    ) {
+      throw new HttpError(400, 'Parámetro numérico inválido');
+    }
+
+    return Number(value);
+  };
+
+  const parseBoolean = (value: unknown) => {
+    if (value === undefined) return undefined;
+    if (value === 'true') return true;
+    if (value === 'false') return false;
+
+    throw new HttpError(400, 'Filtro booleano inválido');
+  };
+
+  const filters: CandidateSearchFilters = {
+    search: typeof search === 'string' ? search.trim() : undefined,
+    categoriaId: parsePositiveInt(query.categoriaId),
+    conEstudios: parseBoolean(query.conEstudios),
+    conExperiencia: parseBoolean(query.conExperiencia),
+    page: parsePositiveInt(query.page, 1)!,
+    limit: parsePositiveInt(query.limit, 10)!,
+  };
+
+  if (filters.limit > 50) {
+    throw new HttpError(400, 'El límite máximo es 50');
+  }
+
+  return applicantRepository.searchCandidates(filters);
+}
+
+export async function getCandidateById(id: number) {
+  const candidate = await applicantRepository.findCandidateById(id);
+
+  if (!candidate) {
+    throw new HttpError(404, 'Candidato no encontrado');
+  }
+
+  return candidate;
+}
+
+export async function getCandidateCvFileUrl(candidateId: number, cvId: number) {
+  const file = await applicantRepository.findCandidateCvFile(candidateId, cvId);
+
+  if (!file?.archivoUrl) {
+    throw new HttpError(404, 'CV no encontrado');
+  }
+
+  return {
+    url: await getCvSignedUrl(file.archivoUrl),
+  };
 }
