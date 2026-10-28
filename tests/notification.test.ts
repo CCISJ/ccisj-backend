@@ -12,6 +12,7 @@ import {
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
+import type { Prisma } from '../src/generated/prisma/client';
 import * as notificationRepository from '../src/modules/notifications/notification.repository';
 import { processPendingEmails } from '../src/services/email/email.processor';
 import * as emailRepository from '../src/services/email/email.repository';
@@ -657,9 +658,7 @@ describe('Notificaciones', () => {
     });
 
     async function queue(
-      data: Partial<
-        Parameters<typeof prisma.envioEmail.create>[0]['data']
-      > = {},
+      data: Partial<Prisma.EnvioEmailUncheckedCreateInput> = {},
     ) {
       const email = await prisma.envioEmail.create({
         data: {
