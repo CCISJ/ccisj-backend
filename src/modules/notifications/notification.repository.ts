@@ -23,6 +23,13 @@ export async function create(data: CreateNotificationData) {
     });
 
     if (data.usuarioIds.length > 0) {
+      // Los destinatarios los eligió el service con una consulta anterior, y
+      // entre esa consulta y este insert alguno puede haberse borrado: la
+      // clave foránea fallaba y la notificación no se creaba para nadie
+      // (H-05). Se vuelven a leer acá con FOR KEY SHARE: los que ya no existen
+      // quedan afuera, y un borrado que esté en curso espera a que esta
+      // transacción termine (y al confirmarse se lleva sus filas por el
+      // `onDelete: Cascade`). Los correos de abajo salen de esta misma lista.
       const usuarios = await tx.$queryRaw<{ id: number }[]>`
         SELECT id FROM usuario
         WHERE id IN (${Prisma.join(data.usuarioIds)})
