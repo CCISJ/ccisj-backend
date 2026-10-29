@@ -14,8 +14,10 @@ import { prisma } from '../src/config/prisma';
 import {
   addFeeAdjustment,
   cancelMemberFeePayment,
+  editFeeConfiguration,
   generateMonthlyFee,
   generateMonthlyFees,
+  getCurrentFeeConfiguration,
   getFeesDashboardSummary,
   getMemberFeeStatus,
   registerFeePayment,
@@ -1036,6 +1038,32 @@ it('mantiene al socio al día hasta el día de vencimiento inclusive', async () 
   }
 });
 
+it('mantiene al socio al día en la noche del vencimiento, en hora de Uruguay', async () => {
+  // A las 22 del 30/09 en Uruguay ya es 01/10 en UTC. "Hoy" se tomaba del día
+  // UTC, y la cuota que vence el 30/09 figuraba vencida desde las 21.
+  const member = await createMember();
+
+  try {
+    await generateMonthlyFee(member.socioId, 2026, 9);
+
+    const status = await getMemberFeeStatus(
+      member.socioId,
+      new Date('2026-09-30T22:00:00-03:00'),
+    );
+
+    expect(status.estado).toBe('AL_DIA');
+    expect(status.cuotasVencidas).toBe(0);
+  } finally {
+    await deleteMemberPayments([member.socioId]);
+
+    await prisma.cuota.deleteMany({
+      where: { socioId: member.socioId },
+    });
+
+    await deleteUsers([member.userId]);
+  }
+});
+
 it('considera pendiente una cuota desde el día siguiente a su vencimiento', async () => {
   const member = await createMember();
 
@@ -1757,6 +1785,40 @@ describe('Resumen de cuotas', () => {
       await deleteUsers([admin.userId, member.userId]);
     }
   });
+
+  it('en la noche del último día del mes, cobradoMes sigue siendo de ese mes', async () => {
+    // El 31/03 a las 22 de Uruguay ya es abril en UTC: el resumen pasaba a
+    // abril y el pago de ese mismo día desaparecía de lo cobrado. Marzo no lo
+    // usa ningún otro test, así que abril queda en 0 si el mes se corre.
+    const admin = await createAdmin();
+    const member = await createMember();
+
+    try {
+      await generateMonthlyFee(member.socioId, 2026, 3);
+
+      await registerFeePayment({
+        socioId: member.socioId,
+        registradoPorId: admin.userId,
+        importe: 760,
+        fechaPago: new Date('2026-03-31'),
+        medioPago: 'EFECTIVO',
+      });
+
+      const summary = await getFeesDashboardSummary(
+        new Date('2026-03-31T22:00:00-03:00'),
+      );
+
+      expect(summary.cobradoMes).toBeGreaterThanOrEqual(760);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await deleteUsers([admin.userId, member.userId]);
+    }
+  });
 });
 
 it('permite a un administrador obtener el resumen del dashboard', async () => {
@@ -1865,6 +1927,33 @@ describe('Edición de la configuración de cuota', () => {
       'Solo se pueden modificar configuraciones de cuota futuras',
     );
     expect(Number(stored.importeBase)).toBe(Number(current.importeBase));
+  });
+
+  it('la configuración del año nuevo entra a la medianoche de Uruguay', async () => {
+    // Antes entraba el 31/12 a las 21 (la medianoche UTC): desde esa hora ya
+    // era la vigente y no se podía modificar.
+    const lastNight = new Date('2098-12-31T22:00:00-03:00');
+    const newYear = new Date('2099-01-01T00:30:00-03:00');
+
+    const beforeMidnight = await getCurrentFeeConfiguration(lastNight);
+    const afterMidnight = await getCurrentFeeConfiguration(newYear);
+
+    expect(beforeMidnight.id).not.toBe(futureConfigurationId);
+    expect(afterMidnight.id).toBe(futureConfigurationId);
+
+    const edited = await editFeeConfiguration(
+      futureConfigurationId,
+      1300,
+      lastNight,
+    );
+
+    expect(Number(edited.importeBase)).toBe(1300);
+
+    await expect(
+      editFeeConfiguration(futureConfigurationId, 1400, newYear),
+    ).rejects.toThrow(
+      'Solo se pueden modificar configuraciones de cuota futuras',
+    );
   });
 
   it('rechaza con 400 un pedido sin importe', async () => {

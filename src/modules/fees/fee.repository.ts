@@ -9,19 +9,6 @@ type TransactionClient = Parameters<
   Parameters<typeof prisma.$transaction>[0]
 >[0];
 
-export async function findCurrentFeeConfiguration() {
-  return prisma.configuracionCuota.findFirst({
-    where: {
-      vigenciaDesde: {
-        lte: new Date(),
-      },
-    },
-    orderBy: {
-      vigenciaDesde: 'desc',
-    },
-  });
-}
-
 export async function findFeeConfigurationHistory() {
   return prisma.configuracionCuota.findMany({
     orderBy: {
