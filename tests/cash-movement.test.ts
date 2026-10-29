@@ -8,6 +8,7 @@ import {
   addManualCashMovement,
   cancelManualCashMovement,
   getCashMovements,
+  getCurrentMonthCashSummary,
 } from '../src/modules/cash-movement/cash-movement.service';
 import {
   createAdmin,
@@ -405,6 +406,31 @@ describe('Movimientos de caja', () => {
     expect(afterCancellation.body.cantidadMovimientos).toBe(
       beforeCancellation.body.cantidadMovimientos - 1,
     );
+  });
+
+  it('en la noche del último día del mes, el resumen sigue siendo de ese mes', async () => {
+    // El 31/03 a las 22 de Uruguay ya es abril en UTC: el resumen pasaba a
+    // abril y no mostraba lo registrado ese día. Ningún otro test usa 2031.
+    const admin = await createAdmin();
+    createdUserIds.push(admin.userId);
+
+    const category = await createCategory('INGRESO');
+
+    await createTrackedMovement({
+      tipo: 'INGRESO',
+      categoriaId: category.id,
+      concepto: `Último día del mes ${uniqueSuffix()}`,
+      importe: 4321,
+      fecha: new Date('2031-03-31'),
+      registradoPorId: admin.userId,
+    });
+
+    const summary = await getCurrentMonthCashSummary(
+      new Date('2031-03-31T22:00:00-03:00'),
+    );
+
+    expect(summary.ingresos).toBe(4321);
+    expect(summary.cantidadMovimientos).toBe(1);
   });
 
   it('no permite anular desde caja un movimiento asociado a una cuota', async () => {

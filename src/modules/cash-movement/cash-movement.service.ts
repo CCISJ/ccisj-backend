@@ -2,6 +2,7 @@ import {
   CashMovementFilters,
   CreateManualCashMovementData,
 } from '@/types/cash-movement.type';
+import { uruguayToday } from '@/utils/date';
 import { HttpError } from '@/utils/http-error';
 
 import { findCashCategoryById } from '../cash-categories/cash-category.repository';
@@ -128,8 +129,8 @@ export async function addManualCashMovement(
   });
 }
 
-export async function getCurrentMonthCashSummary() {
-  const now = new Date();
+export async function getCurrentMonthCashSummary(today = new Date()) {
+  const now = uruguayToday(today);
 
   const startDate = new Date(
     Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),

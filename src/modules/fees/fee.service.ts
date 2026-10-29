@@ -1,4 +1,5 @@
 import { AddFeeAdjustmentData, RegisterFeePaymentData } from '@/types/fee.type';
+import { uruguayToday } from '@/utils/date';
 import { HttpError } from '@/utils/http-error';
 
 import {
@@ -19,7 +20,6 @@ import {
   findActiveFeeAdjustments,
   findAllFeesWithPayments,
   findConfigurationByEffectiveDate,
-  findCurrentFeeConfiguration,
   findFeeByMemberAndPeriod,
   findFeeConfigurationById,
   findFeeConfigurationForDate,
@@ -38,8 +38,8 @@ type FeeAdjustmentForCalculation = {
   importe: { toString(): string };
 };
 
-export async function getCurrentFeeConfiguration() {
-  const configuration = await findCurrentFeeConfiguration();
+export async function getCurrentFeeConfiguration(today = new Date()) {
+  const configuration = await findFeeConfigurationForDate(uruguayToday(today));
 
   if (!configuration) {
     throw new Error('No existe una configuración de cuota vigente');
@@ -96,9 +96,7 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
 
   const fees = await findMemberFeesWithPayments(socioId);
 
-  const todayDate = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-  );
+  const todayDate = uruguayToday(today);
 
   const pendingFees = fees
     .filter((fee) => fee.estado !== 'ANULADA')
@@ -160,16 +158,14 @@ export async function getFeesDashboardSummary(today = new Date()) {
     throw new Error('La fecha no es válida');
   }
 
-  const todayDate = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()),
-  );
+  const todayDate = uruguayToday(today);
 
   const monthStart = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1),
+    Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth(), 1),
   );
 
   const monthEnd = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1),
+    Date.UTC(todayDate.getUTCFullYear(), todayDate.getUTCMonth() + 1, 1),
   );
 
   const [fees, payments, activeMembers] = await Promise.all([
@@ -599,7 +595,11 @@ export async function getRecentFeePayments(limit: number = 5) {
   }));
 }
 
-export async function editFeeConfiguration(id: number, importeBase: number) {
+export async function editFeeConfiguration(
+  id: number,
+  importeBase: number,
+  today = new Date(),
+) {
   if (!Number.isInteger(id) || id <= 0) {
     throw new Error('El ID de la configuración no es válido');
   }
@@ -616,7 +616,7 @@ export async function editFeeConfiguration(id: number, importeBase: number) {
 
   // Se controla antes de guardar: si se controlara después, el importe de una
   // configuración ya vigente quedaría cambiado aunque la respuesta sea un error.
-  if (configuration.vigenciaDesde <= new Date()) {
+  if (configuration.vigenciaDesde <= uruguayToday(today)) {
     throw new Error(
       'Solo se pueden modificar configuraciones de cuota futuras',
     );
