@@ -563,6 +563,20 @@ pnpm dast:activo   # con ataques a cada parámetro de cada endpoint
 
 Cómo funciona, qué cubre y qué no, en [`dast/README.md`](dast/README.md).
 
+## API para los tests punta a punta (E2E)
+
+Los E2E viven en el frontend (`ccisj-frontend/e2e`) y corren con
+`pnpm test:e2e` desde ahí. Playwright arranca esta API con:
+
+```bash
+pnpm e2e:api
+```
+
+que deja lista esta misma base, levanta un Storage falso en
+`127.0.0.1:3202` (los comprobantes y los CV se suben y se abren, pero no salen
+de la máquina) y la API en el puerto 3201 con `NODE_ENV=test`. Ver
+`scripts/e2e-api.mts` y `scripts/storage-falso-http.mts`.
+
 ---
 
 # Ejecutar backend sin Docker
@@ -609,6 +623,7 @@ La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
 | `pnpm test:db:up`      | Solo levanta el contenedor                          |
 | `pnpm test:db:prepare` | Solo aplica migraciones y seed a la base de pruebas |
 | `pnpm test:db:down`    | Apaga la base de pruebas                            |
+| `pnpm e2e:api`         | API + Storage falso para los E2E del frontend       |
 | `pnpm migrate`         | Aplica migraciones pendientes (base compartida)     |
 | `pnpm seed`            | Inserta datos de prueba (idempotente)               |
 
