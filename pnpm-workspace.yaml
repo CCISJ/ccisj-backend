@@ -13,6 +13,10 @@ allowBuilds:
 # Sacar cuando Prisma traiga una versión corregida.
 overrides:
   'prisma>mysql2': ^3.23.1
+  'body-parser': '^2.4.0'
+  'ip-address': '^10.7.4'
+  'fast-uri': '^3.1.9'
+  'qs': '^6.16.1'
 
 # Riesgos aceptados: `pnpm audit` no los cuenta. Cada uno con su motivo, y se
 # revisan cuando Dependabot ofrezca una actualización.

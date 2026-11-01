@@ -11,10 +11,10 @@
  * Responde solo lo que la API usa (ver `cv-storage.service.ts` y
  * `receipt-storage.service.ts`):
  *
- * - `POST /storage/v1/object/:bucket/:ruta`       subir un archivo
- * - `DELETE /storage/v1/object/:bucket`           borrar (`{ prefixes }`)
- * - `POST /storage/v1/object/sign/:bucket/:ruta`  crear un enlace firmado
- * - `GET /storage/v1/object/sign/:bucket/:ruta`   abrir ese enlace
+ * - POST /storage/v1/object/:bucket/:ruta       subir un archivo
+ * - DELETE /storage/v1/object/:bucket           borrar ({ prefixes })
+ * - POST /storage/v1/object/sign/:bucket/:ruta  crear un enlace firmado
+ * - GET /storage/v1/object/sign/:bucket/:ruta   abrir ese enlace
  *
  * El último lo pide el navegador: así el test puede abrir el comprobante o el
  * CV y ver que es el archivo que subió. Los archivos viven en memoria y
@@ -22,16 +22,25 @@
  * protege nada, y solo escucha en la máquina local.
  */
 import { randomUUID } from 'node:crypto';
-import { type IncomingMessage, type Server, createServer } from 'node:http';
+import {
+  type IncomingMessage,
+  type Server,
+  type ServerResponse,
+  createServer,
+} from 'node:http';
 
-type Archivo = { contenido: Buffer; tipo: string };
+type Archivo = {
+  contenido: Buffer;
+  tipo: string;
+};
 
 const FIRMAR = '/storage/v1/object/sign/';
 const OBJETO = '/storage/v1/object/';
 
-function leerCuerpo(req: IncomingMessage) {
+function leerCuerpo(req: IncomingMessage): Promise<Buffer> {
   return new Promise<Buffer>((listo, fallo) => {
     const partes: Buffer[] = [];
+
     req.on('data', (parte: Buffer) => partes.push(parte));
     req.on('end', () => listo(Buffer.concat(partes)));
     req.on('error', fallo);
@@ -41,16 +50,19 @@ function leerCuerpo(req: IncomingMessage) {
 export function arrancarStorageFalso(puerto: number): Promise<Server> {
   const archivos = new Map<string, Archivo>();
 
-  const servidor = createServer(async (req, res) => {
+  async function manejarSolicitud(
+    req: IncomingMessage,
+    res: ServerResponse,
+  ): Promise<void> {
     const url = new URL(req.url ?? '/', 'http://localhost');
     const ruta = decodeURIComponent(url.pathname);
 
-    function responder(estado: number, cuerpo: unknown) {
+    function responder(estado: number, cuerpo: unknown): void {
       res.writeHead(estado, { 'content-type': 'application/json' });
       res.end(JSON.stringify(cuerpo));
     }
 
-    function noExiste() {
+    function noExiste(): void {
       responder(404, {
         statusCode: '404',
         error: 'not_found',
@@ -62,18 +74,24 @@ export function arrancarStorageFalso(puerto: number): Promise<Server> {
       if (ruta.startsWith(FIRMAR)) {
         const clave = ruta.slice(FIRMAR.length);
 
-        if (!archivos.has(clave)) return noExiste();
+        if (!archivos.has(clave)) {
+          noExiste();
+          return;
+        }
 
         if (req.method === 'POST') {
-          return responder(200, {
+          responder(200, {
             signedURL: `/object/sign/${clave}?token=falso`,
           });
+          return;
         }
 
         if (req.method === 'GET') {
           const archivo = archivos.get(clave)!;
+
           res.writeHead(200, { 'content-type': archivo.tipo });
-          return res.end(archivo.contenido);
+          res.end(archivo.contenido);
+          return;
         }
       } else if (ruta.startsWith(OBJETO)) {
         const clave = ruta.slice(OBJETO.length);
@@ -82,11 +100,12 @@ export function arrancarStorageFalso(puerto: number): Promise<Server> {
           const upsert = req.headers['x-upsert'] === 'true';
 
           if (archivos.has(clave) && !upsert) {
-            return responder(400, {
+            responder(400, {
               statusCode: '409',
               error: 'Duplicate',
               message: 'The resource already exists',
             });
+            return;
           }
 
           archivos.set(clave, {
@@ -94,7 +113,11 @@ export function arrancarStorageFalso(puerto: number): Promise<Server> {
             tipo: req.headers['content-type'] ?? 'application/octet-stream',
           });
 
-          return responder(200, { Id: randomUUID(), Key: clave });
+          responder(200, {
+            Id: randomUUID(),
+            Key: clave,
+          });
+          return;
         }
 
         if (req.method === 'DELETE') {
@@ -106,10 +129,14 @@ export function arrancarStorageFalso(puerto: number): Promise<Server> {
             archivos.delete(`${clave}/${prefijo}`),
           );
 
-          return responder(
+          responder(
             200,
-            borrados.map((name) => ({ name, bucket_id: clave })),
+            borrados.map((name) => ({
+              name,
+              bucket_id: clave,
+            })),
           );
+          return;
         }
       }
 
@@ -119,11 +146,37 @@ export function arrancarStorageFalso(puerto: number): Promise<Server> {
         message: `El Storage falso no responde ${req.method} ${ruta}`,
       });
     } catch (error) {
-      responder(500, { statusCode: '500', error: String(error) });
+      if (!res.headersSent) {
+        responder(500, {
+          statusCode: '500',
+          error: String(error),
+        });
+      } else if (!res.writableEnded) {
+        res.end();
+      }
     }
+  }
+
+  const servidor = createServer((req, res) => {
+    void manejarSolicitud(req, res).catch((error: unknown) => {
+      if (!res.headersSent) {
+        res.writeHead(500, {
+          'content-type': 'application/json',
+        });
+      }
+
+      if (!res.writableEnded) {
+        res.end(
+          JSON.stringify({
+            statusCode: '500',
+            error: String(error),
+          }),
+        );
+      }
+    });
   });
 
-  return new Promise((listo, fallo) => {
+  return new Promise<Server>((listo, fallo) => {
     servidor.once('error', fallo);
     servidor.listen(puerto, '127.0.0.1', () => listo(servidor));
   });
