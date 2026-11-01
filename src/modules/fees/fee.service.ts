@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js';
+
 import { AddFeeAdjustmentData, RegisterFeePaymentData } from '@/types/fee.type';
 import { uruguayToday } from '@/utils/date';
 import { HttpError } from '@/utils/http-error';
@@ -102,16 +104,18 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
     .filter((fee) => fee.estado !== 'ANULADA')
     .map((fee) => {
       const totalPaid = fee.pagos.reduce(
-        (total, detail) => total + Number(detail.importeAplicado),
-        0,
+        (total, detail) => total.plus(detail.importeAplicado.toString()),
+        new Decimal(0),
       );
+
+      const balance = new Decimal(fee.importeTotal.toString()).minus(totalPaid);
 
       return {
         fechaVencimiento: fee.fechaVencimiento,
-        balance: Number(fee.importeTotal) - totalPaid,
+        balance,
       };
     })
-    .filter((fee) => fee.balance > 0);
+    .filter((fee) => fee.balance.greaterThan(0));
 
   const overdueFees = pendingFees.filter(
     (fee) => fee.fechaVencimiento < todayDate,
@@ -127,12 +131,13 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
     estado = 'DEUDOR';
   }
 
-  const deudaTotal = pendingFees.reduce((total, fee) => total + fee.balance, 0);
+  const deudaTotal = pendingFees
+    .reduce((total, fee) => total.plus(fee.balance), new Decimal(0))
+    .toNumber();
 
-  const deudaVencida = overdueFees.reduce(
-    (total, fee) => total + fee.balance,
-    0,
-  );
+  const deudaVencida = overdueFees
+    .reduce((total, fee) => total.plus(fee.balance), new Decimal(0))
+    .toNumber();
 
   return {
     estado,
@@ -141,16 +146,6 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
     cuotasVencidas: overdueFees.length,
     deudaVencida,
   };
-}
-
-export async function getMemberFeePayments(socioId: number) {
-  if (!Number.isInteger(socioId) || socioId <= 0) {
-    throw new Error('El socio no es válido');
-  }
-
-  await assertMemberExists(socioId);
-
-  return findMemberFeePayments(socioId);
 }
 
 export async function getFeesDashboardSummary(today = new Date()) {
@@ -174,38 +169,42 @@ export async function getFeesDashboardSummary(today = new Date()) {
     findActive(),
   ]);
 
-  const cobradoMes = payments.reduce(
-    (total, payment) => total + Number(payment.importe),
-    0,
-  );
+  const cobradoMes = payments
+    .reduce(
+      (total, payment) => total.plus(payment.importe.toString()),
+      new Decimal(0),
+    )
+    .toNumber();
 
-  const pendiente = fees.reduce((total, fee) => {
-    if (!fee.socio.usuario.activo || fee.estado === 'ANULADA') {
-      return total;
-    }
+  const pendiente = fees
+    .reduce((total, fee) => {
+      if (!fee.socio.usuario.activo || fee.estado === 'ANULADA') {
+        return total;
+      }
 
-    const totalPaid = fee.pagos.reduce(
-      (paid, detail) => paid + Number(detail.importeAplicado),
-      0,
-    );
+      const totalPaid = fee.pagos.reduce(
+        (paid, detail) => paid.plus(detail.importeAplicado.toString()),
+        new Decimal(0),
+      );
 
-    const balance = Number(fee.importeTotal) - totalPaid;
+      const balance = new Decimal(fee.importeTotal.toString()).minus(totalPaid);
 
-    return total + Math.max(balance, 0);
-  }, 0);
+      return total.plus(Decimal.max(balance, new Decimal(0)));
+    }, new Decimal(0))
+    .toNumber();
 
   const memberDebts = new Map<
     number,
     {
       overdueFees: number;
-      overdueDebt: number;
+      overdueDebt: Decimal;
     }
   >(
     activeMembers.map((member) => [
       member.id,
       {
         overdueFees: 0,
-        overdueDebt: 0,
+        overdueDebt: new Decimal(0),
       },
     ]),
   );
@@ -220,13 +219,13 @@ export async function getFeesDashboardSummary(today = new Date()) {
     }
 
     const totalPaid = fee.pagos.reduce(
-      (total, detail) => total + Number(detail.importeAplicado),
-      0,
+      (total, detail) => total.plus(detail.importeAplicado.toString()),
+      new Decimal(0),
     );
 
-    const balance = Number(fee.importeTotal) - totalPaid;
+    const balance = new Decimal(fee.importeTotal.toString()).minus(totalPaid);
 
-    if (balance <= 0) {
+    if (balance.lessThanOrEqualTo(0)) {
       continue;
     }
 
@@ -237,7 +236,7 @@ export async function getFeesDashboardSummary(today = new Date()) {
     }
 
     member.overdueFees++;
-    member.overdueDebt += balance;
+    member.overdueDebt = member.overdueDebt.plus(balance);
   }
 
   let sociosAlDia = 0;
@@ -254,10 +253,9 @@ export async function getFeesDashboardSummary(today = new Date()) {
     }
   }
 
-  const deudaTotal = [...memberDebts.values()].reduce(
-    (total, member) => total + member.overdueDebt,
-    0,
-  );
+  const deudaTotal = [...memberDebts.values()]
+    .reduce((total, member) => total.plus(member.overdueDebt), new Decimal(0))
+    .toNumber();
 
   return {
     cobradoMes,
@@ -267,6 +265,20 @@ export async function getFeesDashboardSummary(today = new Date()) {
     sociosPendientes,
     sociosDeudores,
   };
+}
+
+export async function getMemberFeePayments(socioId: number) {
+  if (!Number.isInteger(socioId) || socioId <= 0) {
+    throw new Error('El socio no es válido');
+  }
+
+  const member = await findMemberById(socioId);
+
+  if (!member) {
+    throw new Error('Socio no encontrado');
+  }
+
+  return findMemberFeePayments(socioId);
 }
 
 export async function addFeeConfiguration(
@@ -307,22 +319,24 @@ export function calculateFeeTotals(
   adjustments: FeeAdjustmentForCalculation[],
 ) {
   const importeAjustes = adjustments.reduce((total, adjustment) => {
-    const importe = Number(adjustment.importe);
+    const importe = new Decimal(adjustment.importe.toString());
 
-    return adjustment.tipo === 'ADICIONAL' ? total + importe : total - importe;
-  }, 0);
+    return adjustment.tipo === 'ADICIONAL'
+      ? total.plus(importe)
+      : total.minus(importe);
+  }, new Decimal(0));
 
-  const importeTotal = importeBase + importeAjustes;
+  const importeTotal = new Decimal(importeBase).plus(importeAjustes);
 
-  if (importeTotal < 0) {
+  if (importeTotal.isNegative()) {
     throw new Error(
       'Los ajustes no pueden generar una cuota con importe negativo',
     );
   }
 
   return {
-    importeAjustes,
-    importeTotal,
+    importeAjustes: importeAjustes.toNumber(),
+    importeTotal: importeTotal.toNumber(),
   };
 }
 
@@ -393,6 +407,9 @@ export async function generateMonthlyFee(
     importeBase,
     importeAjustes,
     importeTotal,
+    estado: new Decimal(importeTotal.toString()).isZero()
+      ? 'PAGADA'
+      : 'PENDIENTE',
   });
 }
 

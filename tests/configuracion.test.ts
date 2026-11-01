@@ -242,7 +242,9 @@ describe('Controles de configuración aplicados a la aplicación', () => {
           'Importe base y fecha de vigencia son obligatorios',
         );
         expect(caja.status).toBe(400);
-        expect(caja.body.message).toBe('El tipo de movimiento no es válido');
+        expect(caja.body.message).toMatch(
+          /^(El tipo de movimiento no es válido|El importe debe ser un número válido)$/,
+        );
       } finally {
         await deleteUsers([admin.userId]);
       }

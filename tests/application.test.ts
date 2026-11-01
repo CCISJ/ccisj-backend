@@ -139,6 +139,96 @@ describe('Applications', () => {
     expect(response.body).toHaveProperty('postulante');
   });
 
+  it('GET /postulaciones/:id no expone otros CV ni rutas internas', async () => {
+    const response = await request(app)
+      .get(`/postulaciones/${applicationId}`)
+      .set('Cookie', socio.cookie);
+
+    expect(response.status).toBe(200);
+    expect(response.body.id).toBe(applicationId);
+    expect(response.body.postulanteId).toBe(postulante.postulanteId);
+
+    // La empresa recibe los datos del postulante,
+    // pero no su colección completa de archivos PDF.
+    expect(response.body).toHaveProperty('postulante');
+    expect(response.body.postulante).not.toHaveProperty('cvs');
+
+    // La postulación de prueba se creó sin seleccionar un PDF.
+    expect(response.body.cv).toBeNull();
+
+    // Tampoco deben exponerse rutas internas de Storage.
+    expect(response.body).not.toHaveProperty('archivoUrl');
+    expect(response.body.postulante).not.toHaveProperty('archivoUrl');
+    expect(JSON.stringify(response.body)).not.toContain('rutaArchivo');
+  });
+
+  it('GET /postulaciones/:id muestra solo el PDF seleccionado', async () => {
+    const cvSeleccionado = await prisma.cv.create({
+      data: {
+        postulanteId: postulante.postulanteId,
+        nombreArchivo: 'cv-seleccionado.pdf',
+        archivoUrl: 'privado/cv-seleccionado.pdf',
+        descripcion: 'CV seleccionado para la oferta',
+      },
+    });
+
+    const cvNoSeleccionado = await prisma.cv.create({
+      data: {
+        postulanteId: postulante.postulanteId,
+        nombreArchivo: 'cv-privado.pdf',
+        archivoUrl: 'privado/cv-privado.pdf',
+        descripcion: 'CV que no debe ver la empresa',
+      },
+    });
+
+    try {
+      // Asociamos el primer PDF a la postulación existente.
+      await prisma.postulacion.update({
+        where: { id: applicationId },
+        data: { cvId: cvSeleccionado.id },
+      });
+
+      const response = await request(app)
+        .get(`/postulaciones/${applicationId}`)
+        .set('Cookie', socio.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.id).toBe(applicationId);
+      expect(response.body.cvId).toBe(cvSeleccionado.id);
+
+      // Solo se devuelve el CV elegido.
+      expect(response.body.cv).toMatchObject({
+        id: cvSeleccionado.id,
+        nombreArchivo: 'cv-seleccionado.pdf',
+      });
+
+      // No se devuelve la colección completa de CV del postulante.
+      expect(response.body.postulante).not.toHaveProperty('cvs');
+
+      // Ninguna ruta interna de Storage debe llegar al cliente.
+      expect(response.body.cv).not.toHaveProperty('archivoUrl');
+
+      const contenido = JSON.stringify(response.body);
+
+      expect(contenido).not.toContain(cvNoSeleccionado.nombreArchivo);
+      expect(contenido).not.toContain(cvNoSeleccionado.descripcion);
+      expect(contenido).not.toContain(cvNoSeleccionado.archivoUrl);
+      expect(contenido).not.toContain(cvSeleccionado.archivoUrl);
+    } finally {
+      // Restauramos la postulación para las pruebas siguientes.
+      await prisma.postulacion.update({
+        where: { id: applicationId },
+        data: { cvId: null },
+      });
+
+      await prisma.cv.deleteMany({
+        where: {
+          id: { in: [cvSeleccionado.id, cvNoSeleccionado.id] },
+        },
+      });
+    }
+  });
+
   it('PATCH /postulaciones/:id actualiza el estado', async () => {
     const response = await request(app)
       .patch(`/postulaciones/${applicationId}`)

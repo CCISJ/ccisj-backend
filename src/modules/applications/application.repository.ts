@@ -34,10 +34,34 @@ export function findAll() {
   });
 }
 
+const accessibleApplicationSelect = {
+  id: true,
+  ofertaId: true,
+  postulanteId: true,
+  cvId: true,
+  fechaPostulacion: true,
+  estado: true,
+  observaciones: true,
+  oferta: {
+    select: {
+      id: true,
+      socioId: true,
+      titulo: true,
+      estado: true,
+    },
+  },
+  cv: {
+    select: fileSelect,
+  },
+  postulante: {
+    select: cvDataSelect,
+  },
+} as const;
+
 export function findById(id: number) {
   return prisma.postulacion.findUnique({
     where: { id },
-    include: applicationInclude,
+    select: accessibleApplicationSelect,
   });
 }
 

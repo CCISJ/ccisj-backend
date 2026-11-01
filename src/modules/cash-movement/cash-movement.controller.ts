@@ -1,6 +1,7 @@
 import type { Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
+import { validarImporteUYU } from '@/utils/money';
 import { singleQueryParam } from '@/utils/params';
 import { sendError } from '@/utils/send-error';
 
@@ -61,7 +62,7 @@ export async function createMovement(req: AuthRequest, res: Response) {
       tipo,
       categoriaId: Number(categoriaId),
       concepto,
-      importe: Number(importe),
+      importe: validarImporteUYU(importe),
       fecha: new Date(fecha),
       observaciones,
       registradoPorId: req.user.id,
