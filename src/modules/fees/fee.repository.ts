@@ -1,3 +1,5 @@
+import Decimal from 'decimal.js';
+
 import { prisma } from '@/config/prisma';
 import {
   CreateFeeAdjustmentData,
@@ -219,34 +221,33 @@ export async function createFeePayment(data: CreateFeePaymentData) {
     const pendingFees = fees
       .map((fee) => {
         const paid = fee.pagos.reduce(
-          (total, payment) => total + Number(payment.importeAplicado),
-          0,
+          (total, payment) => total.plus(payment.importeAplicado.toString()),
+          new Decimal(0),
         );
 
         return {
           fee,
-          balance: Number(fee.importeTotal) - paid,
+          balance: new Decimal(fee.importeTotal.toString()).minus(paid),
         };
       })
-      .filter(({ balance }) => balance > 0);
+      .filter(({ balance }) => balance.greaterThan(0));
 
     if (pendingFees.length === 0) {
       throw new Error('El socio no tiene cuotas pendientes');
     }
 
     const totalDebt = pendingFees.reduce(
-      (total, { balance }) => total + balance,
-      0,
+      (total, { balance }) => total.plus(balance),
+      new Decimal(0),
     );
 
-    if (importe > totalDebt) {
+    if (new Decimal(importe.toString()).greaterThan(totalDebt)) {
       throw new Error(
         'El importe del pago no puede superar la deuda pendiente',
       );
     }
 
-    // Distribuimos el pago entre las cuotas más antiguas.
-    let remaining = importe;
+    let remaining = new Decimal(importe.toString());
 
     const detalles: {
       cuotaId: number;
@@ -255,18 +256,18 @@ export async function createFeePayment(data: CreateFeePaymentData) {
     }[] = [];
 
     for (const { fee, balance } of pendingFees) {
-      if (remaining <= 0) break;
+      if (remaining.lessThanOrEqualTo(0)) break;
 
-      const applied = Math.min(remaining, balance);
-      const newBalance = balance - applied;
+      const applied = Decimal.min(remaining, balance);
+      const newBalance = balance.minus(applied);
 
       detalles.push({
         cuotaId: fee.id,
-        importeAplicado: applied,
-        estadoResultante: newBalance <= 0 ? 'PAGADA' : 'PARCIAL',
+        importeAplicado: applied.toNumber(),
+        estadoResultante: newBalance.isZero() ? 'PAGADA' : 'PARCIAL',
       });
 
-      remaining -= applied;
+      remaining = remaining.minus(applied);
     }
 
     // Creamos el pago.
@@ -438,17 +439,19 @@ export async function cancelFeePayment(
       }
 
       const totalPaid = fee.pagos.reduce(
-        (total, detail) => total + Number(detail.importeAplicado),
-        0,
+        (total, detail) => total.plus(detail.importeAplicado.toString()),
+        new Decimal(0),
       );
 
-      const total = Number(fee.importeTotal);
+      const total = new Decimal(fee.importeTotal.toString());
 
       let estado: 'PENDIENTE' | 'PARCIAL' | 'PAGADA';
 
-      if (totalPaid <= 0) {
+      if (total.isZero()) {
+        estado = 'PAGADA';
+      } else if (totalPaid.isZero()) {
         estado = 'PENDIENTE';
-      } else if (totalPaid >= total) {
+      } else if (totalPaid.greaterThanOrEqualTo(total)) {
         estado = 'PAGADA';
       } else {
         estado = 'PARCIAL';
@@ -614,7 +617,7 @@ async function recalculateAdjustedFees(
   const fees = await tx.cuota.findMany({
     where: {
       socioId,
-      estado: { in: ['PENDIENTE', 'PARCIAL'] },
+      estado: { not: 'ANULADA' },
       periodoHasta: { gte: fechaDesde },
       ...(fechaHasta ? { periodoDesde: { lte: fechaHasta } } : {}),
     },
@@ -626,6 +629,12 @@ async function recalculateAdjustedFees(
   });
 
   for (const fee of fees) {
+    // Las cuotas pagadas con dinero quedan cerradas.
+    // Las bonificadas al 100 % sí pueden recalcularse.
+    if (fee.estado === 'PAGADA' && fee.pagos.length > 0) {
+      continue;
+    }
+
     const adjustments = await tx.ajusteCuotaSocio.findMany({
       where: {
         socioId,
@@ -635,43 +644,49 @@ async function recalculateAdjustedFees(
       },
     });
 
-    const importeAjustes = adjustments.reduce(
-      (total, adjustment) =>
-        total +
-        (adjustment.tipo === 'ADICIONAL' ? 1 : -1) * Number(adjustment.importe),
-      0,
+    const importeAjustes = adjustments.reduce((total, adjustment) => {
+      const importe = new Decimal(adjustment.importe.toString());
+
+      return adjustment.tipo === 'ADICIONAL'
+        ? total.plus(importe)
+        : total.minus(importe);
+    }, new Decimal(0));
+
+    const importeTotal = new Decimal(fee.importeBase.toString()).plus(
+      importeAjustes,
     );
 
-    const importeTotal = Number(fee.importeBase) + importeAjustes;
-
-    if (importeTotal < 0) {
+    if (importeTotal.isNegative()) {
       throw new Error(
         'Los ajustes no pueden generar una cuota con importe negativo',
       );
     }
 
     const totalPaid = fee.pagos.reduce(
-      (total, payment) => total + Number(payment.importeAplicado),
-      0,
+      (total, payment) => total.plus(payment.importeAplicado.toString()),
+      new Decimal(0),
     );
 
-    if (importeTotal < totalPaid) {
+    if (importeTotal.lessThan(totalPaid)) {
       throw new Error(
         'Los ajustes no pueden dejar una cuota por debajo del importe ya pagado',
       );
     }
 
+    const estado = importeTotal.isZero()
+      ? 'PAGADA'
+      : totalPaid.isZero()
+        ? 'PENDIENTE'
+        : totalPaid.greaterThanOrEqualTo(importeTotal)
+          ? 'PAGADA'
+          : 'PARCIAL';
+
     await tx.cuota.update({
       where: { id: fee.id },
       data: {
-        importeAjustes,
-        importeTotal,
-        estado:
-          totalPaid === 0
-            ? 'PENDIENTE'
-            : totalPaid >= importeTotal
-              ? 'PAGADA'
-              : 'PARCIAL',
+        importeAjustes: importeAjustes.toNumber(),
+        importeTotal: importeTotal.toNumber(),
+        estado,
       },
     });
   }

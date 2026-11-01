@@ -1,3 +1,4 @@
+import Decimal from 'decimal.js';
 import request from 'supertest';
 import {
   afterAll,
@@ -234,6 +235,48 @@ describe('Cuotas', () => {
         where: {
           socioId: member.socioId,
         },
+      });
+
+      await deleteUsers([member.userId]);
+    }
+  });
+
+  it('calcula correctamente ajustes con centésimos', async () => {
+    const member = await createMember();
+
+    try {
+      await prisma.ajusteCuotaSocio.createMany({
+        data: [
+          {
+            socioId: member.socioId,
+            tipo: 'ADICIONAL',
+            importe: 0.2,
+            fechaDesde: new Date('2026-10-01'),
+            fechaHasta: new Date('2026-10-31'),
+          },
+          {
+            socioId: member.socioId,
+            tipo: 'DESCUENTO',
+            importe: 0.1,
+            fechaDesde: new Date('2026-10-01'),
+            fechaHasta: new Date('2026-10-31'),
+          },
+        ],
+      });
+
+      const fee = await generateMonthlyFee(member.socioId, 2026, 10);
+
+      expect(Number(fee.importeAjustes)).toBe(0.1);
+      expect(Number(fee.importeTotal)).toBe(760.1);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await prisma.ajusteCuotaSocio.deleteMany({
+        where: { socioId: member.socioId },
       });
 
       await deleteUsers([member.userId]);
@@ -593,6 +636,151 @@ describe('Cuotas', () => {
         where: {
           socioId: member.socioId,
         },
+      });
+
+      await deleteUsers([member.userId]);
+    }
+  });
+
+  it('completa una cuota con pagos parciales que incluyen centésimos', async () => {
+    const member = await createMember();
+
+    try {
+      const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+      await registerFeePayment({
+        socioId: member.socioId,
+        registradoPorId: member.userId,
+        importe: 300.1,
+        fechaPago: new Date('2026-07-10'),
+        medioPago: 'EFECTIVO',
+      });
+
+      await registerFeePayment({
+        socioId: member.socioId,
+        registradoPorId: member.userId,
+        importe: 459.9,
+        fechaPago: new Date('2026-07-20'),
+        medioPago: 'EFECTIVO',
+      });
+
+      const updatedFee = await prisma.cuota.findUniqueOrThrow({
+        where: { id: fee.id },
+        include: { pagos: true },
+      });
+
+      expect(updatedFee.estado).toBe('PAGADA');
+      expect(updatedFee.pagos).toHaveLength(2);
+
+      const totalPaid = updatedFee.pagos.reduce(
+        (total, detail) => total.plus(detail.importeAplicado),
+        new Decimal(0),
+      );
+
+      expect(totalPaid.eq(760)).toBe(true);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await deleteUsers([member.userId]);
+    }
+  });
+
+  it('genera una cuota de importe cero sin registrar pagos ni movimientos de caja', async () => {
+    const member = await createMember();
+
+    try {
+      await prisma.ajusteCuotaSocio.create({
+        data: {
+          socioId: member.socioId,
+          tipo: 'DESCUENTO',
+          importe: 760,
+          fechaDesde: new Date('2026-07-01'),
+          fechaHasta: new Date('2026-07-31'),
+          motivo: 'Bonificación total',
+        },
+      });
+
+      const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+      expect(Number(fee.importeTotal)).toBe(0);
+      expect(fee.estado).toBe('PAGADA');
+
+      const payments = await prisma.pagoCuota.count({
+        where: { socioId: member.socioId },
+      });
+
+      const movements = await prisma.movimientoCaja.count({
+        where: { pagoCuota: { socioId: member.socioId } },
+      });
+
+      expect(payments).toBe(0);
+      expect(movements).toBe(0);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await prisma.ajusteCuotaSocio.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await deleteUsers([member.userId]);
+    }
+  });
+
+  it('actualiza el estado al aplicar y quitar una bonificación total', async () => {
+    const member = await createMember();
+
+    try {
+      const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+      expect(fee.estado).toBe('PENDIENTE');
+
+      const adjustment = await addFeeAdjustment({
+        socioId: member.socioId,
+        tipo: 'DESCUENTO',
+        importe: 760,
+        fechaDesde: new Date(Date.UTC(2026, 6, 1)),
+        fechaHasta: new Date(Date.UTC(2026, 6, 31)),
+        motivo: 'Bonificación total',
+      });
+
+      const discountedFee = await prisma.cuota.findUniqueOrThrow({
+        where: { id: fee.id },
+      });
+
+      expect(Number(discountedFee.importeTotal)).toBe(0);
+      expect(discountedFee.estado).toBe('PAGADA');
+
+      await removeFeeAdjustment(adjustment.id);
+
+      const restoredFee = await prisma.cuota.findUniqueOrThrow({
+        where: { id: fee.id },
+      });
+
+      expect(Number(restoredFee.importeTotal)).toBe(760);
+      expect(restoredFee.estado).toBe('PENDIENTE');
+
+      const payments = await prisma.pagoCuota.count({
+        where: { socioId: member.socioId },
+      });
+
+      expect(payments).toBe(0);
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await prisma.ajusteCuotaSocio.deleteMany({
+        where: { socioId: member.socioId },
       });
 
       await deleteUsers([member.userId]);
@@ -2212,5 +2400,226 @@ describe('Comprobante del pago de cuota', () => {
     expect(receipt.body.url).toBe(
       `https://storage.test/${created.body.movimientoCaja.comprobanteUrl}?expira=60`,
     );
+  });
+
+  it('distribuye pagos con centésimos sin dejar saldos residuales', async () => {
+    const member = await memberWithFee();
+
+    // Primer pago: 0,10
+    const firstPayment = await pay(
+      member.socioId,
+      {
+        ...cardPayment,
+        importe: '0.10',
+      },
+      {
+        content: PDF,
+        ...pdf,
+      },
+    );
+
+    expect(firstPayment.status).toBe(201);
+    expect(Number(firstPayment.body.detalles[0].importeAplicado)).toBe(0.1);
+    expect(firstPayment.body.detalles[0].cuotaId).toBeDefined();
+
+    // Segundo pago: 759,90
+    const secondPayment = await pay(
+      member.socioId,
+      {
+        ...cardPayment,
+        importe: '759.90',
+      },
+      {
+        content: PDF,
+        ...pdf,
+      },
+    );
+
+    expect(secondPayment.status).toBe(201);
+    expect(Number(secondPayment.body.detalles[0].importeAplicado)).toBe(759.9);
+
+    // Ambos pagos deben aplicarse a la misma cuota.
+    expect(secondPayment.body.detalles[0].cuotaId).toBe(
+      firstPayment.body.detalles[0].cuotaId,
+    );
+
+    // La cuota debe quedar completamente pagada.
+    const fees = await prisma.cuota.findMany({
+      where: { socioId: member.socioId },
+    });
+
+    expect(fees).toHaveLength(1);
+    expect(fees[0].estado).toBe('PAGADA');
+
+    // La suma exacta de los pagos debe ser 760.
+    const totalPaid = new Decimal(
+      firstPayment.body.detalles[0].importeAplicado.toString(),
+    ).plus(secondPayment.body.detalles[0].importeAplicado.toString());
+
+    expect(totalPaid.equals(760)).toBe(true);
+  });
+
+  it('al anular un pago con centésimos recalcula la cuota y anula su movimiento de caja', async () => {
+    const member = await memberWithFee();
+
+    // Primer pago: $0,10.
+    const firstPayment = await pay(
+      member.socioId,
+      {
+        ...cardPayment,
+        importe: '0.10',
+      },
+      {
+        content: PDF,
+        ...pdf,
+      },
+    );
+
+    expect(firstPayment.status).toBe(201);
+
+    // Segundo pago: completa los $760.
+    const secondPayment = await pay(
+      member.socioId,
+      {
+        ...cardPayment,
+        importe: '759.90',
+      },
+      {
+        content: PDF,
+        ...pdf,
+      },
+    );
+
+    expect(secondPayment.status).toBe(201);
+
+    const cuotaId = firstPayment.body.detalles[0].cuotaId;
+
+    expect(secondPayment.body.detalles[0].cuotaId).toBe(cuotaId);
+
+    // La cuota está pagada antes de la anulación.
+    const feeBefore = await prisma.cuota.findUniqueOrThrow({
+      where: { id: cuotaId },
+    });
+
+    expect(feeBefore.estado).toBe('PAGADA');
+
+    // Anulamos únicamente el segundo pago.
+    await cancelMemberFeePayment(
+      secondPayment.body.id,
+      admin.userId,
+      'Anulación de prueba',
+    );
+
+    // La cuota vuelve a quedar parcialmente pagada.
+    const feeAfter = await prisma.cuota.findUniqueOrThrow({
+      where: { id: cuotaId },
+      include: {
+        pagos: {
+          where: {
+            pago: {
+              anulado: false,
+            },
+          },
+        },
+      },
+    });
+
+    expect(feeAfter.estado).toBe('PARCIAL');
+
+    // El primer pago sigue vigente.
+    expect(feeAfter.pagos).toHaveLength(1);
+    expect(
+      new Decimal(feeAfter.pagos[0].importeAplicado.toString()).equals('0.10'),
+    ).toBe(true);
+
+    // El segundo pago conserva su historial, pero está anulado.
+    const cancelledPayment = await prisma.pagoCuota.findUniqueOrThrow({
+      where: { id: secondPayment.body.id },
+      include: {
+        movimientoCaja: true,
+      },
+    });
+
+    expect(cancelledPayment.anulado).toBe(true);
+    expect(cancelledPayment.movimientoCaja?.anulado).toBe(true);
+
+    // El movimiento del primer pago permanece vigente.
+    const firstCashMovement = await prisma.movimientoCaja.findUniqueOrThrow({
+      where: {
+        id: firstPayment.body.movimientoCaja.id,
+      },
+    });
+
+    expect(firstCashMovement.anulado).toBe(false);
+
+    // Saldo restante exacto: $759,90.
+    const remainingBalance = new Decimal(
+      feeAfter.importeTotal.toString(),
+    ).minus(feeAfter.pagos[0].importeAplicado.toString());
+
+    expect(remainingBalance.equals('759.90')).toBe(true);
+  });
+
+  it('impide a un socio común anular pagos y conserva el movimiento de caja', async () => {
+    const admin = await createAdmin();
+    const member = await createMember();
+
+    try {
+      const fee = await generateMonthlyFee(member.socioId, 2026, 7);
+
+      const payment = await registerFeePayment({
+        socioId: member.socioId,
+        registradoPorId: admin.userId,
+        importe: 760,
+        fechaPago: new Date('2026-07-15'),
+        medioPago: 'EFECTIVO',
+      });
+
+      expect(payment).not.toBeNull();
+
+      // Un socio común intenta anular el pago.
+      const forbidden = await request(app)
+        .patch(`/cuotas/${payment!.id}/anular`)
+        .set('Cookie', member.cookie)
+        .send({
+          motivoAnulacion: 'Intento sin permisos',
+        });
+
+      expect(forbidden.status).toBe(403);
+
+      // Un usuario sin iniciar sesión tampoco puede anularlo.
+      const unauthenticated = await request(app)
+        .patch(`/cuotas/${payment!.id}/anular`)
+        .send({
+          motivoAnulacion: 'Intento sin autenticación',
+        });
+
+      expect(unauthenticated.status).toBe(401);
+
+      // El pago debe permanecer vigente.
+      const storedPayment = await prisma.pagoCuota.findUniqueOrThrow({
+        where: { id: payment!.id },
+        include: { movimientoCaja: true },
+      });
+
+      expect(storedPayment.anulado).toBe(false);
+      expect(storedPayment.movimientoCaja).not.toBeNull();
+      expect(storedPayment.movimientoCaja?.anulado).toBe(false);
+
+      // La cuota debe continuar pagada.
+      const storedFee = await prisma.cuota.findUniqueOrThrow({
+        where: { id: fee.id },
+      });
+
+      expect(storedFee.estado).toBe('PAGADA');
+    } finally {
+      await deleteMemberPayments([member.socioId]);
+
+      await prisma.cuota.deleteMany({
+        where: { socioId: member.socioId },
+      });
+
+      await deleteUsers([admin.userId, member.userId]);
+    }
   });
 });

@@ -484,6 +484,20 @@ describe('Movimientos de caja', () => {
       ).rejects.toThrow(
         'Los movimientos asociados a cuotas no pueden anularse desde caja',
       );
+
+      const storedPayment = await prisma.pagoCuota.findUniqueOrThrow({
+        where: { id: payment.id },
+      });
+
+      const storedMovement = await prisma.movimientoCaja.findUniqueOrThrow({
+        where: { id: movement.id },
+      });
+
+      expect(storedPayment.anulado).toBe(false);
+      expect(storedMovement.anulado).toBe(false);
+      expect(storedMovement.pagoCuotaId).toBe(payment.id);
+      expect(storedMovement.fechaAnulacion).toBeNull();
+      expect(storedMovement.anuladoPorId).toBeNull();
     } finally {
       await deleteMemberPayments([member.socioId]);
 
@@ -922,5 +936,43 @@ describe('Movimientos de caja', () => {
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('El movimiento no tiene comprobante');
     });
+  });
+
+  it('solo permite una anulación cuando dos solicitudes llegan simultáneamente', async () => {
+    const admin = await createAdmin();
+    createdUserIds.push(admin.userId);
+
+    const category = await createCategory('INGRESO');
+
+    const movement = await createTrackedMovement({
+      tipo: 'INGRESO',
+      categoriaId: category.id,
+      concepto: 'Anulación concurrente',
+      importe: 500,
+      fecha: new Date('2026-09-18'),
+      registradoPorId: admin.userId,
+    });
+
+    const results = await Promise.allSettled([
+      cancelManualCashMovement(movement.id, admin.userId, 'Primera anulación'),
+      cancelManualCashMovement(movement.id, admin.userId, 'Segunda anulación'),
+    ]);
+
+    expect(
+      results.filter((result) => result.status === 'fulfilled'),
+    ).toHaveLength(1);
+    expect(
+      results.filter((result) => result.status === 'rejected'),
+    ).toHaveLength(1);
+
+    const storedMovement = await prisma.movimientoCaja.findUniqueOrThrow({
+      where: { id: movement.id },
+    });
+
+    expect(storedMovement.anulado).toBe(true);
+    expect(storedMovement.anuladoPorId).toBe(admin.userId);
+    expect(['Primera anulación', 'Segunda anulación']).toContain(
+      storedMovement.motivoAnulacion,
+    );
   });
 });

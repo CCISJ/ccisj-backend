@@ -111,31 +111,47 @@ export async function cancelCashMovement(
   userId: number,
   reason: string,
 ) {
-  return prisma.movimientoCaja.update({
-    where: { id },
-    data: {
-      anulado: true,
-      fechaAnulacion: new Date(),
-      anuladoPorId: userId,
-      motivoAnulacion: reason,
-    },
-    include: {
-      categoria: true,
-      registradoPor: {
-        select: {
-          id: true,
-          email: true,
-          tipo: true,
+  return prisma.$transaction(async (tx) => {
+    const result = await tx.movimientoCaja.updateMany({
+      where: {
+        id,
+        anulado: false,
+        pagoCuotaId: null,
+      },
+      data: {
+        anulado: true,
+        fechaAnulacion: new Date(),
+        anuladoPorId: userId,
+        motivoAnulacion: reason,
+      },
+    });
+
+    if (result.count !== 1) {
+      throw new Error(
+        'El movimiento ya está anulado o no puede anularse desde caja',
+      );
+    }
+
+    return tx.movimientoCaja.findUniqueOrThrow({
+      where: { id },
+      include: {
+        categoria: true,
+        registradoPor: {
+          select: {
+            id: true,
+            email: true,
+            tipo: true,
+          },
+        },
+        anuladoPor: {
+          select: {
+            id: true,
+            email: true,
+            tipo: true,
+          },
         },
       },
-      anuladoPor: {
-        select: {
-          id: true,
-          email: true,
-          tipo: true,
-        },
-      },
-    },
+    });
   });
 }
 

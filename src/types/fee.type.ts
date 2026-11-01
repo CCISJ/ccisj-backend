@@ -8,6 +8,7 @@ export type CreateFeeData = {
   importeBase: number;
   importeAjustes: number;
   importeTotal: number;
+  estado?: 'PENDIENTE' | 'PAGADA';
 };
 
 export type CreateFeeAdjustmentData = {

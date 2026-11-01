@@ -288,6 +288,12 @@ export async function getPaymentsByMember(req: Request, res: Response) {
 
     return res.json(payments);
   } catch (error) {
+    if (error instanceof Error && error.message === 'Socio no encontrado') {
+      return res.status(404).json({
+        message: 'Socio no encontrado',
+      });
+    }
+
     return sendError(res, error, {
       status: 500,
       message: 'Error al obtener los pagos del socio',

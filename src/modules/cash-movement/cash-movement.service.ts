@@ -4,6 +4,7 @@ import {
 } from '@/types/cash-movement.type';
 import { uruguayToday } from '@/utils/date';
 import { HttpError } from '@/utils/http-error';
+import { validarImporteUYU } from '@/utils/money';
 
 import { findCashCategoryById } from '../cash-categories/cash-category.repository';
 import {
@@ -81,9 +82,7 @@ export async function addManualCashMovement(
     throw new Error('El concepto no puede superar los 255 caracteres');
   }
 
-  if (!Number.isFinite(data.importe) || data.importe <= 0) {
-    throw new Error('El importe debe ser mayor a cero');
-  }
+  validarImporteUYU(data.importe);
 
   if (!(data.fecha instanceof Date) || Number.isNaN(data.fecha.getTime())) {
     throw new Error('La fecha no es válida');
@@ -177,7 +176,7 @@ export async function cancelManualCashMovement(
     throw new Error('El movimiento ya está anulado');
   }
 
-  if (movement.pagoCuotaId) {
+  if (movement.pagoCuotaId !== null) {
     throw new Error(
       'Los movimientos asociados a cuotas no pueden anularse desde caja',
     );
