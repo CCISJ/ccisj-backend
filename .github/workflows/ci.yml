@@ -82,6 +82,9 @@ jobs:
 
       - name: Preparar la base de pruebas (migraciones y seed)
         run: pnpm test:db:prepare
+        env:
+          ALLOW_DEMO_SEED: 'true'
+          NODE_ENV: test
 
       - name: Tests (con cobertura)
         run: pnpm test:coverage
