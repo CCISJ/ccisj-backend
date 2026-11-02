@@ -60,10 +60,14 @@ function correr(etiqueta: string, comando: string) {
   // un `.cmd` no se puede ejecutar sin shell.
   const resultado = spawnSync(comando, {
     stdio: 'inherit',
-    env: { ...process.env, DB_URL: TEST_DB_URL },
+    env: {
+      ...process.env,
+      DB_URL: TEST_DB_URL,
+      NODE_ENV: 'test',
+      ALLOW_DEMO_SEED: 'true',
+    },
     shell: true,
   });
-
   if (resultado.status !== 0) {
     console.error(`\nFalló: ${etiqueta}`);
     process.exit(resultado.status ?? 1);
