@@ -659,6 +659,34 @@ La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
 
 ---
 
+# Producción
+
+`Dockerfile` es la imagen de **desarrollo** (`tsx watch`, todas las
+dependencias). Para desplegar va `Dockerfile.prod`:
+
+- corre el código compilado con `NODE_ENV=production`, que enciende la
+  cookie `Secure`;
+- solo lleva las dependencias de producción, como el usuario `node` y con
+  los archivos de solo lectura;
+- trae un healthcheck.
+
+```bash
+docker build -f Dockerfile.prod -t ccisj-api .
+docker build -f Dockerfile.prod --target migraciones -t ccisj-migraciones .   # prisma migrate deploy
+```
+
+El worker de emails es la misma imagen con
+`node dist/workers/email.worker.js`. Detrás de un proxy (lo normal al
+desplegar) hay que poner `TRUST_PROXY=1`. El frontend y la API tienen que
+quedar **en el mismo sitio**, por la cookie `SameSite=Lax`.
+
+Para probar todo eso antes de desplegar está la **preproducción local**
+(`pnpm preprod`). Levanta las imágenes de producción de la API y del
+frontend con HTTPS sobre una base propia, y `pnpm preprod:verificar`
+chequea el hardening. Ver [`preprod/README.md`](preprod/README.md).
+
+---
+
 # Scripts disponibles
 
 | Comando                | Descripción                                         |
@@ -674,6 +702,9 @@ La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
 | `pnpm test:db:prepare` | Solo aplica migraciones y seed a la base de pruebas |
 | `pnpm test:db:down`    | Apaga la base de pruebas                            |
 | `pnpm e2e:api`         | API + Storage falso para los E2E del frontend       |
+| `pnpm preprod`         | Preproducción local: imágenes de producción + HTTPS |
+| `pnpm preprod:verificar` | Chequeo de hardening de la preproducción          |
+| `pnpm preprod:down`    | Apaga la preproducción                              |
 | `pnpm migrate`         | Aplica migraciones pendientes (base compartida)     |
 | `pnpm seed`            | Datos de prueba; exige `ALLOW_DEMO_SEED=true`       |
 
