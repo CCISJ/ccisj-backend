@@ -247,7 +247,7 @@ Archivos relevantes:
 ```text
 prisma/schema.prisma     modelos y enums
 prisma/migrations/       historial de migraciones
-prisma/seed.ts           datos de prueba
+prisma/seed.ts           datos de prueba (y prisma/seeds/)
 prisma.config.ts         configuración de Prisma (lee DB_URL del .env)
 src/config/prisma.ts     cliente de Prisma que usa la aplicación
 src/generated/prisma/    cliente generado (se versiona, no se edita a mano)
@@ -319,13 +319,25 @@ Las migraciones ya aplicadas se ignoran automáticamente.
 Los datos de prueba se encuentran en:
 
 ```text
-prisma/seed.ts
+prisma/seed.ts        arranca el seed y llama a cada módulo, en orden
+prisma/seeds/         un archivo por área (usuarios, socios, cuotas, caja…)
 ```
 
-El seed usa `upsert`, así que se puede correr varias veces sin duplicar datos.
+El seed se puede correr varias veces sin duplicar datos: lo que ya existe se
+reutiliza.
 
-Crea el usuario administrador, dos socios con sus empresas, un postulante con
-CV, las categorías, una oferta y una postulación de ejemplo.
+Crea un usuario por rol (`admin@ccisj.uy`, `empresa@ccisj.uy`,
+`directivo@ccisj.uy` y `postulante@ccisj.uy`, todos con contraseña `1234`), un
+postulante con CV, las categorías, ofertas con una postulación de ejemplo, la
+configuración de cuotas y las categorías de caja. Además genera **datos de
+demostración en cantidad**: unas 50 empresas socias, 600 cuotas, 500 pagos y
+100 movimientos de caja.
+
+**Solo corre si se le pide explícitamente:** sin `ALLOW_DEMO_SEED=true`, o con
+`NODE_ENV=production`, se niega y no toca la base. Escribe en la base de
+`DB_URL`: con el `.env` de desarrollo, esa es la **base compartida del
+equipo**, y los datos de demostración le quedan a todos. La base de pruebas no
+necesita nada de esto: `pnpm test:db` ya pasa la variable.
 
 > Si agregás o cambiás campos en `prisma/schema.prisma`, acordate de actualizar
 > también el seed: si queda desactualizado, falla al crear los registros y los
@@ -334,13 +346,15 @@ CV, las categorías, una oferta y una postulación de ejemplo.
 ## Ejecutar seeds localmente
 
 ```bash
-pnpm seed
+ALLOW_DEMO_SEED=true pnpm seed
 ```
+
+En PowerShell: `$env:ALLOW_DEMO_SEED='true'; pnpm seed`.
 
 ## Ejecutar seeds mediante Docker
 
 ```bash
-docker compose exec backend pnpm seed
+docker compose exec -e ALLOW_DEMO_SEED=true backend pnpm seed
 ```
 
 Los seeds se utilizan únicamente para generar datos de desarrollo/prueba.
@@ -618,14 +632,14 @@ La carpeta `dist/` no se versiona: la genera cada uno con `pnpm build`.
 | `pnpm type-check`      | Solo el chequeo de tipos, de todo el repositorio    |
 | `pnpm start`           | Ejecuta la versión compilada                        |
 | `pnpm test`            | Vitest en modo watch, contra la base de pruebas     |
-| `pnpm test:run`        | Los 306 tests, una sola corrida                     |
+| `pnpm test:run`        | Todos los tests, una sola corrida                   |
 | `pnpm test:db`         | Levanta la base de pruebas y la deja lista          |
 | `pnpm test:db:up`      | Solo levanta el contenedor                          |
 | `pnpm test:db:prepare` | Solo aplica migraciones y seed a la base de pruebas |
 | `pnpm test:db:down`    | Apaga la base de pruebas                            |
 | `pnpm e2e:api`         | API + Storage falso para los E2E del frontend       |
 | `pnpm migrate`         | Aplica migraciones pendientes (base compartida)     |
-| `pnpm seed`            | Inserta datos de prueba (idempotente)               |
+| `pnpm seed`            | Datos de prueba; exige `ALLOW_DEMO_SEED=true`       |
 
 ---
 
