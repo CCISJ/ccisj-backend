@@ -17,6 +17,10 @@ overrides:
   'ip-address': '^10.7.4'
   'fast-uri': '^3.1.9'
   'qs': '^6.16.1'
+  # GHSA-g3hv-75wg-m249 (DoS con patrones armados, moderada). Lo trae el
+  # plugin de Prettier que ordena los imports (minimatch 9), solo en
+  # desarrollo, y ninguna 9.x está corregida.
+  'minimatch': '^11.0.1'
 
 # Riesgos aceptados: `pnpm audit` no los cuenta. Cada uno con su motivo, y se
 # revisan cuando Dependabot ofrezca una actualización.
