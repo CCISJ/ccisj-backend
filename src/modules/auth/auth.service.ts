@@ -6,6 +6,22 @@ import * as usuarioRepository from '@/modules/users/user.repository';
 import { HttpError } from '@/utils/http-error';
 import { PASSWORD_MAX, assertPasswordPolicy } from '@/utils/password';
 
+/**
+ * Credenciales rechazadas, con el motivo y la cuenta (si existe) para el
+ * registro de seguridad. La respuesta es la misma que la de un `HttpError`:
+ * el motivo nunca le llega al cliente.
+ */
+export class CredentialsRejected extends HttpError {
+  constructor(
+    status: number,
+    message: string,
+    readonly motivo: 'cuenta-inexistente' | 'contrasena' | 'cuenta-inactiva',
+    readonly usuarioId: number | null,
+  ) {
+    super(status, message);
+  }
+}
+
 type LoginData = {
   email: string;
   password: string;
@@ -59,19 +75,34 @@ export async function login(data: LoginData) {
   if (!user) {
     await passwordMatches(await getDummyHash(), data.password);
 
-    throw new HttpError(401, 'Credenciales inválidas');
+    throw new CredentialsRejected(
+      401,
+      'Credenciales inválidas',
+      'cuenta-inexistente',
+      null,
+    );
   }
 
   const passwordOk = await passwordMatches(user.password, data.password);
 
   if (!passwordOk) {
-    throw new HttpError(401, 'Credenciales inválidas');
+    throw new CredentialsRejected(
+      401,
+      'Credenciales inválidas',
+      'contrasena',
+      user.id,
+    );
   }
 
   // Recién con la contraseña correcta se informa que la cuenta está
   // desactivada; antes, cualquiera podía averiguarlo con solo el email.
   if (!user.activo) {
-    throw new HttpError(401, 'Usuario inactivo');
+    throw new CredentialsRejected(
+      401,
+      'Usuario inactivo',
+      'cuenta-inactiva',
+      user.id,
+    );
   }
 
   const token = signSession(user.id);
@@ -172,7 +203,12 @@ export async function changePassword(userId: number, body: unknown) {
     (await passwordMatches(user.password, passwordActual));
 
   if (!currentOk) {
-    throw new HttpError(400, 'La contraseña actual no es correcta');
+    throw new CredentialsRejected(
+      400,
+      'La contraseña actual no es correcta',
+      'contrasena',
+      userId,
+    );
   }
 
   // Redondeado al segundo, la misma precisión que el `iat` del token.

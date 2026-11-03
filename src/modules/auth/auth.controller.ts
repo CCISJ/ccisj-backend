@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import { AuthRequest } from '@/middlewares/auth.middleware';
 import { HttpError } from '@/utils/http-error';
+import { logSecurityEvent } from '@/utils/security-log';
 import { sendError } from '@/utils/send-error';
 
 import * as authService from './auth.service';
@@ -31,11 +32,22 @@ export async function login(req: Request, res: Response) {
     });
 
     setSessionCookie(res, result.token);
+    logSecurityEvent(req, 'login.ok', {
+      usuarioId: result.user.id,
+      rol: result.user.tipo,
+    });
 
     return res.status(200).json({
       user: result.user,
     });
   } catch (error) {
+    if (error instanceof authService.CredentialsRejected) {
+      logSecurityEvent(req, 'login.fallido', {
+        motivo: error.motivo,
+        usuarioId: error.usuarioId,
+      });
+    }
+
     if (error instanceof HttpError) {
       return res.status(error.status).json({
         message: error.message,
@@ -53,6 +65,10 @@ export async function register(req: Request, res: Response) {
     const result = await authService.register(req.body);
 
     setSessionCookie(res, result.token);
+    logSecurityEvent(req, 'registro.ok', {
+      usuarioId: result.user.id,
+      rol: 'POSTULANTE',
+    });
 
     return res.status(201).json({
       user: result.user,
@@ -94,11 +110,16 @@ export async function changePassword(req: AuthRequest, res: Response) {
 
     // La sesión actual sigue: recibe un token emitido con el cambio.
     setSessionCookie(res, token);
+    logSecurityEvent(req, 'contrasena.cambiada');
 
     return res.status(200).json({
       message: 'Contraseña actualizada',
     });
   } catch (error) {
+    if (error instanceof authService.CredentialsRejected) {
+      logSecurityEvent(req, 'contrasena.fallida');
+    }
+
     if (error instanceof HttpError) {
       return res.status(error.status).json({
         message: error.message,

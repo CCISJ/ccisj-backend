@@ -2,6 +2,7 @@ import type { Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
+import { logSecurityEvent } from '@/utils/security-log';
 import { sendError } from '@/utils/send-error';
 
 import * as memberService from './member.service';
@@ -83,6 +84,10 @@ export async function create(req: AuthRequest, res: Response) {
       req.body,
     );
 
+    // Crea también la cuenta de acceso. La contraseña inicial nunca se
+    // registra: solo la ve la administración, en esta respuesta.
+    logSecurityEvent(req, 'socio.alta', { socioId });
+
     res.status(201).json({
       message: 'Socio creado correctamente',
       socioId,
@@ -121,6 +126,8 @@ export async function remove(req: AuthRequest, res: Response) {
     if (!id) return invalidId(res);
 
     await memberService.remove(id);
+
+    logSecurityEvent(req, 'socio.baja', { socioId: id });
 
     return res.status(200).json({
       message: 'Socio desactivado correctamente',

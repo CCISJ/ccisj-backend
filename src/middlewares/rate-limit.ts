@@ -1,4 +1,10 @@
-import rateLimit from 'express-rate-limit';
+import type { Request } from 'express';
+import rateLimit, {
+  type RateLimitExceededEventHandler,
+  type RateLimitInfo,
+} from 'express-rate-limit';
+
+import { type SecurityEvent, logSecurityEvent } from '@/utils/security-log';
 
 /**
  * Los límites se apagan en los tests porque todos los requests salen de la
@@ -10,6 +16,26 @@ export function rateLimitApagado() {
   return (
     process.env.NODE_ENV === 'test' && process.env.PROBAR_RATE_LIMIT !== '1'
   );
+}
+
+/**
+ * La respuesta de siempre de un límite (la de la librería), y además deja el
+ * corte en el registro de seguridad. Solo el **primer** pedido cortado de cada
+ * ventana: un script que sigue insistiendo después del corte no tiene por qué
+ * llenar el registro con una línea por pedido.
+ */
+export function cortarYRegistrar(
+  evento: SecurityEvent,
+): RateLimitExceededEventHandler {
+  return (req, res, _next, options) => {
+    const info = (req as Request & { rateLimit?: RateLimitInfo }).rateLimit;
+
+    if (!info || info.used === info.limit + 1) {
+      logSecurityEvent(req, evento, { limite: options.limit as number });
+    }
+
+    res.status(options.statusCode).send(options.message);
+  };
 }
 
 /** Pedidos por minuto y por IP que acepta la API en total. */
@@ -30,6 +56,7 @@ export const globalLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip: rateLimitApagado,
+  handler: cortarYRegistrar('limite.superado'),
   message: {
     message: 'Demasiadas solicitudes. Intente nuevamente en un minuto.',
   },
