@@ -1,0 +1,81 @@
+# Imagen de PRODUCCIÓN de la API. La de desarrollo es `Dockerfile` (con
+# `tsx watch` y todas las dependencias); esta corre el código compilado, solo
+# con las dependencias de producción y con `NODE_ENV=production`, que enciende
+# la cookie `Secure`.
+#
+#   docker build -f Dockerfile.prod -t ccisj-api .
+#   docker run --env-file .env.produccion -p 3000:3000 ccisj-api
+#
+# Las migraciones van aparte, con la etapa `migraciones` (la CLI de Prisma no
+# entra en la imagen de la API):
+#
+#   docker build -f Dockerfile.prod --target migraciones -t ccisj-migraciones .
+#   docker run --rm -e DB_URL=... ccisj-migraciones
+#
+# El worker de emails es la misma imagen con otro comando:
+#
+#   docker run --env-file .env.produccion ccisj-api node dist/workers/email.worker.js
+
+# --- Base: Node y pnpm en las mismas versiones que el CI y el Dockerfile ----
+FROM node:24-alpine AS base
+
+# Ver el comentario en `Dockerfile`: corepack escribe como root, y el
+# `pnpm --version` baja el binario de pnpm a una caché que `node` puede leer.
+ENV COREPACK_HOME=/opt/corepack
+RUN corepack enable \
+  && corepack prepare pnpm@12.3.4 --activate \
+  && pnpm --version \
+  && chmod -R a+rX "$COREPACK_HOME"
+
+RUN mkdir -p /app && chown node:node /app
+WORKDIR /app
+USER node
+
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+# --- Build: todas las dependencias, y `pnpm build` (tipos + tsc + alias) ----
+FROM base AS build
+
+RUN pnpm install --frozen-lockfile
+
+COPY --chown=node:node . .
+
+RUN pnpm build
+
+# --- Migraciones: la CLI de Prisma y nada más que hacer -----------------------
+FROM build AS migraciones
+
+CMD ["./node_modules/.bin/prisma", "migrate", "deploy"]
+
+# --- Dependencias de producción, sin devDependencies -------------------------
+FROM base AS dependencias
+
+# `--ignore-scripts`: el `prepare` (husky) es de desarrollo y acá no existe.
+# Argon2 no necesita compilarse: trae el binario para Alpine (musl) y lo
+# carga al arrancar.
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+
+# --- La imagen final ---------------------------------------------------------
+FROM node:24-alpine
+
+# tini como PID 1: le pasa a Node el SIGTERM de `docker stop`. Sin él, Node
+# siendo el PID 1 lo ignora y el contenedor tarda 10 s en morir a la fuerza.
+RUN apk add --no-cache tini
+
+ENV NODE_ENV=production
+WORKDIR /app
+
+# Todo de root y de solo lectura para `node`, que es quien corre: si alguien
+# consigue ejecutar código en el contenedor, no puede reescribir la API.
+COPY package.json ./
+COPY --from=dependencias /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+
+USER node
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget -q -O /dev/null "http://127.0.0.1:${PORT:-3000}/" || exit 1
+
+ENTRYPOINT ["/sbin/tini", "--"]
+CMD ["node", "dist/server.js"]

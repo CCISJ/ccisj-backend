@@ -1,0 +1,103 @@
+# Preproducción local: el sistema armado como en producción, en esta máquina.
+# Lo levanta `pnpm preprod` (ver preprod/README.md), que genera el JWT_SECRET.
+#
+#   https://ccisj.localhost:8443        la app (y la API en /api)
+#
+# Las imágenes son las de producción (`Dockerfile.prod` de cada repo), con
+# NODE_ENV=production, detrás de un proxy con HTTPS. Lo único que no es real
+# son los datos: una base propia en RAM con el seed, y el Storage falso en vez
+# de Supabase. **Nunca** toca la base del equipo.
+
+name: ccisj-preprod
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ccisj
+      POSTGRES_PASSWORD: ccisj
+      POSTGRES_DB: ccisj
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ccisj -d ccisj']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # Migraciones y seed, una vez. La etapa `migraciones` trae la CLI de Prisma
+  # y tsx; la imagen de la API no.
+  preparar:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      target: migraciones
+    environment:
+      DB_URL: postgresql://ccisj:ccisj@db:5432/ccisj
+      ALLOW_DEMO_SEED: 'true'
+    command:
+      - sh
+      - -c
+      - ./node_modules/.bin/prisma migrate deploy && ./node_modules/.bin/tsx prisma/seed.ts
+    depends_on:
+      db:
+        condition: service_healthy
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+      target: migraciones
+    environment:
+      HOST: 0.0.0.0
+      PUERTO: '3202'
+    command: ['./node_modules/.bin/tsx', 'scripts/storage-falso-http.mts']
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    environment:
+      DB_URL: postgresql://ccisj:ccisj@db:5432/ccisj
+      # Lo genera `pnpm preprod`. Sin él, la API se niega a arrancar.
+      JWT_SECRET: ${PREPROD_JWT_SECRET:-}
+      CORS_ORIGIN: https://ccisj.localhost:8443
+      # Detrás de un proxy (Caddy): sin esto, el rate limit vería a todos
+      # los usuarios con la IP del proxy.
+      TRUST_PROXY: '1'
+      SUPABASE_URL: http://ccisj.localhost:8480/storage-falso
+      SUPABASE_SERVICE_ROLE_KEY: clave-del-storage-falso
+    depends_on:
+      preparar:
+        condition: service_completed_successfully
+      storage:
+        condition: service_started
+
+  web:
+    build:
+      context: ${FRONTEND_DIR:-../frontend}
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: https://ccisj.localhost:8443/api
+
+  caddy:
+    image: caddy:2.10-alpine
+    ports:
+      - '8443:8443'
+      - '8480:8480'
+    volumes:
+      - ./preprod/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-datos:/data
+    networks:
+      default:
+        # La API llama al Storage falso por la misma URL que el navegador.
+        aliases:
+          - ccisj.localhost
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+
+volumes:
+  caddy-datos:

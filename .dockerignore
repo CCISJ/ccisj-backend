@@ -1,4 +1,13 @@
 node_modules
 dist
 .env
+.env.*
+!.env.example
 .git
+
+# Nada de esto hace falta para construir, y algunas carpetas pesan mucho
+.pnpm-store
+coverage
+dast/salida
+.agents
+CLAUDE.md

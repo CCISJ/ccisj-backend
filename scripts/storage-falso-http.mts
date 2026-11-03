@@ -47,7 +47,15 @@ function leerCuerpo(req: IncomingMessage): Promise<Buffer> {
   });
 }
 
-export function arrancarStorageFalso(puerto: number): Promise<Server> {
+/**
+ * `host` es 127.0.0.1 salvo en el entorno de producción local
+ * (`produccion-local/`), donde corre en su propio contenedor y tiene que
+ * escuchar en la red de Docker, que no sale de la máquina.
+ */
+export function arrancarStorageFalso(
+  puerto: number,
+  host = '127.0.0.1',
+): Promise<Server> {
   const archivos = new Map<string, Archivo>();
 
   async function manejarSolicitud(
@@ -178,6 +186,16 @@ export function arrancarStorageFalso(puerto: number): Promise<Server> {
 
   return new Promise<Server>((listo, fallo) => {
     servidor.once('error', fallo);
-    servidor.listen(puerto, '127.0.0.1', () => listo(servidor));
+    servidor.listen(puerto, host, () => listo(servidor));
   });
+}
+
+// Corrido directo (`tsx scripts/storage-falso-http.mts`), arranca solo. Así
+// lo usa el contenedor `storage` de `produccion-local/`.
+if (import.meta.main) {
+  const puerto = Number(process.env.PUERTO ?? 3202);
+  const host = process.env.HOST ?? '127.0.0.1';
+
+  await arrancarStorageFalso(puerto, host);
+  console.log(`Storage falso en http://${host}:${puerto}`);
 }

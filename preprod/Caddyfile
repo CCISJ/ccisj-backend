@@ -1,0 +1,42 @@
+# HTTPS del entorno de preproducción local (ver preprod/README.md).
+#
+# Un solo sitio, https://ccisj.localhost:8443: la app en `/` y la API en
+# `/api`. Que sea el mismo origen hace que la cookie de sesión (SameSite=Lax)
+# viaje sin problemas, que es lo que se le exige al despliegue real.
+{
+	http_port 8480
+	https_port 8443
+
+	# Certificado de una autoridad propia de Caddy, que vive en el volumen
+	# `caddy-datos`. El navegador avisa que no la conoce: es local.
+	local_certs
+	skip_install_trust
+}
+
+ccisj.localhost:8443 {
+	# Sin "Server: Caddy" ni la versión de nada.
+	header -Server
+
+	handle_path /api/* {
+		reverse_proxy api:3000
+	}
+
+	handle {
+		reverse_proxy web:8080
+	}
+}
+
+# Por HTTP solo queda el Storage falso, para que el navegador pueda abrir los
+# comprobantes y CV que sube la API (los enlaces firmados apuntan acá). Todo
+# lo demás se redirige a HTTPS, como en producción.
+http://ccisj.localhost:8480 {
+	header -Server
+
+	handle_path /storage-falso/* {
+		reverse_proxy storage:3202
+	}
+
+	handle {
+		redir https://ccisj.localhost:8443{uri} permanent
+	}
+}
