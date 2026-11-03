@@ -499,6 +499,42 @@ await request(app).get('/ofertas').set('Cookie', socio.cookie);
 > limpieza siempre por ID. Un test que borra "todo" es un test que tapa los
 > errores de los demás.
 
+## Registro de eventos de seguridad
+
+La API deja una línea JSON por cada evento de seguridad en su salida estándar
+(`src/utils/security-log.ts`). Es lo que hay que mirar para responder, ante un
+incidente, qué pasó, desde qué IP y con qué cuenta. Cualquier plataforma de
+despliegue la recoge sin configurar nada.
+
+```json
+{"fecha":"2026-11-03T13:40:12.512Z","tipo":"seguridad","nivel":"warn","evento":"login.fallido","ip":"190.64.1.20","metodo":"POST","ruta":"/auth/login","usuarioId":42,"rol":null,"motivo":"contrasena"}
+```
+
+| Evento | Nivel | Cuándo |
+| --- | --- | --- |
+| `login.ok` / `login.fallido` | info / warn | Login correcto o rechazado (`motivo`: `cuenta-inexistente`, `contrasena`, `cuenta-inactiva`) |
+| `registro.ok` | info | Un postulante crea su cuenta |
+| `contrasena.cambiada` / `contrasena.fallida` | info / warn | Cambio de contraseña, o la actual no era correcta |
+| `login.bloqueado`, `registro.bloqueado`, `contrasena.bloqueada`, `limite.superado` | warn | Un rate limit cortó (solo el primer pedido cortado de cada ventana) |
+| `sesion.invalida` | warn | Una cookie que ya no sirve (`motivo`: `token` = firma inválida, `vencida`, `cuenta` desactivada, `contrasena-cambiada`) |
+| `acceso.denegado` | warn | Un 403 de rol (`requiere`: lo que pedía la ruta) |
+| `usuario.creado` / `usuario.modificado` / `usuario.eliminado` | info | La administración cambia una cuenta (`cuentaId`, `campos` cambiados) |
+| `socio.alta` / `socio.baja` / `postulante.eliminado` | info | Alta o baja de un socio, o borrado de un postulante |
+
+`usuarioId` y `rol` son los de quien hizo el pedido. En un cambio de cuentas,
+la cuenta afectada va en `cuentaId`, `socioId` o `postulanteId`.
+
+**Lo que nunca se registra:** contraseñas (tampoco la inicial de un socio),
+tokens, cookies, el body, la query de la URL ni emails. El email de un login
+fallido podría ser cualquier cosa que alguien tipeó, incluso su contraseña
+en el campo equivocado. Las cuentas van siempre por su ID.
+
+Al agregar una acción sensible (cambiar permisos, borrar datos de personas),
+registrala con `logSecurityEvent(req, 'evento', { ... })`, sumá el nombre a
+`SecurityEvent` y probala en `tests/security-log.test.ts`. En los tests el
+registro está apagado, salvo en ese archivo, que lo enciende con
+`PROBAR_REGISTRO=1`.
+
 ---
 
 # Tests

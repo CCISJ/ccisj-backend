@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 
 import { type AuthRequest, requireAuth } from '@/middlewares/auth.middleware';
-import { rateLimitApagado } from '@/middlewares/rate-limit';
+import { cortarYRegistrar, rateLimitApagado } from '@/middlewares/rate-limit';
 
 import * as authController from './auth.controller';
 
@@ -19,6 +19,7 @@ const loginLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip: rateLimitApagado,
+  handler: cortarYRegistrar('login.bloqueado'),
   message: {
     message:
       'Demasiados intentos de inicio de sesión. Intente nuevamente en unos minutos.',
@@ -35,6 +36,7 @@ const changePasswordLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req) => `usuario-${(req as AuthRequest).user!.id}`,
   skip: rateLimitApagado,
+  handler: cortarYRegistrar('contrasena.bloqueada'),
   message: {
     message:
       'Demasiados intentos de cambio de contraseña. Intente nuevamente en unos minutos.',
@@ -51,6 +53,7 @@ const registerLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip: rateLimitApagado,
+  handler: cortarYRegistrar('registro.bloqueado'),
   message: {
     message:
       'Demasiados registros desde esta conexión. Intente nuevamente más tarde.',

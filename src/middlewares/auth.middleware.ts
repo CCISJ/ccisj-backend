@@ -5,6 +5,7 @@ import { clearSessionCookie } from '@/modules/auth/session-cookie';
 import * as userRepository from '@/modules/users/user.repository';
 import type { MemberType } from '@/types/member.type';
 import type { TipoUsuario } from '@/types/user.type';
+import { logSecurityEvent } from '@/utils/security-log';
 
 /**
  * Usuario de la sesión, leído de la base en cada request. El token solo
@@ -57,7 +58,13 @@ function issuedBeforePasswordChange(
  */
 type ResolvedSession =
   | { estado: 'anonimo' }
-  | { estado: 'invalida' }
+  | {
+      estado: 'invalida';
+      // Para el registro de seguridad: un token con la firma mal es un
+      // intento de falsificarlo; los otros motivos son cosas que pasan.
+      motivo: 'token' | 'vencida' | 'cuenta' | 'contrasena-cambiada';
+      usuarioId: number | null;
+    }
   | { estado: 'sin-secreto' }
   | { estado: 'error' }
   | { estado: 'ok'; user: SessionUser };
@@ -87,23 +94,37 @@ async function resolveSession(req: AuthRequest): Promise<ResolvedSession> {
   try {
     // Fijar el algoritmo evita que un token firmado de otra forma se acepte.
     session = readSession(jwt.verify(token, secret, { algorithms: ['HS256'] }));
-  } catch {
-    session = null;
+  } catch (error) {
+    return {
+      estado: 'invalida',
+      motivo: error instanceof jwt.TokenExpiredError ? 'vencida' : 'token',
+      usuarioId: null,
+    };
   }
 
   if (!session) {
-    return { estado: 'invalida' };
+    return { estado: 'invalida', motivo: 'token', usuarioId: null };
   }
 
   try {
     const user = await userRepository.findSessionUser(session.userId);
 
+    if (!user || !user.activo) {
+      return {
+        estado: 'invalida',
+        motivo: 'cuenta',
+        usuarioId: session.userId,
+      };
+    }
+
     if (
-      !user ||
-      !user.activo ||
       issuedBeforePasswordChange(session.issuedAt, user.passwordActualizada)
     ) {
-      return { estado: 'invalida' };
+      return {
+        estado: 'invalida',
+        motivo: 'contrasena-cambiada',
+        usuarioId: session.userId,
+      };
     }
 
     return {
@@ -136,6 +157,10 @@ export async function requireAuth(
 
     case 'invalida':
       clearSessionCookie(res);
+      logSecurityEvent(req, 'sesion.invalida', {
+        motivo: session.motivo,
+        usuarioId: session.usuarioId,
+      });
 
       return res.status(401).json({
         message: 'Sesión inválida o expirada',
@@ -179,6 +204,10 @@ export async function optionalAuth(
   switch (session.estado) {
     case 'invalida':
       clearSessionCookie(res);
+      logSecurityEvent(req, 'sesion.invalida', {
+        motivo: session.motivo,
+        usuarioId: session.usuarioId,
+      });
 
       return next();
 
@@ -205,6 +234,22 @@ export async function optionalAuth(
 const FORBIDDEN_MESSAGE = 'No tiene permiso para realizar esta acción';
 
 /**
+ * Un 403 de rol. Queda en el registro: el frontend no ofrece lo que el rol no
+ * puede usar, así que un 403 suele ser alguien probando a mano. `requiere` es
+ * lo que pedía la ruta.
+ */
+function deny(
+  req: AuthRequest,
+  res: Response,
+  requiere: string,
+  message = FORBIDDEN_MESSAGE,
+) {
+  logSecurityEvent(req, 'acceso.denegado', { requiere });
+
+  return res.status(403).json({ message });
+}
+
+/**
  * Deja pasar solo a los roles indicados. Va siempre después de `requireAuth`.
  */
 export function requireRole(...roles: TipoUsuario[]) {
@@ -216,9 +261,7 @@ export function requireRole(...roles: TipoUsuario[]) {
     }
 
     if (!roles.includes(req.user.tipo)) {
-      return res.status(403).json({
-        message: FORBIDDEN_MESSAGE,
-      });
+      return deny(req, res, roles.join('|'));
     }
 
     next();
@@ -255,9 +298,7 @@ export function requireAdminOrDirectivo(
   const isDirectivo = user.tipo === 'SOCIO' && user.memberType === 'DIRECTIVO';
 
   if (user.tipo !== 'ADMIN' && !isDirectivo) {
-    return res.status(403).json({
-      message: FORBIDDEN_MESSAGE,
-    });
+    return deny(req, res, 'ADMIN|DIRECTIVO');
   }
 
   next();
@@ -273,7 +314,7 @@ export function requireAdmin(
   }
 
   if (req.user.tipo !== 'ADMIN') {
-    return res.status(403).json({ message: 'Acceso no autorizado' });
+    return deny(req, res, 'ADMIN', 'Acceso no autorizado');
   }
 
   next();
@@ -316,7 +357,5 @@ export function requireMemberAccess(
     return next();
   }
 
-  return res.status(403).json({
-    message: FORBIDDEN_MESSAGE,
-  });
+  return deny(req, res, 'ADMIN|DIRECTIVO|SOCIO-PROPIO');
 }

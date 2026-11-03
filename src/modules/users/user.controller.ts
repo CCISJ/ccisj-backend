@@ -2,9 +2,13 @@ import type { Request, Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
+import { logSecurityEvent } from '@/utils/security-log';
 import { sendError } from '@/utils/send-error';
 
 import * as userService from './user.service';
+
+// Lo que `userService.update` acepta cambiar (lo demás del body se ignora).
+const EDITABLE_FIELDS = ['email', 'tipo', 'activo'];
 
 function invalidId(res: Response) {
   return res.status(400).json({
@@ -56,6 +60,11 @@ export async function create(req: Request, res: Response) {
   try {
     const usuario = await userService.create(req.body);
 
+    logSecurityEvent(req, 'usuario.creado', {
+      cuentaId: usuario.id,
+      cuentaRol: usuario.tipo,
+    });
+
     res.status(201).json(usuario);
   } catch (error) {
     sendError(res, error, { status: 400, message: 'Error al crear usuario' });
@@ -69,6 +78,14 @@ export async function update(req: AuthRequest, res: Response) {
     if (!id) return invalidId(res);
 
     const usuario = await userService.update(id, req.body, req.user!.id);
+
+    // El email cambiado no se escribe: alcanza con saber que cambió.
+    logSecurityEvent(req, 'usuario.modificado', {
+      cuentaId: usuario.id,
+      campos: EDITABLE_FIELDS.filter((campo) => req.body[campo] !== undefined),
+      cuentaRol: usuario.tipo,
+      cuentaActiva: usuario.activo,
+    });
 
     res.json(usuario);
   } catch (error) {
@@ -86,6 +103,8 @@ export async function remove(req: AuthRequest, res: Response) {
     if (!id) return invalidId(res);
 
     await userService.remove(id, req.user!.id);
+
+    logSecurityEvent(req, 'usuario.eliminado', { cuentaId: id });
 
     res.status(204).send();
   } catch (error) {

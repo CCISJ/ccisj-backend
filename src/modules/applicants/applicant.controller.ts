@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 
 import type { AuthRequest } from '@/middlewares/auth.middleware';
 import { parseId } from '@/utils/params';
+import { logSecurityEvent } from '@/utils/security-log';
 import { sendError } from '@/utils/send-error';
 
 import * as applicantService from './applicant.service';
@@ -95,6 +96,8 @@ export async function remove(req: Request, res: Response) {
     if (!id) return invalidId(res);
 
     await applicantService.remove(id);
+
+    logSecurityEvent(req, 'postulante.eliminado', { postulanteId: id });
 
     res.status(204).send();
   } catch (error) {
