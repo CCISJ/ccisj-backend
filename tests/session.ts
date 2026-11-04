@@ -14,7 +14,7 @@ import { prisma } from '../src/config/prisma';
 import type { MemberType } from '../src/types/member.type';
 import type { TipoUsuario } from '../src/types/user.type';
 
-export const TEST_PASSWORD = 'Test123456';
+export const TEST_PASSWORD = 'Faro-Tilo-Gaviota-47';
 const UNUSABLE_PASSWORD = 'test-sin-login';
 
 export function uniqueSuffix() {

@@ -503,8 +503,8 @@ describe('Auth', () => {
       ['sin contraseña actual', { passwordNueva: NEW_PASSWORD }],
       ['sin contraseña nueva', { passwordActual: TEST_PASSWORD }],
       [
-        'una nueva de menos de 10 caracteres',
-        { passwordActual: TEST_PASSWORD, passwordNueva: 'Corta123' },
+        'una nueva de menos de 12 caracteres',
+        { passwordActual: TEST_PASSWORD, passwordNueva: 'Faro-Tilo-1' },
       ],
       [
         'una nueva sin números',
@@ -512,7 +512,7 @@ describe('Auth', () => {
       ],
       [
         'una nueva sin letras',
-        { passwordActual: TEST_PASSWORD, passwordNueva: '12345678901' },
+        { passwordActual: TEST_PASSWORD, passwordNueva: '123456789012' },
       ],
       [
         'una nueva de más de 128 caracteres',
@@ -533,6 +533,28 @@ describe('Auth', () => {
       const response = await change(body);
 
       expect(response.status).toBe(400);
+    });
+
+    it('rechaza una nueva armada con el email de la cuenta', async () => {
+      const own = await createUser({
+        tipo: 'SOCIO',
+        loginEnabled: true,
+        email: uniqueEmail('zorbatelo'),
+      });
+
+      try {
+        const response = await change(
+          { passwordActual: TEST_PASSWORD, passwordNueva: 'Zorbatelo2026' },
+          own.cookie,
+        );
+
+        expect(response.status).toBe(400);
+        expect(response.body.message).toMatch(
+          'La nueva contraseña es fácil de adivinar',
+        );
+      } finally {
+        await deleteUsers([own.userId]);
+      }
     });
 
     it('rechaza un body que no es un objeto', async () => {

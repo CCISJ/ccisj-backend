@@ -81,7 +81,7 @@ export async function create(body: unknown) {
 
   const email = parseEmail(body.email);
 
-  assertPasswordPolicy(body.password, 'La contraseña');
+  assertPasswordPolicy(body.password, 'La contraseña', [email]);
 
   const existingUser = await userRepository.findByEmail(email);
 

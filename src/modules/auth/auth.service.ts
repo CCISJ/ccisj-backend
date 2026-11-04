@@ -185,7 +185,10 @@ export async function changePassword(userId: number, body: unknown) {
     throw new HttpError(400, 'Ingresá la nueva contraseña');
   }
 
-  assertPasswordPolicy(passwordNueva, 'La nueva contraseña');
+  const user = await usuarioRepository.findPasswordHash(userId);
+
+  // Con el email de la cuenta, para no aceptar una contraseña armada con él.
+  assertPasswordPolicy(passwordNueva, 'La nueva contraseña', [user?.email]);
 
   if (passwordNueva === passwordActual) {
     throw new HttpError(
@@ -193,8 +196,6 @@ export async function changePassword(userId: number, body: unknown) {
       'La nueva contraseña tiene que ser distinta de la actual',
     );
   }
-
-  const user = await usuarioRepository.findPasswordHash(userId);
 
   // Un texto enorme no llega a argon2: ninguna contraseña válida lo supera.
   const currentOk =

@@ -383,10 +383,23 @@ El login admite 10 intentos fallidos cada 15 minutos por IP. El email **no
 distingue mayúsculas**: los emails nuevos se guardan en minúsculas y las
 búsquedas (login, emails repetidos) ignoran mayúsculas.
 
+**Política de contraseñas** (`assertPasswordPolicy` en `src/utils/password.ts`,
+la misma en el registro, el alta de usuarios y el cambio): entre 12 y 128
+caracteres, al menos una letra y un número, y **difícil de adivinar** según
+[zxcvbn](https://github.com/zxcvbn-ts/zxcvbn), la librería de Dropbox, con
+diccionarios en español. Se exige puntaje 3 de 4: quedan afuera las
+contraseñas filtradas más usadas, una palabra común con el año
+(`Montevideo2024`), las secuencias de teclado (`qwerty123456`), las
+repeticiones y las armadas con el email, el nombre o el apellido de la persona
+o con el nombre de la institución. Solo se analizan los primeros 64 caracteres
+(con 128 armados a propósito, zxcvbn tardaba más de medio segundo y frenaba el
+servidor). Una contraseña ya guardada no se vuelve a evaluar: la política se
+aplica al elegirla.
+
 **Cambiar la contraseña** (`POST /auth/cambiar-contrasena`, cualquier usuario
 con sesión): recibe `passwordActual` y `passwordNueva`. La nueva debe tener
-entre 10 y 128 caracteres, al menos una letra y un número, y ser distinta de la
-actual. Se guarda el momento del cambio en `usuario.password_actualizada` y
+entre 12 y 128 caracteres, al menos una letra y un número, ser difícil de
+adivinar y ser distinta de la actual. Se guarda el momento del cambio en `usuario.password_actualizada` y
 `requireAuth` rechaza los tokens emitidos antes, así que **se cierran las
 sesiones abiertas en otros dispositivos**; la sesión desde la que se cambió
 recibe una cookie nueva y sigue. Admite 5 intentos fallidos cada 15 minutos por

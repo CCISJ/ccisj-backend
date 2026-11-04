@@ -8,6 +8,7 @@ import {
   createApplicant,
   createMember,
   deleteUsers,
+  uniqueEmail,
 } from './session';
 
 describe('Usuarios', () => {
@@ -85,7 +86,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: testEmail,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'POSTULANTE',
       });
 
@@ -123,7 +124,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: testEmail,
-        password: 'OtraClave123',
+        password: 'Otra-Garza-Mate-61',
         tipo: 'POSTULANTE',
       });
 
@@ -220,7 +221,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `usuario-hash-${Date.now()}@ccisj.uy`,
-        password: 'clave-en-claro-1',
+        password: 'clave-en-claro-lechuza-1',
         tipo: 'POSTULANTE',
       });
 
@@ -231,7 +232,7 @@ describe('Usuarios', () => {
     });
 
     try {
-      expect(stored!.password).not.toBe('clave-en-claro-1');
+      expect(stored!.password).not.toBe('clave-en-claro-lechuza-1');
       expect(stored!.password.startsWith('$argon2')).toBe(true);
     } finally {
       await prisma.usuario.delete({ where: { id: response.body.id } });
@@ -244,7 +245,7 @@ describe('Usuarios', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `usuario-tipo-${Date.now()}@ccisj.uy`,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'SUPERADMIN',
       });
 
@@ -276,13 +277,13 @@ describe('Usuarios', () => {
       const email = `usuario-reglas-${Date.now()}@ccisj.uy`;
 
       const cases = [
-        ['Corta1', 'La contraseña debe tener al menos 10 caracteres'],
+        ['Faro-Tilo-1', 'La contraseña debe tener al menos 12 caracteres'],
         [
-          'sinnumeros',
+          'sinnumerosninada',
           'La contraseña debe tener al menos una letra y un número',
         ],
         [
-          '1234567890',
+          '123456789012',
           'La contraseña debe tener al menos una letra y un número',
         ],
       ];
@@ -299,10 +300,23 @@ describe('Usuarios', () => {
       }
     });
 
+    it('rechaza una contraseña armada con el email', async () => {
+      const response = await createUser({
+        email: uniqueEmail('zorbatelo'),
+        password: 'Zorbatelo2026',
+        tipo: 'POSTULANTE',
+      });
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toMatch(
+        'La contraseña es fácil de adivinar',
+      );
+    });
+
     it('valida el formato del email y lo guarda en minúsculas', async () => {
       const invalid = await createUser({
         email: 'no-es-un-email',
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'POSTULANTE',
       });
 
@@ -312,7 +326,7 @@ describe('Usuarios', () => {
       const suffix = Date.now();
       const response = await createUser({
         email: `  Usuario.Mayus-${suffix}@CCISJ.uy `,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'POSTULANTE',
       });
 
@@ -323,7 +337,7 @@ describe('Usuarios', () => {
       // El mismo email con otras mayúsculas es un repetido.
       const duplicate = await createUser({
         email: `USUARIO.MAYUS-${suffix}@ccisj.uy`,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'POSTULANTE',
       });
 
@@ -334,7 +348,7 @@ describe('Usuarios', () => {
     it('no crea cuentas de socio sueltas, sin su empresa', async () => {
       const response = await createUser({
         email: `socio-suelto-${Date.now()}@ccisj.uy`,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'SOCIO',
       });
 
@@ -469,7 +483,7 @@ describe('Usuarios', () => {
         .set('Cookie', socio.cookie)
         .send({
           email: `escalada-${Date.now()}@ccisj.uy`,
-          password: 'Clave12345',
+          password: 'Garza-Mate-Rio-58',
           tipo: 'ADMIN',
         });
 
