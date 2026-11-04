@@ -21,3 +21,7 @@ coverage/
 # Lo que deja el escaneo de ZAP ("pnpm dast"): reportes y copias de trabajo.
 # Se regenera en cada corrida.
 dast/salida/
+
+# Los respaldos de la base ("pnpm respaldo"): tienen datos personales y
+# los hashes de las contraseñas. Nunca van al repositorio.
+respaldo/salida/

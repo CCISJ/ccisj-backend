@@ -698,6 +698,14 @@ Para probar todo eso antes de desplegar está la **preproducción local**
 frontend con HTTPS sobre una base propia, y `pnpm preprod:verificar`
 chequea el hardening. Ver [`preprod/README.md`](preprod/README.md).
 
+## Respaldos
+
+`pnpm respaldo` respalda la base y `pnpm respaldo:restaurar` lo restaura en
+una base **vacía** (nunca pisa una con datos). `pnpm respaldo:probar` es el
+simulacro: respalda una base con el seed, la restaura en otra y comprueba que
+las dos sean idénticas (datos, secuencias, estructura y migraciones). Todo con
+Docker, sin instalar PostgreSQL. Ver [`respaldo/README.md`](respaldo/README.md).
+
 ---
 
 # Scripts disponibles
@@ -718,6 +726,9 @@ chequea el hardening. Ver [`preprod/README.md`](preprod/README.md).
 | `pnpm preprod`         | Preproducción local: imágenes de producción + HTTPS |
 | `pnpm preprod:verificar` | Chequeo de hardening de la preproducción          |
 | `pnpm preprod:down`    | Apaga la preproducción                              |
+| `pnpm respaldo`        | Respalda la base de `RESPALDO_DB_URL`               |
+| `pnpm respaldo:restaurar` | Restaura un respaldo en una base vacía           |
+| `pnpm respaldo:probar` | Simulacro: respaldar, restaurar y comparar (local)  |
 | `pnpm migrate`         | Aplica migraciones pendientes (base compartida)     |
 | `pnpm seed`            | Datos de prueba; exige `ALLOW_DEMO_SEED=true`       |
 
