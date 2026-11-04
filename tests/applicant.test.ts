@@ -102,7 +102,7 @@ describe('Applicants', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `applicant-test-${Date.now()}@ccisj.uy`,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'POSTULANTE',
       });
 
@@ -163,7 +163,7 @@ describe('Applicants', () => {
       .set('Cookie', admin.cookie)
       .send({
         email: `admin-as-applicant-${Date.now()}@ccisj.uy`,
-        password: 'Clave12345',
+        password: 'Garza-Mate-Rio-58',
         tipo: 'ADMIN',
       });
 

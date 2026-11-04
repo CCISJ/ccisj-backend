@@ -162,6 +162,20 @@ describe('Registro de postulantes', () => {
     expect(usuario).toBeNull();
   });
 
+  it('rechaza una contraseña armada con el nombre o el apellido', async () => {
+    // Fuera de este contexto, 'Zorbatelo2026' pasa (tests/password.test.ts).
+    for (const datos of [{ nombre: 'Zorbatelo' }, { apellido: 'Zorbatelo' }]) {
+      const body = validBody({ password: 'Zorbatelo2026', ...datos });
+
+      const response = await request(app).post('/auth/registro').send(body);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toMatch(
+        'La contraseña es fácil de adivinar',
+      );
+    }
+  });
+
   it('responde 400 si un dato no es texto', async () => {
     const response = await request(app)
       .post('/auth/registro')

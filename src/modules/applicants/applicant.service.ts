@@ -140,7 +140,11 @@ export async function register(body: unknown) {
     throw new HttpError(400, 'El email no es válido');
   }
 
-  assertPasswordPolicy(password, 'La contraseña');
+  assertPasswordPolicy(password, 'La contraseña', [
+    email,
+    body.nombre,
+    body.apellido,
+  ]);
 
   const nombre = parseField('nombre', body.nombre);
   const apellido = parseField('apellido', body.apellido);

@@ -91,7 +91,7 @@ export function findSessionUser(id: number) {
 export function findPasswordHash(id: number) {
   return prisma.usuario.findUnique({
     where: { id },
-    select: { password: true },
+    select: { password: true, email: true },
   });
 }
 
