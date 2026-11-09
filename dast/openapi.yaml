@@ -433,7 +433,7 @@ paths:
     get:
       tags: [Postulantes]
       summary: Consulta el CV completo de un candidato.
-      description: Disponible para administración y socios directivos.
+      description: Disponible para administración y socios directivos. A la administración le llega además la cuenta (usuarioId y email), para poder restablecerle la contraseña.
       responses:
         '200':
           {
