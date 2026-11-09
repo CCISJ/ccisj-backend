@@ -142,12 +142,17 @@ export async function seedPayments(prisma: PrismaClient) {
       totalCuota,
       pagadoAnterior,
       marca,
+      // El 10 de cada mes, salvo en el mes en curso antes del 10: ahí, hoy.
+      // Si no, la demo mostraba pagos con fecha futura.
       fechaPago: new Date(
-        Date.UTC(
-          cuota.periodoDesde.getUTCFullYear(),
-          cuota.periodoDesde.getUTCMonth(),
-          10,
-          12,
+        Math.min(
+          Date.UTC(
+            cuota.periodoDesde.getUTCFullYear(),
+            cuota.periodoDesde.getUTCMonth(),
+            10,
+            12,
+          ),
+          Date.now(),
         ),
       ),
     });

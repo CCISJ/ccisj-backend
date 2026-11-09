@@ -18,6 +18,7 @@ import cashCategoryRoutes from './modules/cash-categories/cash-category.routes';
 import cashMovementRoutes from './modules/cash-movement/cash-movement.routes';
 import categoryRoutes from './modules/categories/category.routes';
 import feeRoutes from './modules/fees/fee.routes';
+import gestionRoutes from './modules/gestiones/gestion.routes';
 import memberRoutes from './modules/members/member.routes';
 import notificationRoutes from './modules/notifications/notification.routes';
 import offerRoutes from './modules/offers/offer.routes';
@@ -116,6 +117,7 @@ app.use('/auth', authRoutes);
 app.use('/cuotas', feeRoutes);
 app.use('/caja/categorias', cashCategoryRoutes);
 app.use('/caja/movimientos', cashMovementRoutes);
+app.use('/gestiones', gestionRoutes);
 
 app.get('/', (_req, res) => {
   res.send('API de CCISJ');

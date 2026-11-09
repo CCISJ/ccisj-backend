@@ -1329,6 +1329,119 @@ paths:
         '400': { $ref: '#/components/responses/DatosInvalidos' }
         '404': { $ref: '#/components/responses/NoEncontrado' }
 
+  # --- Gestoría -------------------------------------------------------------
+
+  /gestiones:
+    get:
+      tags: [Gestoría]
+      summary: Las gestiones, de la más reciente a la más vieja.
+      description: Para la administración y los socios directivos.
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string, maxLength: 100, example: habilitación }
+        - name: categoria
+          in: query
+          schema: { type: string, maxLength: 80, example: Trámites }
+      responses:
+        '200':
+          {
+            description: Lista de gestiones con cuántos archivos tiene cada una.,
+          }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+    post:
+      tags: [Gestoría]
+      summary: Crea una gestión (solo administración).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GestionNueva'
+      responses:
+        '201': { description: Gestión creada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+
+  /gestiones/categorias:
+    get:
+      tags: [Gestoría]
+      summary: Las categorías en uso, con cuántas gestiones tiene cada una.
+      responses:
+        '200': { description: Lista de categorías. }
+
+  /gestiones/{id}:
+    parameters:
+      - $ref: '#/components/parameters/GestionId'
+    get:
+      tags: [Gestoría]
+      summary: Una gestión, con sus archivos (sin la ruta en Storage).
+      responses:
+        '200': { description: La gestión. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    patch:
+      tags: [Gestoría]
+      summary: Edita título, descripción o categoría (solo administración).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GestionNueva'
+      responses:
+        '200': { description: Gestión editada. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Gestoría]
+      summary: Borra la gestión y sus archivos (solo administración).
+      responses:
+        '200': { description: Gestión borrada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /gestiones/{id}/archivos:
+    parameters:
+      - $ref: '#/components/parameters/GestionId'
+    post:
+      tags: [Gestoría]
+      summary: Adjunta archivos a una gestión (solo administración).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [archivos]
+              properties:
+                archivos:
+                  type: array
+                  items: { type: string, format: binary }
+                  description: Hasta 5 por subida y 20 por gestión, de hasta 10 MB cada uno. PDF, JPG, PNG, Word o Excel, verificados por el contenido.
+      responses:
+        '201': { description: Archivos subidos. }
+        '400': { $ref: '#/components/responses/DatosInvalidos' }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '413': { $ref: '#/components/responses/ArchivoDemasiadoGrande' }
+
+  /gestiones/{id}/archivos/{archivoId}:
+    parameters:
+      - $ref: '#/components/parameters/GestionId'
+      - name: archivoId
+        in: path
+        required: true
+        schema: { type: integer, example: 1 }
+    get:
+      tags: [Gestoría]
+      summary: Enlace firmado de 60 segundos para abrir un archivo.
+      responses:
+        '200': { description: La URL firmada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+    delete:
+      tags: [Gestoría]
+      summary: Borra un archivo de la gestión (solo administración).
+      responses:
+        '200': { description: Archivo borrado. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
 components:
   securitySchemes:
     cookieAuth:
@@ -1397,6 +1510,12 @@ components:
       required: true
       schema: { type: integer, example: 1 }
       x-fixture: movimiento
+    GestionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, example: 1 }
+      x-fixture: gestion
     CvId:
       name: cvId
       in: path
@@ -1404,6 +1523,19 @@ components:
       schema: { type: integer, example: 1 }
 
   schemas:
+    GestionNueva:
+      type: object
+      required: [titulo, descripcion, categoria]
+      properties:
+        titulo:
+          { type: string, maxLength: 200, example: Habilitación municipal }
+        descripcion:
+          {
+            type: string,
+            maxLength: 20000,
+            example: Pasos y documentos para renovarla.,
+          }
+        categoria: { type: string, maxLength: 80, example: Trámites }
     Error:
       type: object
       required: [message]

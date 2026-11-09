@@ -91,27 +91,27 @@ enum EstadoEnvioEmail {
 }
 
 model EnvioEmail {
-  id             Int              @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  destinatario   String           @db.VarChar(255)
-  asunto         String           @db.VarChar(255)
-  contenidoHtml  String           @map("contenido_html")
+  destinatario  String @db.VarChar(255)
+  asunto        String @db.VarChar(255)
+  contenidoHtml String @map("contenido_html")
 
-  estado         EstadoEnvioEmail @default(PENDIENTE)
-  intentos       Int              @default(0)
-  ultimoError    String?          @map("ultimo_error")
-  resendId       String?          @map("resend_id")
+  estado      EstadoEnvioEmail @default(PENDIENTE)
+  intentos    Int              @default(0)
+  ultimoError String?          @map("ultimo_error")
+  resendId    String?          @map("resend_id")
 
-  fechaCreacion  DateTime         @default(now()) @map("fecha_creacion")
-  fechaEnvio     DateTime?        @map("fecha_envio")
-  proximoIntento DateTime?        @map("proximo_intento")
+  fechaCreacion    DateTime  @default(now()) @map("fecha_creacion")
+  fechaEnvio       DateTime? @map("fecha_envio")
+  proximoIntento   DateTime? @map("proximo_intento")
   fechaInicioEnvio DateTime? @map("fecha_inicio_envio")
 
-  notificacionId Int?             @map("notificacion_id")
-  usuarioId      Int?             @map("usuario_id")
+  notificacionId Int? @map("notificacion_id")
+  usuarioId      Int? @map("usuario_id")
 
-  notificacion   Notificacion?    @relation(fields: [notificacionId], references: [id], onDelete: SetNull)
-  usuario        Usuario?         @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  notificacion Notificacion? @relation(fields: [notificacionId], references: [id], onDelete: SetNull)
+  usuario      Usuario?      @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
 
   @@index([estado, proximoIntento])
   @@index([notificacionId])
@@ -139,6 +139,8 @@ model Usuario {
 
   movimientosCajaRegistrados MovimientoCaja[] @relation("MovimientoCajaRegistradoPor")
   movimientosCajaAnulados    MovimientoCaja[] @relation("MovimientoCajaAnuladoPor")
+
+  gestionesCreadas Gestion[] @relation("GestionCreadaPor")
 
   enviosEmail EnvioEmail[]
 
@@ -506,4 +508,42 @@ model MovimientoCaja {
   pagoCuota     PagoCuota?    @relation(fields: [pagoCuotaId], references: [id], onDelete: NoAction)
 
   @@map("movimiento_caja")
+}
+
+/// Gestoría: informes y trámites que la administración deja asentados para
+/// los socios directivos. Contenido libre: título, descripción, categoría y
+/// archivos.
+model Gestion {
+  id                 Int      @id @default(autoincrement())
+  titulo             String   @db.VarChar(200)
+  descripcion        String
+  // Texto libre: la administración la escribe, y la pantalla sugiere las
+  // que ya se usaron para que no se repitan con otra forma.
+  categoria          String   @db.VarChar(80)
+  creadoPorId        Int      @map("creado_por_id")
+  fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime @default(now()) @updatedAt @map("fecha_actualizacion")
+
+  creadoPor Usuario          @relation("GestionCreadaPor", fields: [creadoPorId], references: [id], onDelete: NoAction)
+  archivos  ArchivoGestion[]
+
+  @@index([categoria])
+  @@map("gestion")
+}
+
+/// Un archivo adjunto a una gestión. El archivo vive en Supabase Storage; acá
+/// queda su ruta (nunca una URL pública) y con qué nombre se subió.
+model ArchivoGestion {
+  id          Int      @id @default(autoincrement())
+  gestionId   Int      @map("gestion_id")
+  ruta        String   @db.VarChar(500)
+  nombre      String   @db.VarChar(255)
+  tipo        String   @db.VarChar(100)
+  tamano      Int
+  fechaSubida DateTime @default(now()) @map("fecha_subida")
+
+  gestion Gestion @relation(fields: [gestionId], references: [id], onDelete: Cascade)
+
+  @@index([gestionId])
+  @@map("archivo_gestion")
 }

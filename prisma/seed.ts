@@ -7,6 +7,7 @@ import { seedCashMovements } from './seeds/cash-movements.seed';
 import { seedCashCategories } from './seeds/cash.seed';
 import { seedCategories } from './seeds/categories.seed';
 import { seedFeeConfiguration } from './seeds/fees.seed';
+import { seedGestiones } from './seeds/gestiones.seed';
 import { seedMembers } from './seeds/members.seed';
 import { seedOffers } from './seeds/offers.seed';
 import { seedPayments } from './seeds/payments.seed';
@@ -50,6 +51,7 @@ async function main() {
   await seedCashCategories(prisma);
   await seedPayments(prisma);
   await seedCashMovements(prisma);
+  await seedGestiones(prisma, users.admin.id);
   console.log('Seed base ejecutado correctamente.');
   console.log(
     'Usuarios: admin@ccisj.uy, empresa@ccisj.uy, directivo@ccisj.uy, postulante@ccisj.uy',

@@ -127,3 +127,16 @@ export type CategoriaCaja = Prisma.CategoriaCajaModel
  * 
  */
 export type MovimientoCaja = Prisma.MovimientoCajaModel
+/**
+ * Model Gestion
+ * Gestoría: informes y trámites que la administración deja asentados para
+ * los socios directivos. Contenido libre: título, descripción, categoría y
+ * archivos.
+ */
+export type Gestion = Prisma.GestionModel
+/**
+ * Model ArchivoGestion
+ * Un archivo adjunto a una gestión. El archivo vive en Supabase Storage; acá
+ * queda su ruta (nunca una URL pública) y con qué nombre se subió.
+ */
+export type ArchivoGestion = Prisma.ArchivoGestionModel

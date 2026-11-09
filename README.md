@@ -418,6 +418,14 @@ Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.
 | `/ofertas`        | Cualquier usuario; cada socio las suyas con conteo de postulaciones en `/ofertas/mias`              | Admin y socios | Admin; cada socio solo las de su empresa                                |
 | `/postulaciones`  | Admin todas; cada socio las de sus ofertas en `/postulaciones/recibidas`; el postulante las suyas   | Postulantes    | Estado: admin y socio dueño de la oferta. Borrar: admin y el postulante |
 | `/notificaciones` | Admin las enviadas por admins; cada usuario las que recibió                                         | Admin          | Cada usuario marca las suyas como leídas                                |
+| `/gestiones`      | Admin y socios directivos                                                                           | Admin          | Admin                                                                   |
+
+Gestoría (`/gestiones`): informes y trámites que la administración deja
+asentados para los directivos, con título, descripción, categoría (texto libre;
+si ya existe una igual salvo mayúsculas, se usa esa) y archivos. Los archivos
+(PDF, JPG, PNG, Word o Excel; hasta 5 por subida, 20 por gestión y 10 MB cada
+uno) se verifican por el contenido, van a Storage en `gestoria/` y se abren
+con un enlace firmado de 60 segundos. Borrar una gestión borra sus archivos.
 
 Ofertas:
 

@@ -162,6 +162,18 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /caja/movimientos/:id/comprobante': SOLO_ADMIN,
   'PATCH /caja/movimientos/:id/anular': SOLO_ADMIN,
 
+  // Gestoría: un apartado solo para socios directivos (lo definió el
+  // cliente). La administración escribe; los directivos consultan.
+  'GET /gestiones': ['direc', 'admin'],
+  'GET /gestiones/categorias': ['direc', 'admin'],
+  'GET /gestiones/:id': ['direc', 'admin'],
+  'GET /gestiones/:id/archivos/:archivoId': ['direc', 'admin'],
+  'POST /gestiones': SOLO_ADMIN,
+  'PATCH /gestiones/:id': SOLO_ADMIN,
+  'DELETE /gestiones/:id': SOLO_ADMIN,
+  'POST /gestiones/:id/archivos': SOLO_ADMIN,
+  'DELETE /gestiones/:id/archivos/:archivoId': SOLO_ADMIN,
+
   // El cartel de la API.
   'GET /': TODOS,
 };
