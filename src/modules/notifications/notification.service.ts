@@ -1,3 +1,4 @@
+import { emitToUser } from '@/config/socket';
 import {
   CreateNotificationInput,
   TipoNotificacion,
@@ -80,13 +81,23 @@ export async function create(data: CreateNotificationInput) {
     throw new Error('No se encontraron destinatarios');
   }
 
-  return notificationRepository.create({
+  const notification = await notificationRepository.create({
     titulo: data.titulo.trim(),
     mensaje: data.mensaje.trim(),
     tipo: data.tipo,
     creadoPorId: data.creadoPorId,
     usuarioIds: usuarios.map((usuario) => usuario.id),
   });
+
+  if (notification) {
+    for (const destinatario of notification.destinatarios) {
+      emitToUser(destinatario.usuarioId, 'notificacion:nueva', {
+        notificacionId: notification.id,
+      });
+    }
+  }
+
+  return notification;
 }
 
 export async function getAll() {

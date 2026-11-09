@@ -76,9 +76,9 @@ type ResolvedSession =
  * el request, `optionalAuth` sigue como anónimo) y duplicar código de
  * seguridad es la forma más fácil de que las dos copias se vayan separando.
  */
-async function resolveSession(req: AuthRequest): Promise<ResolvedSession> {
-  const token = req.cookies?.token;
-
+export async function resolveSessionToken(
+  token: string | undefined,
+): Promise<ResolvedSession> {
   if (!token) {
     return { estado: 'anonimo' };
   }
@@ -140,6 +140,10 @@ async function resolveSession(req: AuthRequest): Promise<ResolvedSession> {
   } catch {
     return { estado: 'error' };
   }
+}
+
+async function resolveSession(req: AuthRequest): Promise<ResolvedSession> {
+  return resolveSessionToken(req.cookies?.token);
 }
 
 export async function requireAuth(

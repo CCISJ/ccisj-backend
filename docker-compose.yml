@@ -37,3 +37,20 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+  email-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ccisj-email-worker
+    env_file:
+      - .env
+    environment:
+      EMAIL_WORKER_ENABLED: 'true'
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+    command: ./node_modules/.bin/tsx watch src/workers/email.worker.ts
+    depends_on:
+      - backend
+    restart: unless-stopped
