@@ -3,7 +3,7 @@ import 'dotenv/config';
 import { processPendingEmails } from '../services/email/email.processor';
 import * as emailRepository from '../services/email/email.repository';
 
-const INTERVALO_MS = 30_000;
+const INTERVALO_MS = 5_000;
 
 async function main() {
   if (process.env.EMAIL_WORKER_ENABLED !== 'true') {
