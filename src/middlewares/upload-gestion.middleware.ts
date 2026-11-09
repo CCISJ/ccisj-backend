@@ -3,7 +3,8 @@ import multer from 'multer';
 
 import { rechazarNul } from './nul-byte.middleware';
 
-export const GESTION_MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
+// 8 MB en bytes decimales: es el tope que acepta Sonar (S5693) sin marcarlo.
+export const GESTION_MAX_FILE_SIZE = 8_000_000;
 
 /** Cuántos archivos se pueden mandar en una misma subida. */
 export const GESTION_MAX_FILES_PER_UPLOAD = 5;
