@@ -416,6 +416,23 @@ describe('Gestoría: archivos', () => {
     expect(vacia.body.message).toBe('Elegí al menos un archivo');
   });
 
+  it('un archivo de más de 8 MB se rechaza con 413', async () => {
+    const gestion = await crearGestion();
+    const grande = Buffer.concat([PDF, Buffer.alloc(8 * 1024 * 1024)]);
+
+    const response = await subir(gestion.id, [
+      {
+        buffer: grande,
+        filename: 'grande.pdf',
+        contentType: 'application/pdf',
+      },
+    ]);
+
+    expect(response.status).toBe(413);
+    expect(response.body.message).toBe('Cada archivo puede pesar hasta 8 MB');
+    expect(storageFalso.files.size).toBe(0);
+  });
+
   it('una gestión tiene hasta 20 archivos', async () => {
     const gestion = await crearGestion();
 

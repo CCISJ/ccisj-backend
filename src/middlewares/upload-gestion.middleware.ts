@@ -3,7 +3,7 @@ import multer from 'multer';
 
 import { rechazarNul } from './nul-byte.middleware';
 
-export const GESTION_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+export const GESTION_MAX_FILE_SIZE = 8 * 1024 * 1024; // 8 MB
 
 /** Cuántos archivos se pueden mandar en una misma subida. */
 export const GESTION_MAX_FILES_PER_UPLOAD = 5;
@@ -70,7 +70,7 @@ export function uploadGestionFiles(
       error.code === 'LIMIT_FILE_SIZE'
     ) {
       return res.status(413).json({
-        message: 'Cada archivo puede pesar hasta 10 MB',
+        message: 'Cada archivo puede pesar hasta 8 MB',
       });
     }
 

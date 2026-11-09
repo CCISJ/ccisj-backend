@@ -423,7 +423,7 @@ Todas las rutas piden sesión salvo `POST /auth/login` y `POST /auth/logout`.
 Gestoría (`/gestiones`): informes y trámites que la administración deja
 asentados para los directivos, con título, descripción, categoría (texto libre;
 si ya existe una igual salvo mayúsculas, se usa esa) y archivos. Los archivos
-(PDF, JPG, PNG, Word o Excel; hasta 5 por subida, 20 por gestión y 10 MB cada
+(PDF, JPG, PNG, Word o Excel; hasta 5 por subida, 20 por gestión y 8 MB cada
 uno) se verifican por el contenido, van a Storage en `gestoria/` y se abren
 con un enlace firmado de 60 segundos. Borrar una gestión borra sus archivos.
 

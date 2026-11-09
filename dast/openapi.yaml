@@ -1415,7 +1415,7 @@ paths:
                 archivos:
                   type: array
                   items: { type: string, format: binary }
-                  description: Hasta 5 por subida y 20 por gestión, de hasta 10 MB cada uno. PDF, JPG, PNG, Word o Excel, verificados por el contenido.
+                  description: Hasta 5 por subida y 20 por gestión, de hasta 8 MB cada uno. PDF, JPG, PNG, Word o Excel, verificados por el contenido.
       responses:
         '201': { description: Archivos subidos. }
         '400': { $ref: '#/components/responses/DatosInvalidos' }
