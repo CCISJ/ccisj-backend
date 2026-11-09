@@ -4,6 +4,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
 import {
+  generateMonthlyFee,
+  getMemberFeeStatus,
+} from '../src/modules/fees/fee.service';
+import {
   createAdmin,
   createApplicant,
   createMember,
@@ -69,6 +73,54 @@ describe('Socios', () => {
 
     expect(response.status).toBe(200);
     expect(Array.isArray(response.body)).toBe(true);
+  });
+
+  it('GET /socios trae el estado de cuotas de cada socio, el mismo que su ficha', async () => {
+    const debtor = await createMember();
+    const upToDate = await createMember();
+
+    try {
+      // Inactivos, para que la generación masiva de otro archivo que corre a
+      // la vez no les agregue cuotas entre la lista y la ficha (en el CI pasó:
+      // la lista vio 3 vencidas y la ficha, un instante después, 4). La lista
+      // de la administración incluye a los inactivos.
+      await prisma.usuario.updateMany({
+        where: { id: { in: [debtor.userId, upToDate.userId] } },
+        data: { activo: false },
+      });
+
+      // Enero a marzo de 2026 ya vencieron: tres cuotas vencidas es deudor.
+      for (const month of [1, 2, 3]) {
+        await generateMonthlyFee(debtor.socioId, 2026, month);
+      }
+
+      const response = await request(app)
+        .get('/socios')
+        .set('Cookie', admin.cookie);
+
+      expect(response.status).toBe(200);
+
+      const byId = (id: number) =>
+        response.body.find((item: { id: number }) => item.id === id);
+
+      // Se compara contra la ficha, que es la regla de siempre. Entre el
+      // alta y la baja pudo entrarle alguna cuota de otro archivo, así que
+      // no se fijan los importes.
+      expect(byId(debtor.socioId).estadoCuotas).toEqual(
+        await getMemberFeeStatus(debtor.socioId),
+      );
+      expect(byId(debtor.socioId).estadoCuotas.estado).toBe('DEUDOR');
+      expect(
+        byId(debtor.socioId).estadoCuotas.cuotasVencidas,
+      ).toBeGreaterThanOrEqual(3);
+
+      expect(byId(upToDate.socioId).estadoCuotas).toEqual(
+        await getMemberFeeStatus(upToDate.socioId),
+      );
+      expect(byId(upToDate.socioId).estadoCuotas.estado).toBe('AL_DIA');
+    } finally {
+      await deleteUsers([debtor.userId, upToDate.userId]);
+    }
   });
 
   it('GET /socios/:id devuelve un socio existente', async () => {

@@ -98,8 +98,66 @@ export async function getMemberFeeStatus(socioId: number, today = new Date()) {
 
   const fees = await findMemberFeesWithPayments(socioId);
 
-  const todayDate = uruguayToday(today);
+  return feeStatusFrom(fees, uruguayToday(today));
+}
 
+/**
+ * El estado de cuotas de cada socio, en una sola consulta: para la lista de
+ * socios de la administración. Es la misma regla que `getMemberFeeStatus`
+ * (la ficha de un socio), así que la lista y la ficha nunca dicen cosas
+ * distintas. Un socio sin cuotas no figura: está al día.
+ */
+export async function getFeeStatusByMember(today = new Date()) {
+  if (Number.isNaN(today.getTime())) {
+    throw new Error('La fecha no es válida');
+  }
+
+  const todayDate = uruguayToday(today);
+  const feesByMember = new Map<number, FeeForStatus[]>();
+
+  for (const fee of await findAllFeesWithPayments()) {
+    const fees = feesByMember.get(fee.socioId);
+
+    if (fees) {
+      fees.push(fee);
+    } else {
+      feesByMember.set(fee.socioId, [fee]);
+    }
+  }
+
+  return new Map(
+    [...feesByMember].map(([socioId, fees]) => [
+      socioId,
+      feeStatusFrom(fees, todayDate),
+    ]),
+  );
+}
+
+type FeeForStatus = {
+  estado: string;
+  importeTotal: { toString(): string };
+  fechaVencimiento: Date;
+  pagos: { importeAplicado: { toString(): string } }[];
+};
+
+export type MemberFeeStatus = {
+  estado: 'AL_DIA' | 'PENDIENTE' | 'DEUDOR';
+  cuotasPendientes: number;
+  deudaTotal: number;
+  cuotasVencidas: number;
+  deudaVencida: number;
+};
+
+/** Estado de un socio sin ninguna cuota sin pagar. */
+export const FEE_STATUS_UP_TO_DATE: MemberFeeStatus = {
+  estado: 'AL_DIA',
+  cuotasPendientes: 0,
+  deudaTotal: 0,
+  cuotasVencidas: 0,
+  deudaVencida: 0,
+};
+
+function feeStatusFrom(fees: FeeForStatus[], todayDate: Date): MemberFeeStatus {
   const pendingFees = fees
     .filter((fee) => fee.estado !== 'ANULADA')
     .map((fee) => {

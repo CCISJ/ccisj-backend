@@ -10,6 +10,7 @@ import { EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
 import { generatePassword } from '@/utils/password';
 
+import * as feeService from '../fees/fee.service';
 import * as usuarioRepository from '../users/user.repository';
 import * as memberRepository from './member.repository';
 
@@ -154,8 +155,20 @@ function parseMemberData(body: unknown): Partial<CreateMemberData> {
   return data;
 }
 
-export async function getAll() {
-  return memberRepository.findAll();
+/**
+ * La lista de la administración, con el estado de cuotas de cada socio. El
+ * directorio de los directivos no lo lleva: es un dato interno de la Cámara.
+ */
+export async function getAll(today = new Date()) {
+  const [members, feeStatus] = await Promise.all([
+    memberRepository.findAll(),
+    feeService.getFeeStatusByMember(today),
+  ]);
+
+  return members.map((member) => ({
+    ...member,
+    estadoCuotas: feeStatus.get(member.id) ?? feeService.FEE_STATUS_UP_TO_DATE,
+  }));
 }
 
 export async function getDirectory() {
