@@ -311,7 +311,10 @@ paths:
       tags: [Socios]
       summary: Padrón de socios (administración y socios directivos).
       responses:
-        '200': { description: Lista de socios. }
+        '200':
+          {
+            description: 'Lista de socios. A la administración le llega además el estado de cuotas de cada uno (estadoCuotas); al directivo, no.',
+          }
         '403': { $ref: '#/components/responses/SinPermiso' }
     post:
       tags: [Socios]
