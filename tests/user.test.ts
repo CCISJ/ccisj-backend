@@ -6,6 +6,7 @@ import { prisma } from '../src/config/prisma';
 import {
   createAdmin,
   createApplicant,
+  createLoggedUser,
   createMember,
   deleteUsers,
   uniqueEmail,
@@ -450,6 +451,95 @@ describe('Usuarios', () => {
       expect(response.status).toBe(400);
       expect(response.body.message).toBe('El email no es válido');
       expect(JSON.stringify(response.body)).not.toMatch(/prisma|invocation/i);
+    });
+  });
+
+  describe('restablecer la contraseña', () => {
+    function reset(userId: number, cookie = admin.cookie) {
+      return request(app)
+        .post(`/usuarios/${userId}/restablecer-contrasena`)
+        .set('Cookie', cookie);
+    }
+
+    it('genera una contraseña nueva, la devuelve una vez y la vieja deja de servir', async () => {
+      const cuenta = await createLoggedUser({ tipo: 'POSTULANTE' });
+
+      try {
+        const response = await reset(cuenta.userId);
+
+        expect(response.status).toBe(200);
+        expect(response.headers['cache-control']).toBe('no-store');
+        expect(response.body.email).toBe(cuenta.email);
+        expect(response.body.password).toMatch(/^[a-zA-Z2-9]{12}$/);
+        expect(response.body.password).toMatch(/\d/);
+
+        const vieja = await request(app)
+          .post('/auth/login')
+          .send({ email: cuenta.email, password: cuenta.password });
+        const nueva = await request(app)
+          .post('/auth/login')
+          .send({ email: cuenta.email, password: response.body.password });
+
+        expect(vieja.status).toBe(401);
+        expect(nueva.status).toBe(200);
+
+        // Nunca se guarda en texto plano.
+        const stored = await prisma.usuario.findUnique({
+          where: { id: cuenta.userId },
+          select: { password: true },
+        });
+
+        expect(stored?.password).toMatch(/^\$argon2/);
+      } finally {
+        await deleteUsers([cuenta.userId]);
+      }
+    });
+
+    it('cierra las sesiones que la cuenta tenía abiertas', async () => {
+      const cuenta = await createLoggedUser({ tipo: 'POSTULANTE' });
+
+      try {
+        expect((await cuenta.agent.get('/auth/me')).status).toBe(200);
+
+        expect((await reset(cuenta.userId)).status).toBe(200);
+
+        expect((await cuenta.agent.get('/auth/me')).status).toBe(401);
+      } finally {
+        await deleteUsers([cuenta.userId]);
+      }
+    });
+
+    it('la propia no: se cambia desde Mi cuenta, con la actual', async () => {
+      const response = await reset(admin.userId);
+
+      expect(response.status).toBe(400);
+      expect(response.body.message).toBe(
+        'Tu propia contraseña se cambia desde Mi cuenta, con la actual',
+      );
+    });
+
+    it('devuelve 404 si la cuenta no existe y 400 si el ID no es válido', async () => {
+      expect((await reset(999_999_999)).status).toBe(404);
+
+      const invalid = await request(app)
+        .post('/usuarios/abc/restablecer-contrasena')
+        .set('Cookie', admin.cookie);
+
+      expect(invalid.status).toBe(400);
+    });
+
+    it('un socio directivo no puede restablecer la de nadie', async () => {
+      const directivo = await createMember('DIRECTIVO');
+      const otro = await createMember();
+
+      try {
+        const response = await reset(otro.userId, directivo.cookie);
+
+        expect(response.status).toBe(403);
+        expect(response.body).not.toHaveProperty('password');
+      } finally {
+        await deleteUsers([directivo.userId, otro.userId]);
+      }
     });
   });
 

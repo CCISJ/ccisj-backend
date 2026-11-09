@@ -48,6 +48,7 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /usuarios/:id': SOLO_ADMIN,
   'POST /usuarios': SOLO_ADMIN,
   'PATCH /usuarios/:id': SOLO_ADMIN,
+  'POST /usuarios/:id/restablecer-contrasena': SOLO_ADMIN,
   'DELETE /usuarios/:id': SOLO_ADMIN,
 
   // El socio administra su propia empresa; el padrón lo ven la administración

@@ -271,6 +271,18 @@ paths:
         '200': { description: Cuenta borrada. }
         '404': { $ref: '#/components/responses/NoEncontrado' }
 
+  /usuarios/{id}/restablecer-contrasena:
+    parameters:
+      - $ref: '#/components/parameters/UsuarioId'
+    post:
+      tags: [Usuarios]
+      summary: Le da a una cuenta una contraseña nueva, generada al azar.
+      description: La devuelve una sola vez y cierra las sesiones abiertas de esa cuenta. La propia se cambia desde /auth/cambiar-contrasena.
+      responses:
+        '200': { description: El email de la cuenta y la contraseña nueva. }
+        '400': { description: Es la cuenta de quien la pide. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+
   # --- Socios ---------------------------------------------------------------
 
   /socios/me:

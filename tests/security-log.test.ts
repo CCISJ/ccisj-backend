@@ -360,6 +360,29 @@ describe('Cambios de cuentas', () => {
     }
   });
 
+  it('restablecer una contraseña deja quién lo hizo y a qué cuenta, sin la contraseña', async () => {
+    const cuenta = await cuentaConLogin();
+
+    const response = await request(app)
+      .post(`/usuarios/${cuenta.userId}/restablecer-contrasena`)
+      .set('Cookie', admin.cookie);
+
+    expect(response.status).toBe(200);
+    expect(eventos()).toEqual([
+      expect.objectContaining({
+        evento: 'contrasena.restablecida',
+        usuarioId: admin.userId,
+        rol: 'ADMIN',
+        cuentaId: cuenta.userId,
+        cuentaRol: 'POSTULANTE',
+      }),
+    ]);
+
+    for (const dato of [response.body.password, cuenta.email]) {
+      expect(lineas.join()).not.toContain(dato);
+    }
+  });
+
   it('el alta y la baja de un socio, sin su contraseña inicial', async () => {
     const suffix = Date.now();
 

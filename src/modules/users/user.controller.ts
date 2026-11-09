@@ -114,3 +114,27 @@ export async function remove(req: AuthRequest, res: Response) {
     });
   }
 }
+
+export async function resetPassword(req: AuthRequest, res: Response) {
+  try {
+    const id = parseId(req.params.id);
+
+    if (!id) return invalidId(res);
+
+    const result = await userService.resetPassword(id, req.user!.id);
+
+    logSecurityEvent(req, 'contrasena.restablecida', {
+      cuentaId: result.id,
+      cuentaRol: result.tipo,
+    });
+
+    // La contraseña viaja una sola vez: que no quede guardada en ningún caché.
+    res.set('Cache-Control', 'no-store');
+    res.json({ email: result.email, password: result.password });
+  } catch (error) {
+    sendError(res, error, {
+      status: 400,
+      message: 'Error al restablecer la contraseña',
+    });
+  }
+}
