@@ -246,14 +246,25 @@ export async function searchCandidates(query: Record<string, unknown>) {
   return applicantRepository.searchCandidates(filters);
 }
 
-export async function getCandidateById(id: number) {
+/**
+ * La ficha de un candidato. La administración ve además su cuenta (el email
+ * con el que entra), para poder restablecerle la contraseña; un directivo no.
+ */
+export async function getCandidateById(
+  id: number,
+  { withAccount = false } = {},
+) {
   const candidate = await applicantRepository.findCandidateById(id);
 
   if (!candidate) {
     throw new HttpError(404, 'Candidato no encontrado');
   }
 
-  return candidate;
+  const { usuario, ...ficha } = candidate;
+
+  return withAccount
+    ? { ...ficha, cuenta: { usuarioId: usuario.id, email: usuario.email } }
+    : ficha;
 }
 
 export async function getCandidateCvFileUrl(candidateId: number, cvId: number) {

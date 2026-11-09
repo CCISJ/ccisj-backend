@@ -12,6 +12,7 @@ import {
   getById,
   getNotificationRecipients,
   remove,
+  resetPassword,
   update,
 } from './user.controller';
 
@@ -30,6 +31,7 @@ router.get(
 router.get('/:id', getById);
 router.post('/', create);
 router.patch('/:id', update);
+router.post('/:id/restablecer-contrasena', resetPassword);
 router.delete('/:id', remove);
 
 export default router;

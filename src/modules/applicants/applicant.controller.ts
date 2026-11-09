@@ -127,7 +127,9 @@ export async function getCandidateById(req: AuthRequest, res: Response) {
 
     if (!id) return invalidId(res);
 
-    const candidate = await applicantService.getCandidateById(id);
+    const candidate = await applicantService.getCandidateById(id, {
+      withAccount: req.user?.tipo === 'ADMIN',
+    });
 
     res.json(candidate);
   } catch (error) {

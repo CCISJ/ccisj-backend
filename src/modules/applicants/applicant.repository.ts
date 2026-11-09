@@ -253,6 +253,7 @@ export function findCandidateById(id: number) {
       apellido: true,
       direccion: true,
       otros: true,
+      usuario: { select: { id: true, email: true } },
       estudios: {
         orderBy: [{ orden: 'asc' }, { id: 'asc' }],
       },

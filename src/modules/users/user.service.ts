@@ -3,7 +3,7 @@ import argon2 from 'argon2';
 import { TipoUsuario } from '@/types/user.type';
 import { EMAIL_MAX, EMAIL_PATTERN, normalizeEmail } from '@/utils/email';
 import { HttpError } from '@/utils/http-error';
-import { assertPasswordPolicy } from '@/utils/password';
+import { assertPasswordPolicy, generatePassword } from '@/utils/password';
 
 import * as userRepository from './user.repository';
 
@@ -198,4 +198,48 @@ export async function remove(id: number, actorId: number) {
       'La cuenta tiene datos asociados (empresa, ofertas o notificaciones enviadas) y no se puede eliminar. Desactivala.',
     );
   }
+}
+
+/**
+ * La administración le da una contraseña nueva a una cuenta que perdió la
+ * suya. No la elige quien la entrega: se genera al azar, con las mismas reglas
+ * que la inicial del alta de un socio, y se devuelve una sola vez para que la
+ * administración se la pase a la persona. Las sesiones abiertas de la cuenta
+ * dejan de valer, como cuando la cambia su dueño.
+ *
+ * La propia no se restablece acá: se cambia desde Mi cuenta, con la actual.
+ */
+export async function resetPassword(id: number, actorId: number) {
+  if (id === actorId) {
+    throw new HttpError(
+      400,
+      'Tu propia contraseña se cambia desde Mi cuenta, con la actual',
+    );
+  }
+
+  const usuario = await userRepository.findById(id);
+
+  if (!usuario) {
+    throw new HttpError(404, 'Usuario no encontrado');
+  }
+
+  const password = generatePassword();
+
+  // El `iat` del token va en segundos. Redondeando hacia arriba, ninguna
+  // sesión emitida hasta este segundo inclusive sigue valiendo, ni siquiera
+  // una que se abrió en el mismo segundo del cambio.
+  const changedAt = new Date(Math.ceil(Date.now() / 1000) * 1000);
+
+  await userRepository.updatePassword(
+    id,
+    await argon2.hash(password),
+    changedAt,
+  );
+
+  return {
+    id: usuario.id,
+    email: usuario.email,
+    tipo: usuario.tipo,
+    password,
+  };
 }

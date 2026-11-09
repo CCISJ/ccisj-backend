@@ -473,6 +473,26 @@ describe('Applicants', () => {
       expect(response.body.items[0].id).toBe(candidato.postulanteId);
     });
 
+    it('la ficha le muestra la cuenta a la administración, no a un directivo', async () => {
+      const comoAdmin = await request(app)
+        .get(`/postulantes/candidatos/${candidato.postulanteId}`)
+        .set('Cookie', admin.cookie);
+      const comoDirectivo = await request(app)
+        .get(`/postulantes/candidatos/${candidato.postulanteId}`)
+        .set('Cookie', directivo.cookie);
+
+      expect(comoAdmin.status).toBe(200);
+      expect(comoAdmin.body.cuenta).toEqual({
+        usuarioId: candidato.userId,
+        email: candidato.email,
+      });
+
+      expect(comoDirectivo.status).toBe(200);
+      expect(comoDirectivo.body).not.toHaveProperty('cuenta');
+      expect(comoDirectivo.body).not.toHaveProperty('usuario');
+      expect(JSON.stringify(comoDirectivo.body)).not.toContain(candidato.email);
+    });
+
     it('no muestra a un postulante con la cuenta desactivada', async () => {
       const list = await search(
         `search=${encodeURIComponent(`Inactivo ${suffix}`)}`,

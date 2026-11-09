@@ -27,6 +27,7 @@ export type SecurityEvent =
   | 'contrasena.cambiada'
   | 'contrasena.fallida'
   | 'contrasena.bloqueada'
+  | 'contrasena.restablecida'
   | 'sesion.invalida'
   | 'acceso.denegado'
   | 'limite.superado'
