@@ -80,6 +80,15 @@ describe('Socios', () => {
     const upToDate = await createMember();
 
     try {
+      // Inactivos, para que la generación masiva de otro archivo que corre a
+      // la vez no les agregue cuotas entre la lista y la ficha (en el CI pasó:
+      // la lista vio 3 vencidas y la ficha, un instante después, 4). La lista
+      // de la administración incluye a los inactivos.
+      await prisma.usuario.updateMany({
+        where: { id: { in: [debtor.userId, upToDate.userId] } },
+        data: { activo: false },
+      });
+
       // Enero a marzo de 2026 ya vencieron: tres cuotas vencidas es deudor.
       for (const month of [1, 2, 3]) {
         await generateMonthlyFee(debtor.socioId, 2026, month);
@@ -94,9 +103,9 @@ describe('Socios', () => {
       const byId = (id: number) =>
         response.body.find((item: { id: number }) => item.id === id);
 
-      // Se compara contra la ficha, que es la regla de siempre. Otro archivo
-      // puede generarle a la vez la cuota del mes a todo socio activo, así
-      // que no se fijan los importes.
+      // Se compara contra la ficha, que es la regla de siempre. Entre el
+      // alta y la baja pudo entrarle alguna cuota de otro archivo, así que
+      // no se fijan los importes.
       expect(byId(debtor.socioId).estadoCuotas).toEqual(
         await getMemberFeeStatus(debtor.socioId),
       );
