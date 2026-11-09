@@ -16,33 +16,37 @@ export function configureSocket(httpServer: HttpServer) {
     transports: ['websocket', 'polling'],
   });
 
-  io.use(async (socket, next) => {
-    try {
-      const origin = socket.handshake.headers.origin;
+  io.use((socket, next) => {
+    void (async () => {
+      try {
+        const origin = socket.handshake.headers.origin;
 
-      if (!origin || !environment.allowedOrigins.includes(origin)) {
-        return next(new Error('Origen no permitido'));
+        if (!origin || !environment.allowedOrigins.includes(origin)) {
+          next(new Error('Origen no permitido'));
+          return;
+        }
+
+        const cookies = parseCookie(socket.handshake.headers.cookie ?? '');
+        const session = await resolveSessionToken(cookies.token);
+
+        if (session.estado !== 'ok') {
+          next(new Error('Sesión inválida o expirada'));
+          return;
+        }
+
+        socket.data.usuarioId = session.user.id;
+
+        next();
+      } catch {
+        next(new Error('No se pudo autenticar la conexión'));
       }
-
-      const cookies = parseCookie(socket.handshake.headers.cookie ?? '');
-      const session = await resolveSessionToken(cookies.token);
-
-      if (session.estado !== 'ok') {
-        return next(new Error('Sesión inválida o expirada'));
-      }
-
-      socket.data.usuarioId = session.user.id;
-
-      next();
-    } catch {
-      next(new Error('No se pudo autenticar la conexión'));
-    }
+    })();
   });
 
   io.on('connection', (socket) => {
     const usuarioId = socket.data.usuarioId as number;
 
-    socket.join(`usuario:${usuarioId}`);
+    void socket.join(`usuario:${usuarioId}`);
 
     console.log(`Socket conectado: usuario ${usuarioId}`);
 
