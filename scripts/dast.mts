@@ -349,6 +349,12 @@ async function crearJuego(admin: Pedir, postulante: Pedir, n: number) {
     apellido: 'DAST',
   });
 
+  const gestion = await admin('POST', '/gestiones', {
+    titulo: `Gestión DAST ${sufijo}`,
+    descripcion: 'Creada para el escaneo',
+    categoria: 'DAST',
+  });
+
   const juego: Fixtures = {
     usuario: Number(usuario.id),
     socio: socioId,
@@ -362,6 +368,7 @@ async function crearJuego(admin: Pedir, postulante: Pedir, n: number) {
     ajuste: Number(ajuste.id),
     cajaCategoria: Number(cajaCategoria.id),
     movimiento: Number(movimiento.id),
+    gestion: Number(gestion.id),
   };
 
   const faltan = Object.entries(juego).filter(

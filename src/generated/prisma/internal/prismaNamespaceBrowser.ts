@@ -72,7 +72,9 @@ export const ModelName = {
   PagoCuota: 'PagoCuota',
   PagoCuotaDetalle: 'PagoCuotaDetalle',
   CategoriaCaja: 'CategoriaCaja',
-  MovimientoCaja: 'MovimientoCaja'
+  MovimientoCaja: 'MovimientoCaja',
+  Gestion: 'Gestion',
+  ArchivoGestion: 'ArchivoGestion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -397,6 +399,32 @@ export const MovimientoCajaScalarFieldEnum = {
 } as const
 
 export type MovimientoCajaScalarFieldEnum = (typeof MovimientoCajaScalarFieldEnum)[keyof typeof MovimientoCajaScalarFieldEnum]
+
+
+export const GestionScalarFieldEnum = {
+  id: 'id',
+  titulo: 'titulo',
+  descripcion: 'descripcion',
+  categoria: 'categoria',
+  creadoPorId: 'creadoPorId',
+  fechaCreacion: 'fechaCreacion',
+  fechaActualizacion: 'fechaActualizacion'
+} as const
+
+export type GestionScalarFieldEnum = (typeof GestionScalarFieldEnum)[keyof typeof GestionScalarFieldEnum]
+
+
+export const ArchivoGestionScalarFieldEnum = {
+  id: 'id',
+  gestionId: 'gestionId',
+  ruta: 'ruta',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  tamano: 'tamano',
+  fechaSubida: 'fechaSubida'
+} as const
+
+export type ArchivoGestionScalarFieldEnum = (typeof ArchivoGestionScalarFieldEnum)[keyof typeof ArchivoGestionScalarFieldEnum]
 
 
 export const SortOrder = {

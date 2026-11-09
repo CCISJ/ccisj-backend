@@ -43,6 +43,7 @@ const MONTAJES = [
   '/cuotas',
   '/caja/categorias',
   '/caja/movimientos',
+  '/gestiones',
 ];
 
 /** Middlewares de infraestructura: no dicen nada sobre permisos. */

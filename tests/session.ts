@@ -260,6 +260,9 @@ export async function deleteUsers(userIds: number[]) {
 
   await deleteNotificationsCreatedBy(ids);
 
+  // Las gestiones que creó un admin de prueba (sus archivos se van con ellas).
+  await prisma.gestion.deleteMany({ where: { creadoPorId: { in: ids } } });
+
   const socios = await prisma.socio.findMany({
     where: {
       usuarioId: { in: ids },

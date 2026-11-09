@@ -418,7 +418,9 @@ export const ModelName = {
   PagoCuota: 'PagoCuota',
   PagoCuotaDetalle: 'PagoCuotaDetalle',
   CategoriaCaja: 'CategoriaCaja',
-  MovimientoCaja: 'MovimientoCaja'
+  MovimientoCaja: 'MovimientoCaja',
+  Gestion: 'Gestion',
+  ArchivoGestion: 'ArchivoGestion'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -434,7 +436,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "envioEmail" | "usuario" | "notificacion" | "notificacionUsuario" | "socio" | "postulante" | "estudio" | "experienciaLaboral" | "referencia" | "cv" | "categoria" | "postulanteCategoria" | "oferta" | "ofertaCategoria" | "postulacion" | "configuracionCuota" | "ajusteCuotaSocio" | "cuota" | "pagoCuota" | "pagoCuotaDetalle" | "categoriaCaja" | "movimientoCaja"
+    modelProps: "envioEmail" | "usuario" | "notificacion" | "notificacionUsuario" | "socio" | "postulante" | "estudio" | "experienciaLaboral" | "referencia" | "cv" | "categoria" | "postulanteCategoria" | "oferta" | "ofertaCategoria" | "postulacion" | "configuracionCuota" | "ajusteCuotaSocio" | "cuota" | "pagoCuota" | "pagoCuotaDetalle" | "categoriaCaja" | "movimientoCaja" | "gestion" | "archivoGestion"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2066,6 +2068,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Gestion: {
+      payload: Prisma.$GestionPayload<ExtArgs>
+      fields: Prisma.GestionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.GestionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.GestionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>
+        }
+        findFirst: {
+          args: Prisma.GestionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.GestionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>
+        }
+        findMany: {
+          args: Prisma.GestionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>[]
+        }
+        create: {
+          args: Prisma.GestionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>
+        }
+        createMany: {
+          args: Prisma.GestionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.GestionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>[]
+        }
+        delete: {
+          args: Prisma.GestionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>
+        }
+        update: {
+          args: Prisma.GestionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>
+        }
+        deleteMany: {
+          args: Prisma.GestionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.GestionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.GestionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>[]
+        }
+        upsert: {
+          args: Prisma.GestionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$GestionPayload>
+        }
+        aggregate: {
+          args: Prisma.GestionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateGestion>
+        }
+        groupBy: {
+          args: Prisma.GestionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GestionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.GestionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.GestionCountAggregateOutputType> | number
+        }
+      }
+    }
+    ArchivoGestion: {
+      payload: Prisma.$ArchivoGestionPayload<ExtArgs>
+      fields: Prisma.ArchivoGestionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ArchivoGestionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ArchivoGestionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>
+        }
+        findFirst: {
+          args: Prisma.ArchivoGestionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ArchivoGestionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>
+        }
+        findMany: {
+          args: Prisma.ArchivoGestionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>[]
+        }
+        create: {
+          args: Prisma.ArchivoGestionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>
+        }
+        createMany: {
+          args: Prisma.ArchivoGestionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ArchivoGestionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>[]
+        }
+        delete: {
+          args: Prisma.ArchivoGestionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>
+        }
+        update: {
+          args: Prisma.ArchivoGestionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>
+        }
+        deleteMany: {
+          args: Prisma.ArchivoGestionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ArchivoGestionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ArchivoGestionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>[]
+        }
+        upsert: {
+          args: Prisma.ArchivoGestionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ArchivoGestionPayload>
+        }
+        aggregate: {
+          args: Prisma.ArchivoGestionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateArchivoGestion>
+        }
+        groupBy: {
+          args: Prisma.ArchivoGestionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ArchivoGestionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ArchivoGestionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ArchivoGestionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2411,6 +2561,32 @@ export const MovimientoCajaScalarFieldEnum = {
 } as const
 
 export type MovimientoCajaScalarFieldEnum = (typeof MovimientoCajaScalarFieldEnum)[keyof typeof MovimientoCajaScalarFieldEnum]
+
+
+export const GestionScalarFieldEnum = {
+  id: 'id',
+  titulo: 'titulo',
+  descripcion: 'descripcion',
+  categoria: 'categoria',
+  creadoPorId: 'creadoPorId',
+  fechaCreacion: 'fechaCreacion',
+  fechaActualizacion: 'fechaActualizacion'
+} as const
+
+export type GestionScalarFieldEnum = (typeof GestionScalarFieldEnum)[keyof typeof GestionScalarFieldEnum]
+
+
+export const ArchivoGestionScalarFieldEnum = {
+  id: 'id',
+  gestionId: 'gestionId',
+  ruta: 'ruta',
+  nombre: 'nombre',
+  tipo: 'tipo',
+  tamano: 'tamano',
+  fechaSubida: 'fechaSubida'
+} as const
+
+export type ArchivoGestionScalarFieldEnum = (typeof ArchivoGestionScalarFieldEnum)[keyof typeof ArchivoGestionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2846,6 +3022,8 @@ export type GlobalOmitConfig = {
   pagoCuotaDetalle?: Prisma.PagoCuotaDetalleOmit
   categoriaCaja?: Prisma.CategoriaCajaOmit
   movimientoCaja?: Prisma.MovimientoCajaOmit
+  gestion?: Prisma.GestionOmit
+  archivoGestion?: Prisma.ArchivoGestionOmit
 }
 
 /* Types for Logging */
