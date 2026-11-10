@@ -504,6 +504,28 @@ router.use(requireAuth);
 router.post('/', requireRole('ADMIN', 'SOCIO'), create);
 ```
 
+## Notificaciones en tiempo real
+
+`src/config/socket.ts` monta Socket.IO sobre el mismo servidor HTTP.
+
+- **Al conectar:** se exige un `Origin` de `CORS_ORIGIN` y la cookie de
+  sesión, validada con la misma función que `requireAuth`. Cada conexión
+  entra a la sala `usuario:{id}`.
+- **El aviso:** cuando a alguien le llega una notificación (comunicado del
+  admin o aviso automático de una postulación), recibe
+  `notificacion:nueva` con **solo el id**. El contenido lo pide la pantalla
+  por la API, con sus permisos.
+- **Sesiones que dejan de valer:** antes de cada aviso se revalida la
+  sesión de cada conexión. Si la contraseña cambió o la cuenta se
+  desactivó, se corta sin avisar. Además, cada conexión se cierra cuando
+  vence su token.
+- **Agregar un aviso nuevo:** llamar a `avisarNotificacionNueva(id,
+  usuarioIds)` **después** de la transacción que lo guarda, nunca adentro:
+  si no, la pantalla lo pide antes de que exista.
+
+Los tests están en `tests/socket.test.ts`, con un servidor y un cliente de
+verdad.
+
 ## Tests con sesión
 
 `tests/session.ts` crea usuarios de cada rol directamente en la base y les

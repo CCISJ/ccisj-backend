@@ -1,3 +1,4 @@
+import { avisarNotificacionNueva } from '@/config/socket';
 import { Prisma } from '@/generated/prisma/client';
 import type { SessionUser } from '@/middlewares/auth.middleware';
 import * as applicantRepository from '@/modules/applicants/applicant.repository';
@@ -317,6 +318,10 @@ async function updateAsMember(
         409,
         'La postulación cambió mientras la estabas viendo. Actualizá la página.',
       );
+    }
+
+    if (changed.notificacionId !== null) {
+      void avisarNotificacionNueva(changed.notificacionId, [recipient.id]);
     }
   }
 
