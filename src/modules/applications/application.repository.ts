@@ -259,7 +259,9 @@ type StatusChange = {
 /**
  * Cambia el estado y crea el aviso al postulante en la misma transacción: o
  * pasan las dos cosas o ninguna. El estado solo cambia si sigue siendo el que
- * se leyó (`from`); si otro cambio llegó antes, devuelve false y no avisa.
+ * se leyó (`from`); si otro cambio llegó antes, devuelve null y no avisa.
+ * Si cambió, devuelve el id del aviso creado (o null si no hubo aviso), para
+ * avisarlo en tiempo real recién cuando la transacción ya terminó.
  */
 export function changeStatus({ id, from, to, notification }: StatusChange) {
   return prisma.$transaction(async (tx) => {
@@ -268,22 +270,23 @@ export function changeStatus({ id, from, to, notification }: StatusChange) {
       data: { estado: to },
     });
 
-    if (count === 0) return false;
+    if (count === 0) return null;
 
-    if (notification) {
-      await tx.notificacion.create({
-        data: {
-          titulo: notification.titulo,
-          mensaje: notification.mensaje,
-          tipo: 'NORMAL',
-          creadoPorId: notification.creadoPorId,
-          destinatarios: {
-            create: { usuarioId: notification.usuarioId },
-          },
+    if (!notification) return { notificacionId: null };
+
+    const { id: notificacionId } = await tx.notificacion.create({
+      data: {
+        titulo: notification.titulo,
+        mensaje: notification.mensaje,
+        tipo: 'NORMAL',
+        creadoPorId: notification.creadoPorId,
+        destinatarios: {
+          create: { usuarioId: notification.usuarioId },
         },
-      });
-    }
+      },
+      select: { id: true },
+    });
 
-    return true;
+    return { notificacionId };
   });
 }

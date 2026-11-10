@@ -1,4 +1,4 @@
-import { emitToUser } from '@/config/socket';
+import { avisarNotificacionNueva } from '@/config/socket';
 import {
   CreateNotificationInput,
   TipoNotificacion,
@@ -90,11 +90,10 @@ export async function create(data: CreateNotificationInput) {
   });
 
   if (notification) {
-    for (const destinatario of notification.destinatarios) {
-      emitToUser(destinatario.usuarioId, 'notificacion:nueva', {
-        notificacionId: notification.id,
-      });
-    }
+    void avisarNotificacionNueva(
+      notification.id,
+      notification.destinatarios.map((d) => d.usuarioId),
+    );
   }
 
   return notification;

@@ -238,6 +238,9 @@ type ClosedOfferNotice = (offerTitle: string) => {
  * y las postulaciones sin resolver pasan a FINALIZADA, con un aviso por oferta a
  * los postulantes activos. Todo en una transacción: se aplica completo o nada.
  * Si después se reactiva la cuenta, las ofertas siguen cerradas.
+ *
+ * Devuelve los avisos creados (id y destinatarios) para avisarlos en tiempo
+ * real cuando la transacción ya terminó.
  */
 export function remove(
   id: number,
@@ -267,7 +270,9 @@ export function remove(
         select: { ofertaId: true, postulanteId: true },
       });
 
-      if (finalized.length === 0) return;
+      const avisos: { notificacionId: number; usuarioIds: number[] }[] = [];
+
+      if (finalized.length === 0) return avisos;
 
       const offers = await tx.oferta.findMany({
         where: { id: { in: [...new Set(finalized.map((a) => a.ofertaId))] } },
@@ -296,7 +301,7 @@ export function remove(
 
         if (userIds.length === 0) continue;
 
-        await tx.notificacion.create({
+        const { id: notificacionId } = await tx.notificacion.create({
           data: {
             ...closedOfferNotice(offer.titulo),
             tipo: 'NORMAL',
@@ -307,8 +312,13 @@ export function remove(
               create: userIds.map((userId) => ({ usuarioId: userId })),
             },
           },
+          select: { id: true },
         });
+
+        avisos.push({ notificacionId, usuarioIds: userIds });
       }
+
+      return avisos;
     },
     // Una empresa con muchas ofertas son varias consultas contra la base remota.
     { timeout: 15_000 },

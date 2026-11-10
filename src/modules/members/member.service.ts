@@ -1,5 +1,6 @@
 import argon2 from 'argon2';
 
+import { avisarNotificacionNueva } from '@/config/socket';
 import { Prisma } from '@/generated/prisma/client';
 import {
   CreateMemberData,
@@ -443,8 +444,16 @@ export async function remove(id: number) {
   }
 
   // El aviso no cuenta que la empresa se dio de baja: solo que la oferta cerró.
-  return memberRepository.remove(id, member.usuarioId, (offerTitle) => ({
-    titulo: 'Tu postulación: Finalizada',
-    mensaje: `La oferta «${offerTitle}» de ${member.razonSocial} se cerró y tu postulación quedó finalizada. Gracias por tu interés.`,
-  }));
+  const avisos = await memberRepository.remove(
+    id,
+    member.usuarioId,
+    (offerTitle) => ({
+      titulo: 'Tu postulación: Finalizada',
+      mensaje: `La oferta «${offerTitle}» de ${member.razonSocial} se cerró y tu postulación quedó finalizada. Gracias por tu interés.`,
+    }),
+  );
+
+  for (const aviso of avisos) {
+    void avisarNotificacionNueva(aviso.notificacionId, aviso.usuarioIds);
+  }
 }
