@@ -207,9 +207,9 @@ describe('un postulante contra los datos de otro postulante', () => {
     expect(res.status).toBe(404);
   });
 
-  it('no puede borrar la postulación ajena', async () => {
+  it('no puede retirar la postulación ajena', async () => {
     const res = await request(app)
-      .delete(`/postulaciones/${ajeno.postulacionId}`)
+      .patch(`/postulaciones/${ajeno.postulacionId}/retirar`)
       .set('Cookie', atacante.postulante);
 
     expect(res.status).toBe(404);
@@ -219,6 +219,7 @@ describe('un postulante contra los datos de otro postulante', () => {
     });
 
     expect(sigue).not.toBeNull();
+    expect(sigue!.estado).not.toBe('RETIRADA');
   });
 
   it('no puede marcar como leída una notificación ajena', async () => {
