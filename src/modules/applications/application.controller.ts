@@ -137,6 +137,21 @@ export async function update(req: AuthRequest, res: Response) {
   }
 }
 
+export async function withdraw(req: AuthRequest, res: Response) {
+  try {
+    const id = parseId(req.params.id);
+
+    if (!id) return invalidId(res);
+
+    res.json(await applicationService.withdraw(id, req.user!));
+  } catch (error) {
+    sendError(res, error, {
+      status: 400,
+      message: 'Error al retirar la postulación',
+    });
+  }
+}
+
 export async function remove(req: AuthRequest, res: Response) {
   try {
     const id = parseId(req.params.id);

@@ -108,21 +108,56 @@ export function findById(id: number) {
   });
 }
 
-export function findBySocio(socioId: number) {
-  return prisma.oferta.findMany({
+/**
+ * Agrega a cada oferta cuántas postulaciones siguen vigentes (sin contar las
+ * retiradas), que es lo que se le muestra al socio. `_count.postulaciones`
+ * sigue contando todas: es lo que decide si la oferta se puede borrar.
+ */
+async function withActiveApplications<T extends { id: number }>(offers: T[]) {
+  if (offers.length === 0) return [];
+
+  const groups = await prisma.postulacion.groupBy({
+    by: ['ofertaId'],
+    where: {
+      ofertaId: { in: offers.map((offer) => offer.id) },
+      estado: { not: 'RETIRADA' },
+    },
+    _count: { _all: true },
+  });
+
+  const active = new Map(
+    groups.map((group) => [group.ofertaId, group._count._all]),
+  );
+
+  return offers.map((offer) => ({
+    ...offer,
+    postulacionesActivas: active.get(offer.id) ?? 0,
+  }));
+}
+
+export async function findBySocio(socioId: number) {
+  const offers = await prisma.oferta.findMany({
     where: { socioId },
     include: ownOfferInclude,
     orderBy: {
       fechaPublicacion: 'desc',
     },
   });
+
+  return withActiveApplications(offers);
 }
 
-export function findOwnById(id: number, socioId: number) {
-  return prisma.oferta.findFirst({
+export async function findOwnById(id: number, socioId: number) {
+  const offer = await prisma.oferta.findFirst({
     where: { id, socioId },
     include: ownOfferInclude,
   });
+
+  if (!offer) return null;
+
+  const [withCount] = await withActiveApplications([offer]);
+
+  return withCount;
 }
 
 export function create(data: CreateOfferData) {

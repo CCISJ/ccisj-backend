@@ -448,10 +448,24 @@ describe('Applications', () => {
 
     it('otro postulante no puede retirar la postulación', async () => {
       const response = await request(app)
-        .delete(`/postulaciones/${applicationId}`)
+        .patch(`/postulaciones/${applicationId}/retirar`)
         .set('Cookie', otherPostulante.cookie);
 
       expect(response.status).toBe(404);
+
+      const stored = await prisma.postulacion.findUnique({
+        where: { id: applicationId },
+      });
+
+      expect(stored!.estado).not.toBe('RETIRADA');
+    });
+
+    it('el postulante ya no borra su postulación: la retira', async () => {
+      const response = await request(app)
+        .delete(`/postulaciones/${applicationId}`)
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(403);
     });
   });
 
@@ -808,10 +822,156 @@ describe('Applications', () => {
     });
   });
 
-  it('DELETE /postulaciones/:id elimina la postulación', async () => {
+  describe('retirar una postulación (postulante)', () => {
+    let withdrawOfferId: number;
+    let withdrawId: number;
+
+    // Los avisos que crea el postulante al retirarse (van a la empresa).
+    const countWithdrawNotices = () =>
+      prisma.notificacionUsuario.count({
+        where: {
+          usuarioId: socio.userId,
+          notificacion: { creadoPorId: postulante.userId },
+        },
+      });
+
+    beforeAll(async () => {
+      const offer = await request(app)
+        .post('/ofertas')
+        .set('Cookie', socio.cookie)
+        .send({
+          titulo: 'Oferta para retirar postulaciones',
+          descripcion: 'Oferta de prueba',
+          modalidad: 'PRESENCIAL',
+          categoriaIds: [categoryId],
+        });
+
+      expect(offer.status).toBe(201);
+
+      withdrawOfferId = offer.body.id;
+
+      const created = await request(app)
+        .post('/postulaciones')
+        .set('Cookie', postulante.cookie)
+        .send({ ofertaId: withdrawOfferId, observaciones: 'Primera vez' });
+
+      expect(created.status).toBe(201);
+
+      withdrawId = created.body.id;
+
+      // Ya seleccionado: aun así se puede retirar (darse de baja del trabajo).
+      const selected = await request(app)
+        .patch(`/postulaciones/${withdrawId}`)
+        .set('Cookie', socio.cookie)
+        .send({ estado: 'SELECCIONADO' });
+
+      expect(selected.status).toBe(200);
+    });
+
+    it('se puede retirar aunque ya haya sido seleccionado, sin borrarla', async () => {
+      const before = await countWithdrawNotices();
+
+      const response = await request(app)
+        .patch(`/postulaciones/${withdrawId}/retirar`)
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ id: withdrawId, estado: 'RETIRADA' });
+
+      const stored = await prisma.postulacion.findUnique({
+        where: { id: withdrawId },
+      });
+
+      expect(stored).not.toBeNull();
+      expect(stored!.estado).toBe('RETIRADA');
+
+      // La empresa recibe un aviso.
+      expect(await countWithdrawNotices()).toBe(before + 1);
+    });
+
+    it('la empresa la sigue viendo, como retirada', async () => {
+      const response = await request(app)
+        .get(`/postulaciones/recibidas/${withdrawId}`)
+        .set('Cookie', socio.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.estado).toBe('RETIRADA');
+    });
+
+    it('en sus ofertas no cuenta como vigente, pero sí para no borrarla', async () => {
+      const response = await request(app)
+        .get(`/ofertas/mias/${withdrawOfferId}`)
+        .set('Cookie', socio.cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.postulacionesActivas).toBe(0);
+      expect(response.body._count.postulaciones).toBe(1);
+    });
+
+    it('retirarla dos veces responde 409', async () => {
+      const response = await request(app)
+        .patch(`/postulaciones/${withdrawId}/retirar`)
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(409);
+    });
+
+    it('la empresa ya no le cambia el estado a una retirada', async () => {
+      const response = await request(app)
+        .patch(`/postulaciones/${withdrawId}`)
+        .set('Cookie', socio.cookie)
+        .send({ estado: 'EN_REVISION' });
+
+      expect(response.status).toBe(409);
+
+      const stored = await prisma.postulacion.findUnique({
+        where: { id: withdrawId },
+      });
+
+      expect(stored!.estado).toBe('RETIRADA');
+    });
+
+    it('con la oferta abierta puede volver a postularse', async () => {
+      const response = await request(app)
+        .post('/postulaciones')
+        .set('Cookie', postulante.cookie)
+        .send({ ofertaId: withdrawOfferId, observaciones: 'Segunda vez' });
+
+      expect(response.status).toBe(201);
+      expect(response.body.id).toBe(withdrawId);
+      expect(response.body.estado).toBe('ENVIADA');
+      expect(response.body.observaciones).toBe('Segunda vez');
+
+      // Y no puede postularse otra vez mientras siga activa.
+      const again = await request(app)
+        .post('/postulaciones')
+        .set('Cookie', postulante.cookie)
+        .send({ ofertaId: withdrawOfferId });
+
+      expect(again.status).toBe(400);
+    });
+
+    it('un socio no puede usar el retiro', async () => {
+      const response = await request(app)
+        .patch(`/postulaciones/${withdrawId}/retirar`)
+        .set('Cookie', socio.cookie);
+
+      expect(response.status).toBe(403);
+    });
+
+    it('un ID inexistente responde 404', async () => {
+      const response = await request(app)
+        .patch('/postulaciones/999999/retirar')
+        .set('Cookie', postulante.cookie);
+
+      expect(response.status).toBe(404);
+    });
+  });
+
+  it('DELETE /postulaciones/:id: la administración la elimina', async () => {
     const response = await request(app)
       .delete(`/postulaciones/${applicationId}`)
-      .set('Cookie', postulante.cookie);
+      .set('Cookie', admin.cookie);
 
     expect(response.status).toBe(204);
 

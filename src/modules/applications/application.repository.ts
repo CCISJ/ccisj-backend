@@ -94,12 +94,7 @@ export function create(data: {
 export function update(
   id: number,
   data: {
-    estado?:
-      | 'ENVIADA'
-      | 'EN_REVISION'
-      | 'SELECCIONADO'
-      | 'NO_SELECCIONADO'
-      | 'FINALIZADA';
+    estado?: ApplicationStatus;
     observaciones?: string;
   },
 ) {
@@ -113,6 +108,67 @@ export function update(
 export function remove(id: number) {
   return prisma.postulacion.delete({
     where: { id },
+  });
+}
+
+/**
+ * Vuelve a postular a quien había retirado su postulación a la misma oferta:
+ * se reusa la fila (hay una sola por oferta y postulante) como si fuera nueva.
+ * Solo cambia si sigue retirada; si no, devuelve null.
+ */
+export async function reactivate(data: {
+  id: number;
+  observaciones?: string;
+  cvId?: number;
+}) {
+  const { count } = await prisma.postulacion.updateMany({
+    where: { id: data.id, estado: 'RETIRADA' },
+    data: {
+      estado: 'ENVIADA',
+      fechaPostulacion: new Date(),
+      observaciones: data.observaciones ?? null,
+      cvId: data.cvId ?? null,
+    },
+  });
+
+  if (count === 0) return null;
+
+  return prisma.postulacion.findUnique({
+    where: { id: data.id },
+    include: applicationInclude,
+  });
+}
+
+/** Lo necesario para que el postulante la retire y avisarle a la empresa. */
+export function findForWithdraw(id: number) {
+  return prisma.postulacion.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      estado: true,
+      postulanteId: true,
+      postulante: {
+        select: {
+          nombre: true,
+          apellido: true,
+        },
+      },
+      oferta: {
+        select: {
+          titulo: true,
+          socio: {
+            select: {
+              usuario: {
+                select: {
+                  id: true,
+                  activo: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 }
 
