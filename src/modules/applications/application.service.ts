@@ -147,6 +147,18 @@ export async function create(data: CreateApplicationData, actor: SessionUser) {
       postulanteId,
     );
 
+  // Si la había retirado, vuelve a postularse con la misma fila: la oferta
+  // admite una sola postulación por persona.
+  if (existingApplication?.estado === 'RETIRADA') {
+    const reactivated = await applicationRepository.reactivate({
+      id: existingApplication.id,
+      observaciones: data.observaciones?.trim(),
+      cvId,
+    });
+
+    if (reactivated) return reactivated;
+  }
+
   if (existingApplication) {
     throw new Error('El postulante ya se postuló a esta oferta');
   }
@@ -292,6 +304,13 @@ async function updateAsMember(
     );
   }
 
+  if (application.estado === 'RETIRADA') {
+    throw new HttpError(
+      409,
+      'El postulante retiró su postulación y ya no se puede cambiar',
+    );
+  }
+
   if (application.estado !== estado) {
     const recipient = application.postulante.usuario;
 
@@ -367,8 +386,57 @@ export async function update(
   });
 }
 
+/** Borra la postulación. Solo la administración (el postulante la retira). */
 export async function remove(id: number, actor: SessionUser) {
   await findAccessible(id, actor);
 
   return applicationRepository.remove(id);
+}
+
+/**
+ * El postulante se retira de una postulación, en cualquier estado: incluso
+ * si ya fue seleccionado, es darse de baja de ese trabajo (RF-40). No se
+ * borra: queda como RETIRADA, la empresa la sigue viendo y recibe un aviso.
+ * Mientras la oferta siga abierta, puede volver a postularse.
+ */
+export async function withdraw(id: number, actor: SessionUser) {
+  const application = await applicationRepository.findForWithdraw(id);
+
+  if (!application || application.postulanteId !== actor.postulanteId) {
+    throw new HttpError(404, 'Postulación no encontrada');
+  }
+
+  if (application.estado === 'RETIRADA') {
+    throw new HttpError(409, 'Ya retiraste esta postulación');
+  }
+
+  const recipient = application.oferta.socio.usuario;
+  const { nombre, apellido } = application.postulante;
+
+  const changed = await applicationRepository.changeStatus({
+    id,
+    from: application.estado,
+    to: 'RETIRADA',
+    notification: recipient.activo
+      ? {
+          titulo: 'Postulación retirada',
+          mensaje: `${nombre} ${apellido} retiró su postulación a «${application.oferta.titulo}».`,
+          creadoPorId: actor.id,
+          usuarioId: recipient.id,
+        }
+      : null,
+  });
+
+  if (!changed) {
+    throw new HttpError(
+      409,
+      'La postulación cambió mientras la estabas viendo. Actualizá la página.',
+    );
+  }
+
+  if (changed.notificacionId !== null) {
+    void avisarNotificacionNueva(changed.notificacionId, [recipient.id]);
+  }
+
+  return { id, estado: 'RETIRADA' as const };
 }

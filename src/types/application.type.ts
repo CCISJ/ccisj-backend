@@ -1,5 +1,11 @@
 export type ApplicationStatus =
-  'ENVIADA' | 'EN_REVISION' | 'SELECCIONADO' | 'NO_SELECCIONADO' | 'FINALIZADA';
+  | 'ENVIADA'
+  | 'EN_REVISION'
+  | 'SELECCIONADO'
+  | 'NO_SELECCIONADO'
+  | 'FINALIZADA'
+  // La pone el postulante al retirarse (PATCH /postulaciones/:id/retirar).
+  | 'RETIRADA';
 
 /**
  * Estados a los que la empresa puede pasar una postulación a sus ofertas.

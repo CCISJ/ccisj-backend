@@ -12,6 +12,7 @@ import {
   getReceivedCvFile,
   remove,
   update,
+  withdraw,
 } from './application.controller';
 
 const router = Router();
@@ -29,6 +30,8 @@ router.get('/recibidas/:id/cv/:cvId', requireRole('SOCIO'), getReceivedCvFile);
 router.get('/:id', getById);
 router.post('/', requireRole('POSTULANTE'), create);
 router.patch('/:id', requireRole('ADMIN', 'SOCIO'), update);
-router.delete('/:id', requireRole('ADMIN', 'POSTULANTE'), remove);
+// El postulante no borra su postulación: la retira y queda en el historial.
+router.patch('/:id/retirar', requireRole('POSTULANTE'), withdraw);
+router.delete('/:id', requireRole('ADMIN'), remove);
 
 export default router;

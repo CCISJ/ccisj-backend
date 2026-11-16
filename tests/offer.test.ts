@@ -390,6 +390,7 @@ describe('Offers', () => {
       );
 
       expect(found._count.postulaciones).toBe(0);
+      expect(found.postulacionesActivas).toBe(0);
       expect(found.categorias).toHaveLength(2);
     });
 

@@ -20,6 +20,8 @@ enum EstadoPostulacion {
   SELECCIONADO
   NO_SELECCIONADO
   FINALIZADA
+  // El postulante se dio de baja. Se conserva para que la empresa lo vea.
+  RETIRADA
 
   @@map("estado_postulacion")
 }

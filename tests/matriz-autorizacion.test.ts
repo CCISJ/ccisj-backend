@@ -108,7 +108,8 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /postulaciones/:id': AUTENTICADOS,
   'POST /postulaciones': ['post'],
   'PATCH /postulaciones/:id': ['socio', 'direc', 'admin'],
-  'DELETE /postulaciones/:id': ['post', 'admin'],
+  'PATCH /postulaciones/:id/retirar': ['post'],
+  'DELETE /postulaciones/:id': SOLO_ADMIN,
 
   // Cada uno ve y marca las suyas. El listado completo es de la
   // administración, que además es la única que las crea.

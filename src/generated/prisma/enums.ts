@@ -22,7 +22,8 @@ export const EstadoPostulacion = {
   EN_REVISION: 'EN_REVISION',
   SELECCIONADO: 'SELECCIONADO',
   NO_SELECCIONADO: 'NO_SELECCIONADO',
-  FINALIZADA: 'FINALIZADA'
+  FINALIZADA: 'FINALIZADA',
+  RETIRADA: 'RETIRADA'
 } as const
 
 export type EstadoPostulacion = (typeof EstadoPostulacion)[keyof typeof EstadoPostulacion]

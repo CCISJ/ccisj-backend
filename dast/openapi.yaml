@@ -878,10 +878,21 @@ paths:
         '404': { $ref: '#/components/responses/NoEncontrado' }
     delete:
       tags: [Postulaciones]
-      summary: Borra una postulación (el postulante, la suya).
+      summary: Borra una postulación (solo la administración).
       responses:
-        '200': { description: Postulación borrada. }
+        '204': { description: Postulación borrada. }
         '404': { $ref: '#/components/responses/NoEncontrado' }
+
+  /postulaciones/{id}/retirar:
+    parameters:
+      - $ref: '#/components/parameters/PostulacionId'
+    patch:
+      tags: [Postulaciones]
+      summary: El postulante retira su postulación (queda como RETIRADA).
+      responses:
+        '200': { description: Postulación retirada. }
+        '404': { $ref: '#/components/responses/NoEncontrado' }
+        '409': { description: La postulación ya estaba retirada. }
 
   # --- Notificaciones -------------------------------------------------------
 
