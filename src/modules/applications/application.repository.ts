@@ -217,12 +217,16 @@ export function findReceivedById(id: number, socioId: number) {
 }
 
 // Lo que ve el postulante de sus propias postulaciones: la oferta y la empresa
-// que la publicó, sin datos internos de la oferta ni de su cuenta.
+// que la publicó, sin datos internos de la oferta ni de su cuenta, y el PDF
+// que mandó (sin su ruta interna; lo abre con su propio enlace firmado).
 const ownApplicationSelect = {
   id: true,
   fechaPostulacion: true,
   estado: true,
   observaciones: true,
+  cv: {
+    select: fileSelect,
+  },
   oferta: {
     select: {
       id: true,

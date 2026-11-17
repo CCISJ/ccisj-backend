@@ -523,6 +523,8 @@ describe('Applications', () => {
       expect(own.estado).toBe('ENVIADA');
       expect(own.observaciones).toBe('Quiero trabajar acá');
       expect(own.oferta.id).toBe(ownOfferId);
+      // Se postuló sin elegir PDF: va el CV del formulario.
+      expect(own.cv).toBeNull();
       expect(own.oferta.titulo).toBe('Oferta para mis postulaciones');
       expect(own.oferta.socio.razonSocial).toEqual(expect.any(String));
 
