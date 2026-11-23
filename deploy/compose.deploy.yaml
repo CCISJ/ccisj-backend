@@ -1,0 +1,6 @@
+# Override para producción. El compose.yaml original permanece en la VM.
+services:
+  api:
+    image: ccisj-api:${API_IMAGE_TAG:-baseline}
+  web:
+    image: ccisj-web:${WEB_IMAGE_TAG:-baseline}
