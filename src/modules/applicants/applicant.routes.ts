@@ -1,10 +1,6 @@
 import { Router } from 'express';
 
-import {
-  requireAdminOrDirectivo,
-  requireAuth,
-  requireRole,
-} from '@/middlewares/auth.middleware';
+import { requireAuth, requireRole } from '@/middlewares/auth.middleware';
 import { uploadCvFiles } from '@/middlewares/upload-cv.middleware';
 
 import {
@@ -36,14 +32,15 @@ router.use(requireAuth);
 router.get('/', requireRole('ADMIN'), getAll);
 
 // Bolsa de candidatos: todos los postulantes activos.
-// Accesible únicamente para ADMIN y socios DIRECTIVOS.
-router.get('/candidatos', requireAdminOrDirectivo, searchCandidates);
+// Accesible únicamente para ADMIN y socios.
+router.get('/candidatos', requireRole('ADMIN', 'SOCIO'), searchCandidates);
 
 // "Mi CV" del postulante de la sesión: datos, estudios, experiencia,
 // referencias y los PDF que subió. Van antes de /:id para que 'me' no se tome
 // como un ID.
 router.get('/me/cv', requireRole('POSTULANTE'), getMyCv);
 router.put('/me/cv', requireRole('POSTULANTE'), saveMyCv);
+
 // "Mi perfil": datos personales y rubros de interés. Se lee con GET /me/cv.
 router.patch('/me/perfil', requireRole('POSTULANTE'), saveMyProfile);
 router.post(
@@ -52,18 +49,20 @@ router.post(
   uploadCvFiles,
   uploadMyCvFiles,
 );
+
 router.get('/me/cv/archivos/:cvId', requireRole('POSTULANTE'), getMyCvFileUrl);
+
 router.delete(
   '/me/cv/archivos/:cvId',
   requireRole('POSTULANTE'),
   deleteMyCvFile,
 );
 
-router.get('/candidatos/:id', requireAdminOrDirectivo, getCandidateById);
+router.get('/candidatos/:id', requireRole('ADMIN', 'SOCIO'), getCandidateById);
 
 router.get(
   '/candidatos/:id/cvs/:cvId/archivo',
-  requireAdminOrDirectivo,
+  requireRole('ADMIN', 'SOCIO'),
   getCandidateCvFileUrl,
 );
 

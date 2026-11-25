@@ -67,10 +67,14 @@ const ESPERADO: Record<string, Actor[]> = {
   'GET /postulantes/:id': ['post', 'admin'],
   'POST /postulantes': SOLO_ADMIN,
 
-  // Buscador global de candidatos: administración y socios directivos.
-  'GET /postulantes/candidatos': ['direc', 'admin'],
-  'GET /postulantes/candidatos/:id': ['direc', 'admin'],
-  'GET /postulantes/candidatos/:id/cvs/:cvId/archivo': ['direc', 'admin'],
+  // Buscador global de candidatos: administración y todos los socios.
+  'GET /postulantes/candidatos': ['socio', 'direc', 'admin'],
+  'GET /postulantes/candidatos/:id': ['socio', 'direc', 'admin'],
+  'GET /postulantes/candidatos/:id/cvs/:cvId/archivo': [
+    'socio',
+    'direc',
+    'admin',
+  ],
 
   'PATCH /postulantes/:id': ['post', 'admin'],
   'DELETE /postulantes/:id': SOLO_ADMIN,
