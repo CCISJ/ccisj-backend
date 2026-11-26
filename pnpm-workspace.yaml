@@ -20,7 +20,10 @@ overrides:
   # GHSA-g3hv-75wg-m249 (DoS con patrones armados, moderada). Lo trae el
   # plugin de Prettier que ordena los imports (minimatch 9), solo en
   # desarrollo, y ninguna 9.x está corregida.
-  'minimatch': '^11.0.1'
+  'minimatch':
+    '^11.0.1'
+    # GHSA-7589-6fvf-x4pw: corrección de ReDoS en effect.
+  '@prisma/config>effect': '3.22.1'
 
 # Riesgos aceptados: `pnpm audit` no los cuenta. Cada uno con su motivo, y se
 # revisan cuando Dependabot ofrezca una actualización.
