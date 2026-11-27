@@ -122,7 +122,8 @@ describe('Cuotas', () => {
 
     expect(fee.periodoHasta.toISOString().slice(0, 10)).toBe('2026-09-30');
 
-    expect(fee.fechaVencimiento.toISOString().slice(0, 10)).toBe('2026-09-30');
+    // Vence el último día del mes siguiente al período.
+    expect(fee.fechaVencimiento.toISOString().slice(0, 10)).toBe('2026-10-31');
   });
 
   it('no permite generar dos cuotas para el mismo socio y período', async () => {
@@ -1209,7 +1210,7 @@ it('mantiene al socio al día hasta el día de vencimiento inclusive', async () 
 
     const status = await getMemberFeeStatus(
       member.socioId,
-      new Date('2026-09-30T12:00:00Z'),
+      new Date('2026-10-31T12:00:00Z'),
     );
 
     expect(status.estado).toBe('AL_DIA');
@@ -1227,8 +1228,8 @@ it('mantiene al socio al día hasta el día de vencimiento inclusive', async () 
 });
 
 it('mantiene al socio al día en la noche del vencimiento, en hora de Uruguay', async () => {
-  // A las 22 del 30/09 en Uruguay ya es 01/10 en UTC. "Hoy" se tomaba del día
-  // UTC, y la cuota que vence el 30/09 figuraba vencida desde las 21.
+  // A las 22 del 31/10 en Uruguay ya es 01/11 en UTC. "Hoy" se tomaba del día
+  // UTC, y la cuota que vence el 31/10 figuraba vencida desde las 21.
   const member = await createMember();
 
   try {
@@ -1236,7 +1237,7 @@ it('mantiene al socio al día en la noche del vencimiento, en hora de Uruguay', 
 
     const status = await getMemberFeeStatus(
       member.socioId,
-      new Date('2026-09-30T22:00:00-03:00'),
+      new Date('2026-10-31T22:00:00-03:00'),
     );
 
     expect(status.estado).toBe('AL_DIA');
@@ -1260,12 +1261,69 @@ it('considera pendiente una cuota desde el día siguiente a su vencimiento', asy
 
     const status = await getMemberFeeStatus(
       member.socioId,
-      new Date('2026-10-01T12:00:00Z'),
+      new Date('2026-11-01T12:00:00Z'),
     );
 
     expect(status.estado).toBe('PENDIENTE');
     expect(status.cuotasVencidas).toBe(1);
     expect(status.deudaVencida).toBe(760);
+  } finally {
+    await deleteMemberPayments([member.socioId]);
+
+    await prisma.cuota.deleteMany({
+      where: { socioId: member.socioId },
+    });
+
+    await deleteUsers([member.userId]);
+  }
+});
+
+it('la cuota de un mes no vence al terminar ese mes, sino al terminar el siguiente', async () => {
+  // El 1/10 la cuota de setiembre todavía no venció: vence el 31/10.
+  const member = await createMember();
+
+  try {
+    await generateMonthlyFee(member.socioId, 2026, 9);
+
+    const status = await getMemberFeeStatus(
+      member.socioId,
+      new Date('2026-10-01T12:00:00Z'),
+    );
+
+    expect(status.estado).toBe('AL_DIA');
+    expect(status.cuotasPendientes).toBe(1);
+    expect(status.cuotasVencidas).toBe(0);
+  } finally {
+    await deleteMemberPayments([member.socioId]);
+
+    await prisma.cuota.deleteMany({
+      where: { socioId: member.socioId },
+    });
+
+    await deleteUsers([member.userId]);
+  }
+});
+
+it('vence el último día del mes siguiente también con meses de 30 días y al cambiar de año', async () => {
+  const member = await createMember();
+
+  try {
+    // Octubre → 30 de noviembre; noviembre → 31 de diciembre;
+    // diciembre → 31 de enero del año siguiente.
+    const october = await generateMonthlyFee(member.socioId, 2026, 10);
+    const november = await generateMonthlyFee(member.socioId, 2026, 11);
+    const december = await generateMonthlyFee(member.socioId, 2026, 12);
+
+    const day = (fee: { fechaVencimiento: Date }) =>
+      fee.fechaVencimiento.toISOString().slice(0, 10);
+
+    expect(day(october)).toBe('2026-11-30');
+    expect(day(november)).toBe('2026-12-31');
+    expect(day(december)).toBe('2027-01-31');
+
+    // El período sigue siendo el mes calendario.
+    expect(december.periodoDesde.toISOString().slice(0, 10)).toBe('2026-12-01');
+    expect(december.periodoHasta.toISOString().slice(0, 10)).toBe('2026-12-31');
   } finally {
     await deleteMemberPayments([member.socioId]);
 
@@ -1286,7 +1344,7 @@ it('mantiene estado pendiente con dos cuotas vencidas', async () => {
 
     const status = await getMemberFeeStatus(
       member.socioId,
-      new Date('2026-10-01T12:00:00Z'),
+      new Date('2026-11-01T12:00:00Z'),
     );
 
     expect(status.estado).toBe('PENDIENTE');
@@ -1313,7 +1371,7 @@ it('considera deudor al socio con tres cuotas vencidas', async () => {
 
     const status = await getMemberFeeStatus(
       member.socioId,
-      new Date('2026-10-01T12:00:00Z'),
+      new Date('2026-11-01T12:00:00Z'),
     );
 
     expect(status.estado).toBe('DEUDOR');
@@ -1346,7 +1404,7 @@ it('una cuota vencida parcialmente pagada sigue contando como pendiente', async 
 
     const status = await getMemberFeeStatus(
       member.socioId,
-      new Date('2026-10-01T12:00:00Z'),
+      new Date('2026-11-01T12:00:00Z'),
     );
 
     expect(status.estado).toBe('PENDIENTE');
@@ -2253,16 +2311,19 @@ describe('Comprobante del pago de cuota', () => {
     expect(payment.movimientoCaja?.id).toBe(response.body.movimientoCaja.id);
   });
 
-  it('rechaza un pago con tarjeta sin comprobante y no registra nada', async () => {
+  it('acepta un pago con tarjeta sin comprobante: no es obligatorio con ningún medio', async () => {
     const member = await memberWithFee();
 
     const response = await pay(member.socioId, cardPayment);
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe(
-      'El comprobante es obligatorio para pagos con tarjeta',
-    );
-    expect(await paymentsOf(member.socioId)).toHaveLength(0);
+    expect(response.status).toBe(201);
+    expect(response.body.movimientoCaja.comprobanteUrl).toBeNull();
+
+    const [payment] = await paymentsOf(member.socioId);
+
+    expect(payment.medioPago).toBe('TARJETA');
+    expect(payment.movimientoCaja?.comprobanteUrl).toBeNull();
+    expect(storageFalso.files.size).toBe(0);
   });
 
   it('sigue aceptando un pago sin comprobante enviado como JSON', async () => {
