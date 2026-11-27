@@ -57,10 +57,15 @@ function jwtSecret() {
   return secret;
 }
 
-/** Token de sesión. `issuedAt` (en segundos) fija el momento de emisión. */
-function signSession(userId: number, issuedAt?: number) {
+/**
+ * Token de sesión. `issuedAtMs` fija el momento de emisión, en milisegundos
+ * (por defecto, ahora). Además del `iat` estándar, en segundos, lleva
+ * `iatMs`: con él, una sesión se compara al milisegundo con el último cambio
+ * de contraseña (ver `auth.middleware.ts`).
+ */
+function signSession(userId: number, issuedAtMs = Date.now()) {
   return jwt.sign(
-    issuedAt === undefined ? { id: userId } : { id: userId, iat: issuedAt },
+    { id: userId, iat: Math.floor(issuedAtMs / 1000), iatMs: issuedAtMs },
     jwtSecret(),
     {
       algorithm: 'HS256',
@@ -212,14 +217,16 @@ export async function changePassword(userId: number, body: unknown) {
     );
   }
 
-  // Redondeado al segundo, la misma precisión que el `iat` del token.
-  const issuedAt = Math.floor(Date.now() / 1000);
+  // La sesión nueva se emite en el mismo milisegundo del cambio: sigue
+  // valiendo, y cualquier otra abierta antes, aunque sea en el mismo
+  // segundo, queda cerrada.
+  const changedAt = Date.now();
 
   await usuarioRepository.updatePassword(
     userId,
     await argon2.hash(passwordNueva),
-    new Date(issuedAt * 1000),
+    new Date(changedAt),
   );
 
-  return { token: signSession(userId, issuedAt) };
+  return { token: signSession(userId, changedAt) };
 }

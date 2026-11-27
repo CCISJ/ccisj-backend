@@ -225,10 +225,10 @@ export async function resetPassword(id: number, actorId: number) {
 
   const password = generatePassword();
 
-  // El `iat` del token va en segundos. Redondeando hacia arriba, ninguna
-  // sesión emitida hasta este segundo inclusive sigue valiendo, ni siquiera
-  // una que se abrió en el mismo segundo del cambio.
-  const changedAt = new Date(Math.ceil(Date.now() / 1000) * 1000);
+  // Al milisegundo: las sesiones emitidas antes quedan cerradas y un login
+  // con la contraseña nueva vale aunque caiga en el mismo segundo. Antes se
+  // redondeaba hacia arriba al segundo, y ese login se rechazaba.
+  const changedAt = new Date();
 
   await userRepository.updatePassword(
     id,

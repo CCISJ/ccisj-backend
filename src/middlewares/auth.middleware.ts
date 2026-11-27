@@ -32,24 +32,44 @@ function readSession(payload: string | jwt.JwtPayload) {
 
   if (!Number.isInteger(id) || id <= 0) return null;
 
-  return {
-    userId: id as number,
-    issuedAt: typeof payload.iat === 'number' ? payload.iat : null,
-  };
+  return { userId: id as number, issuedAtMs: issuedAtMs(payload) };
+}
+
+/**
+ * Cuándo se emitió el token, en milisegundos. `iat` (el estándar de JWT) va
+ * en segundos, y no alcanza: un login hecho en el mismo segundo que un cambio
+ * de contraseña no se puede distinguir de una sesión de antes del cambio. Por
+ * eso el token lleva también `iatMs`. Se usa solo si coincide con `iat`;
+ * un token sin él (emitido antes de este cambio) usa `iat`.
+ */
+function issuedAtMs(payload: jwt.JwtPayload) {
+  if (typeof payload.iat !== 'number') return null;
+
+  const ms = payload.iatMs;
+
+  if (
+    typeof ms === 'number' &&
+    Number.isInteger(ms) &&
+    Math.floor(ms / 1000) === payload.iat
+  ) {
+    return ms;
+  }
+
+  return payload.iat * 1000;
 }
 
 /**
  * Una sesión emitida antes del último cambio de contraseña ya no vale: así,
  * cambiar la contraseña cierra las sesiones abiertas en otros dispositivos.
- * `iat` está en segundos; el cambio se guarda redondeado al segundo.
+ * Se compara al milisegundo, la precisión con que se guarda el cambio.
  */
 function issuedBeforePasswordChange(
-  issuedAt: number | null,
+  issuedAtMs: number | null,
   passwordChangedAt: Date | null,
 ) {
   if (!passwordChangedAt) return false;
 
-  return issuedAt === null || issuedAt * 1000 < passwordChangedAt.getTime();
+  return issuedAtMs === null || issuedAtMs < passwordChangedAt.getTime();
 }
 
 /**
@@ -118,7 +138,7 @@ export async function resolveSessionToken(
     }
 
     if (
-      issuedBeforePasswordChange(session.issuedAt, user.passwordActualizada)
+      issuedBeforePasswordChange(session.issuedAtMs, user.passwordActualizada)
     ) {
       return {
         estado: 'invalida',

@@ -1,5 +1,13 @@
 import request from 'supertest';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 
 import app from '../src/app';
 import { prisma } from '../src/config/prisma';
@@ -507,6 +515,69 @@ describe('Usuarios', () => {
       } finally {
         await deleteUsers([cuenta.userId]);
       }
+    });
+
+    describe('en el mismo segundo del cambio', () => {
+      // Se fija el reloj (solo `Date`) para que todo caiga en el mismo
+      // segundo: `iat` va en segundos y antes el cambio se redondeaba hacia
+      // arriba, así que un login con la contraseña nueva hecho en ese mismo
+      // segundo quedaba rechazado en el request siguiente (lo vio el E2E en
+      // el CI). Un segundo entero que todavía no empezó, para que los tokens
+      // de los fixtures, emitidos antes, sigan vigentes.
+      const proximoSegundo = Math.ceil(Date.now() / 1000) * 1000 + 2000;
+      const en = (ms: number) => vi.setSystemTime(proximoSegundo + ms);
+
+      afterEach(() => {
+        vi.useRealTimers();
+      });
+
+      it('un login con la contraseña nueva vale', async () => {
+        const cuenta = await createLoggedUser({ tipo: 'POSTULANTE' });
+
+        try {
+          vi.useFakeTimers({ toFake: ['Date'] });
+
+          en(18);
+          const response = await reset(cuenta.userId);
+          expect(response.status).toBe(200);
+
+          en(818);
+          const agent = request.agent(app);
+          const login = await agent
+            .post('/auth/login')
+            .send({ email: cuenta.email, password: response.body.password });
+
+          expect(login.status).toBe(200);
+          expect((await agent.get('/auth/me')).status).toBe(200);
+        } finally {
+          vi.useRealTimers();
+          await deleteUsers([cuenta.userId]);
+        }
+      });
+
+      it('una sesión abierta antes del cambio se cierra igual', async () => {
+        const cuenta = await createLoggedUser({ tipo: 'POSTULANTE' });
+
+        try {
+          vi.useFakeTimers({ toFake: ['Date'] });
+
+          en(10);
+          const agent = request.agent(app);
+          const login = await agent
+            .post('/auth/login')
+            .send({ email: cuenta.email, password: cuenta.password });
+          expect(login.status).toBe(200);
+
+          en(18);
+          expect((await reset(cuenta.userId)).status).toBe(200);
+
+          en(500);
+          expect((await agent.get('/auth/me')).status).toBe(401);
+        } finally {
+          vi.useRealTimers();
+          await deleteUsers([cuenta.userId]);
+        }
+      });
     });
 
     it('la propia no: se cambia desde Mi cuenta, con la actual', async () => {
