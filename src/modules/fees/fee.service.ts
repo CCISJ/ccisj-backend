@@ -431,8 +431,13 @@ export async function generateMonthlyFee(
     throw new Error('El período de la cuota no es válido');
   }
 
+  // Las cuotas son meses calendario y vencen el último día del mes siguiente
+  // al período: la de setiembre vence el 31 de octubre, y la de diciembre, el
+  // 31 de enero del año siguiente. `Date.UTC` con día 0 da el último día del
+  // mes anterior, así que cubre los meses de 28, 29, 30 y 31 días.
   const periodoDesde = new Date(Date.UTC(year, month - 1, 1));
   const periodoHasta = new Date(Date.UTC(year, month, 0));
+  const fechaVencimiento = new Date(Date.UTC(year, month + 1, 0));
 
   const existingFee = await findFeeByMemberAndPeriod(socioId, periodoDesde);
 
@@ -460,7 +465,7 @@ export async function generateMonthlyFee(
     periodoDesde,
     periodoHasta,
 
-    fechaVencimiento: periodoHasta,
+    fechaVencimiento,
 
     importeBase,
     importeAjustes,
@@ -575,10 +580,6 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
     throw new Error('El medio de pago es obligatorio');
   }
 
-  if (medioPago.trim().toUpperCase() === 'TARJETA' && !comprobante) {
-    throw new Error('El comprobante es obligatorio para pagos con tarjeta');
-  }
-
   // Los mismos largos que la base (`VarChar(50)` y `VarChar(500)`), como en
   // los movimientos de caja. Sin esto llegaban a la base, que los rechazaba
   // con el 400 genérico "Uno de los datos es demasiado largo". Van antes de
@@ -597,8 +598,8 @@ export async function registerFeePayment(data: RegisterFeePaymentData) {
 
   // El comprobante se sube recién acá, con todas las validaciones pasadas, y
   // antes de grabar: así el pago y su movimiento de caja se crean ya con él
-  // en la misma transacción, y un pago con tarjeta nunca queda sin
-  // comprobante. Si la transacción falla, se borra el archivo para que no
+  // en la misma transacción. El comprobante es opcional con cualquier medio
+  // de pago. Si la transacción falla, se borra el archivo para que no
   // quede huérfano en Storage.
   const comprobanteUrl = comprobante
     ? await uploadFeePaymentReceiptToStorage(socioId, comprobante)

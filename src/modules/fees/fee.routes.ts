@@ -87,7 +87,7 @@ router.get(
   getPaymentsByMember,
 );
 
-// El comprobante es opcional (obligatorio con tarjeta) y viaja en el mismo
+// El comprobante es opcional con cualquier medio de pago y viaja en el mismo
 // request, como multipart en el campo `comprobante`. Sin archivo, el pago se
 // sigue pudiendo mandar como JSON: multer solo lee los multipart.
 router.post(

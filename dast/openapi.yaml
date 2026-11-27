@@ -1120,8 +1120,8 @@ paths:
       summary: Registra un pago y lo aplica a las cuotas pendientes.
       description: >-
         Acepta JSON o multipart. El comprobante (PDF, JPG o PNG, hasta 5 MB)
-        es obligatorio con tarjeta, y se guarda en el movimiento de caja del
-        pago.
+        es opcional con cualquier medio de pago, y se guarda en el movimiento
+        de caja del pago.
       requestBody:
         required: true
         content:
