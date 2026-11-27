@@ -110,7 +110,9 @@ export async function remove(req: Request, res: Response) {
 
 export async function searchCandidates(req: AuthRequest, res: Response) {
   try {
-    const result = await applicantService.searchCandidates(req.query);
+    const result = await applicantService.searchCandidates(req.query, {
+      admin: req.user?.tipo === 'ADMIN',
+    });
 
     res.json(result);
   } catch (error) {
@@ -128,7 +130,7 @@ export async function getCandidateById(req: AuthRequest, res: Response) {
     if (!id) return invalidId(res);
 
     const candidate = await applicantService.getCandidateById(id, {
-      withAccount: req.user?.tipo === 'ADMIN',
+      admin: req.user?.tipo === 'ADMIN',
     });
 
     res.json(candidate);
@@ -152,6 +154,7 @@ export async function getCandidateCvFileUrl(req: AuthRequest, res: Response) {
     const result = await applicantService.getCandidateCvFileUrl(
       candidateId,
       cvId,
+      { admin: req.user?.tipo === 'ADMIN' },
     );
 
     res.json(result);

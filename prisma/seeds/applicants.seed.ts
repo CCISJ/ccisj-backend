@@ -36,6 +36,9 @@ export async function seedApplicants(
       fechaNacimiento: new Date('1998-04-12'),
       otros:
         'Libreta de conducir categoría A. Disponibilidad horaria completa.',
+      // El postulante de demo eligió aparecer en la bolsa de candidatos, para
+      // que las empresas del seed tengan a quién encontrar.
+      visibleParaEmpresas: true,
     },
   });
 

@@ -103,9 +103,13 @@ export const cvDataSelect = {
   },
 } as const;
 
-/** El CV completo del postulante, con todos sus PDF. */
+/**
+ * El CV completo del postulante, con todos sus PDF y su elección de aparecer
+ * en la bolsa de candidatos (solo la ve él: no está en `cvDataSelect`).
+ */
 export const cvSelect = {
   ...cvDataSelect,
+  visibleParaEmpresas: true,
   cvs: {
     select: fileSelect,
     orderBy: { fechaActualizacion: 'desc' },
@@ -186,6 +190,8 @@ export type ProfileInput = {
   direccion: string | null;
   fechaNacimiento: Date | null;
   categoriaIds: number[];
+  // undefined = no se cambia (un formulario viejo que no lo manda no lo apaga).
+  visibleParaEmpresas?: boolean;
 };
 
 /** "Mi perfil": datos personales y rubros de interés, sin tocar el resto. */

@@ -2344,7 +2344,8 @@ export const PostulanteScalarFieldEnum = {
   telefono: 'telefono',
   direccion: 'direccion',
   fechaNacimiento: 'fechaNacimiento',
-  otros: 'otros'
+  otros: 'otros',
+  visibleParaEmpresas: 'visibleParaEmpresas'
 } as const
 
 export type PostulanteScalarFieldEnum = (typeof PostulanteScalarFieldEnum)[keyof typeof PostulanteScalarFieldEnum]
