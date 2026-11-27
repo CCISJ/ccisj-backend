@@ -34,8 +34,9 @@ export async function seedFeeConfiguration(prisma: PrismaClient) {
         Date.UTC(anio, mes - desplazamiento + 1, 0),
       );
 
+      // La misma regla que la generación: el último día del mes siguiente.
       const fechaVencimiento = new Date(
-        Date.UTC(anio, mes - desplazamiento, 15),
+        Date.UTC(anio, mes - desplazamiento + 2, 0),
       );
 
       return {
