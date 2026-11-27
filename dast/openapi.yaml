@@ -537,6 +537,12 @@ paths:
                   type: array
                   items: { type: integer }
                   description: Vacío = todas.
+                visibleParaEmpresas:
+                  type: boolean
+                  example: true
+                  description: >-
+                    Si las empresas socias lo pueden encontrar en la bolsa de
+                    candidatos sin que se postule. Si no viene, no cambia.
       responses:
         '200': { description: Perfil guardado. }
         '400': { $ref: '#/components/responses/DatosInvalidos' }

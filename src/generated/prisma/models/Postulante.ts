@@ -45,6 +45,7 @@ export type PostulanteMinAggregateOutputType = {
   direccion: string | null
   fechaNacimiento: Date | null
   otros: string | null
+  visibleParaEmpresas: boolean | null
 }
 
 export type PostulanteMaxAggregateOutputType = {
@@ -56,6 +57,7 @@ export type PostulanteMaxAggregateOutputType = {
   direccion: string | null
   fechaNacimiento: Date | null
   otros: string | null
+  visibleParaEmpresas: boolean | null
 }
 
 export type PostulanteCountAggregateOutputType = {
@@ -67,6 +69,7 @@ export type PostulanteCountAggregateOutputType = {
   direccion: number
   fechaNacimiento: number
   otros: number
+  visibleParaEmpresas: number
   _all: number
 }
 
@@ -90,6 +93,7 @@ export type PostulanteMinAggregateInputType = {
   direccion?: true
   fechaNacimiento?: true
   otros?: true
+  visibleParaEmpresas?: true
 }
 
 export type PostulanteMaxAggregateInputType = {
@@ -101,6 +105,7 @@ export type PostulanteMaxAggregateInputType = {
   direccion?: true
   fechaNacimiento?: true
   otros?: true
+  visibleParaEmpresas?: true
 }
 
 export type PostulanteCountAggregateInputType = {
@@ -112,6 +117,7 @@ export type PostulanteCountAggregateInputType = {
   direccion?: true
   fechaNacimiento?: true
   otros?: true
+  visibleParaEmpresas?: true
   _all?: true
 }
 
@@ -210,6 +216,7 @@ export type PostulanteGroupByOutputType = {
   direccion: string | null
   fechaNacimiento: Date | null
   otros: string | null
+  visibleParaEmpresas: boolean
   _count: PostulanteCountAggregateOutputType | null
   _avg: PostulanteAvgAggregateOutputType | null
   _sum: PostulanteSumAggregateOutputType | null
@@ -244,6 +251,7 @@ export type PostulanteWhereInput = {
   direccion?: Prisma.StringNullableFilter<"Postulante"> | string | null
   fechaNacimiento?: Prisma.DateTimeNullableFilter<"Postulante"> | Date | string | null
   otros?: Prisma.StringNullableFilter<"Postulante"> | string | null
+  visibleParaEmpresas?: Prisma.BoolFilter<"Postulante"> | boolean
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   cvs?: Prisma.CvListRelationFilter
   estudios?: Prisma.EstudioListRelationFilter
@@ -262,6 +270,7 @@ export type PostulanteOrderByWithRelationInput = {
   direccion?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaNacimiento?: Prisma.SortOrderInput | Prisma.SortOrder
   otros?: Prisma.SortOrderInput | Prisma.SortOrder
+  visibleParaEmpresas?: Prisma.SortOrder
   usuario?: Prisma.UsuarioOrderByWithRelationInput
   cvs?: Prisma.CvOrderByRelationAggregateInput
   estudios?: Prisma.EstudioOrderByRelationAggregateInput
@@ -283,6 +292,7 @@ export type PostulanteWhereUniqueInput = Prisma.AtLeast<{
   direccion?: Prisma.StringNullableFilter<"Postulante"> | string | null
   fechaNacimiento?: Prisma.DateTimeNullableFilter<"Postulante"> | Date | string | null
   otros?: Prisma.StringNullableFilter<"Postulante"> | string | null
+  visibleParaEmpresas?: Prisma.BoolFilter<"Postulante"> | boolean
   usuario?: Prisma.XOR<Prisma.UsuarioScalarRelationFilter, Prisma.UsuarioWhereInput>
   cvs?: Prisma.CvListRelationFilter
   estudios?: Prisma.EstudioListRelationFilter
@@ -301,6 +311,7 @@ export type PostulanteOrderByWithAggregationInput = {
   direccion?: Prisma.SortOrderInput | Prisma.SortOrder
   fechaNacimiento?: Prisma.SortOrderInput | Prisma.SortOrder
   otros?: Prisma.SortOrderInput | Prisma.SortOrder
+  visibleParaEmpresas?: Prisma.SortOrder
   _count?: Prisma.PostulanteCountOrderByAggregateInput
   _avg?: Prisma.PostulanteAvgOrderByAggregateInput
   _max?: Prisma.PostulanteMaxOrderByAggregateInput
@@ -320,6 +331,7 @@ export type PostulanteScalarWhereWithAggregatesInput = {
   direccion?: Prisma.StringNullableWithAggregatesFilter<"Postulante"> | string | null
   fechaNacimiento?: Prisma.DateTimeNullableWithAggregatesFilter<"Postulante"> | Date | string | null
   otros?: Prisma.StringNullableWithAggregatesFilter<"Postulante"> | string | null
+  visibleParaEmpresas?: Prisma.BoolWithAggregatesFilter<"Postulante"> | boolean
 }
 
 export type PostulanteCreateInput = {
@@ -329,6 +341,7 @@ export type PostulanteCreateInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
@@ -347,6 +360,7 @@ export type PostulanteUncheckedCreateInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
@@ -362,6 +376,7 @@ export type PostulanteUpdateInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
@@ -380,6 +395,7 @@ export type PostulanteUncheckedUpdateInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -397,6 +413,7 @@ export type PostulanteCreateManyInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
 }
 
 export type PostulanteUpdateManyMutationInput = {
@@ -406,6 +423,7 @@ export type PostulanteUpdateManyMutationInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type PostulanteUncheckedUpdateManyInput = {
@@ -417,6 +435,7 @@ export type PostulanteUncheckedUpdateManyInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type PostulanteNullableScalarRelationFilter = {
@@ -433,6 +452,7 @@ export type PostulanteCountOrderByAggregateInput = {
   direccion?: Prisma.SortOrder
   fechaNacimiento?: Prisma.SortOrder
   otros?: Prisma.SortOrder
+  visibleParaEmpresas?: Prisma.SortOrder
 }
 
 export type PostulanteAvgOrderByAggregateInput = {
@@ -449,6 +469,7 @@ export type PostulanteMaxOrderByAggregateInput = {
   direccion?: Prisma.SortOrder
   fechaNacimiento?: Prisma.SortOrder
   otros?: Prisma.SortOrder
+  visibleParaEmpresas?: Prisma.SortOrder
 }
 
 export type PostulanteMinOrderByAggregateInput = {
@@ -460,6 +481,7 @@ export type PostulanteMinOrderByAggregateInput = {
   direccion?: Prisma.SortOrder
   fechaNacimiento?: Prisma.SortOrder
   otros?: Prisma.SortOrder
+  visibleParaEmpresas?: Prisma.SortOrder
 }
 
 export type PostulanteSumOrderByAggregateInput = {
@@ -595,6 +617,7 @@ export type PostulanteCreateWithoutUsuarioInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
@@ -611,6 +634,7 @@ export type PostulanteUncheckedCreateWithoutUsuarioInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
@@ -642,6 +666,7 @@ export type PostulanteUpdateWithoutUsuarioInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
@@ -658,6 +683,7 @@ export type PostulanteUncheckedUpdateWithoutUsuarioInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -673,6 +699,7 @@ export type PostulanteCreateWithoutEstudiosInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
@@ -690,6 +717,7 @@ export type PostulanteUncheckedCreateWithoutEstudiosInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
   referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
@@ -720,6 +748,7 @@ export type PostulanteUpdateWithoutEstudiosInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
@@ -737,6 +766,7 @@ export type PostulanteUncheckedUpdateWithoutEstudiosInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
   referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -751,6 +781,7 @@ export type PostulanteCreateWithoutExperienciasInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
@@ -768,6 +799,7 @@ export type PostulanteUncheckedCreateWithoutExperienciasInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
@@ -798,6 +830,7 @@ export type PostulanteUpdateWithoutExperienciasInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
@@ -815,6 +848,7 @@ export type PostulanteUncheckedUpdateWithoutExperienciasInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -829,6 +863,7 @@ export type PostulanteCreateWithoutReferenciasInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
@@ -846,6 +881,7 @@ export type PostulanteUncheckedCreateWithoutReferenciasInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
@@ -876,6 +912,7 @@ export type PostulanteUpdateWithoutReferenciasInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
@@ -893,6 +930,7 @@ export type PostulanteUncheckedUpdateWithoutReferenciasInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -907,6 +945,7 @@ export type PostulanteCreateWithoutCvsInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralCreateNestedManyWithoutPostulanteInput
@@ -924,6 +963,7 @@ export type PostulanteUncheckedCreateWithoutCvsInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
   referencias?: Prisma.ReferenciaUncheckedCreateNestedManyWithoutPostulanteInput
@@ -954,6 +994,7 @@ export type PostulanteUpdateWithoutCvsInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUpdateManyWithoutPostulanteNestedInput
@@ -971,6 +1012,7 @@ export type PostulanteUncheckedUpdateWithoutCvsInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
   referencias?: Prisma.ReferenciaUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -985,6 +1027,7 @@ export type PostulanteCreateWithoutCategoriasInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
@@ -1002,6 +1045,7 @@ export type PostulanteUncheckedCreateWithoutCategoriasInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
@@ -1032,6 +1076,7 @@ export type PostulanteUpdateWithoutCategoriasInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
@@ -1049,6 +1094,7 @@ export type PostulanteUncheckedUpdateWithoutCategoriasInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -1063,6 +1109,7 @@ export type PostulanteCreateWithoutPostulacionesInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   usuario: Prisma.UsuarioCreateNestedOneWithoutPostulanteInput
   cvs?: Prisma.CvCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioCreateNestedManyWithoutPostulanteInput
@@ -1080,6 +1127,7 @@ export type PostulanteUncheckedCreateWithoutPostulacionesInput = {
   direccion?: string | null
   fechaNacimiento?: Date | string | null
   otros?: string | null
+  visibleParaEmpresas?: boolean
   cvs?: Prisma.CvUncheckedCreateNestedManyWithoutPostulanteInput
   estudios?: Prisma.EstudioUncheckedCreateNestedManyWithoutPostulanteInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedCreateNestedManyWithoutPostulanteInput
@@ -1110,6 +1158,7 @@ export type PostulanteUpdateWithoutPostulacionesInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   usuario?: Prisma.UsuarioUpdateOneRequiredWithoutPostulanteNestedInput
   cvs?: Prisma.CvUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUpdateManyWithoutPostulanteNestedInput
@@ -1127,6 +1176,7 @@ export type PostulanteUncheckedUpdateWithoutPostulacionesInput = {
   direccion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   fechaNacimiento?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   otros?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  visibleParaEmpresas?: Prisma.BoolFieldUpdateOperationsInput | boolean
   cvs?: Prisma.CvUncheckedUpdateManyWithoutPostulanteNestedInput
   estudios?: Prisma.EstudioUncheckedUpdateManyWithoutPostulanteNestedInput
   experiencias?: Prisma.ExperienciaLaboralUncheckedUpdateManyWithoutPostulanteNestedInput
@@ -1219,6 +1269,7 @@ export type PostulanteSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   direccion?: boolean
   fechaNacimiento?: boolean
   otros?: boolean
+  visibleParaEmpresas?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   cvs?: boolean | Prisma.Postulante$cvsArgs<ExtArgs>
   estudios?: boolean | Prisma.Postulante$estudiosArgs<ExtArgs>
@@ -1238,6 +1289,7 @@ export type PostulanteSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   direccion?: boolean
   fechaNacimiento?: boolean
   otros?: boolean
+  visibleParaEmpresas?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulante"]>
 
@@ -1250,6 +1302,7 @@ export type PostulanteSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   direccion?: boolean
   fechaNacimiento?: boolean
   otros?: boolean
+  visibleParaEmpresas?: boolean
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["postulante"]>
 
@@ -1262,9 +1315,10 @@ export type PostulanteSelectScalar = {
   direccion?: boolean
   fechaNacimiento?: boolean
   otros?: boolean
+  visibleParaEmpresas?: boolean
 }
 
-export type PostulanteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "nombre" | "apellido" | "telefono" | "direccion" | "fechaNacimiento" | "otros", ExtArgs["result"]["postulante"]>
+export type PostulanteOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "usuarioId" | "nombre" | "apellido" | "telefono" | "direccion" | "fechaNacimiento" | "otros" | "visibleParaEmpresas", ExtArgs["result"]["postulante"]>
 export type PostulanteInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   usuario?: boolean | Prisma.UsuarioDefaultArgs<ExtArgs>
   cvs?: boolean | Prisma.Postulante$cvsArgs<ExtArgs>
@@ -1302,6 +1356,7 @@ export type $PostulantePayload<ExtArgs extends runtime.Types.Extensions.Internal
     direccion: string | null
     fechaNacimiento: Date | null
     otros: string | null
+    visibleParaEmpresas: boolean
   }, ExtArgs["result"]["postulante"]>
   composites: {}
 }
@@ -1740,6 +1795,7 @@ export interface PostulanteFieldRefs {
   readonly direccion: Prisma.FieldRef<"Postulante", 'String'>
   readonly fechaNacimiento: Prisma.FieldRef<"Postulante", 'DateTime'>
   readonly otros: Prisma.FieldRef<"Postulante", 'String'>
+  readonly visibleParaEmpresas: Prisma.FieldRef<"Postulante", 'Boolean'>
 }
     
 

@@ -148,8 +148,15 @@ export function remove(id: number) {
 }
 
 export async function searchCandidates(filters: CandidateSearchFilters) {
-  const { search, categoriaId, conEstudios, conExperiencia, page, limit } =
-    filters;
+  const {
+    search,
+    categoriaId,
+    conEstudios,
+    conExperiencia,
+    page,
+    limit,
+    soloVisiblesParaEmpresas,
+  } = filters;
 
   // Prisma arma `contains` con ILIKE sin escapar: sin esto, buscar `%` o `_`
   // devolvía a todos (ver utils/like.ts).
@@ -159,6 +166,8 @@ export async function searchCandidates(filters: CandidateSearchFilters) {
     usuario: {
       activo: true,
     },
+
+    ...(soloVisiblesParaEmpresas && { visibleParaEmpresas: true }),
 
     ...(text && {
       OR: [
@@ -190,6 +199,7 @@ export async function searchCandidates(filters: CandidateSearchFilters) {
         nombre: true,
         apellido: true,
         direccion: true,
+        visibleParaEmpresas: true,
         categorias: {
           select: {
             categoria: {
@@ -241,11 +251,16 @@ export async function searchCandidates(filters: CandidateSearchFilters) {
   };
 }
 
-export function findCandidateById(id: number) {
+/**
+ * La ficha de un candidato activo. Con `soloVisibles` (una empresa socia),
+ * solo si eligió que las empresas lo encuentren.
+ */
+export function findCandidateById(id: number, soloVisibles: boolean) {
   return prisma.postulante.findFirst({
     where: {
       id,
       usuario: { activo: true },
+      ...(soloVisibles && { visibleParaEmpresas: true }),
     },
     select: {
       id: true,
@@ -253,6 +268,7 @@ export function findCandidateById(id: number) {
       apellido: true,
       direccion: true,
       otros: true,
+      visibleParaEmpresas: true,
       usuario: { select: { id: true, email: true } },
       estudios: {
         orderBy: [{ orden: 'asc' }, { id: 'asc' }],
@@ -285,13 +301,18 @@ export function findCandidateById(id: number) {
   });
 }
 
-export function findCandidateCvFile(candidateId: number, cvId: number) {
+export function findCandidateCvFile(
+  candidateId: number,
+  cvId: number,
+  soloVisibles: boolean,
+) {
   return prisma.cv.findFirst({
     where: {
       id: cvId,
       postulanteId: candidateId,
       postulante: {
         usuario: { activo: true },
+        ...(soloVisibles && { visibleParaEmpresas: true }),
       },
     },
     select: {

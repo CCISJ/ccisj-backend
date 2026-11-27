@@ -405,65 +405,149 @@ describe('Applicants', () => {
   describe('buscador de candidatos', () => {
     const suffix = uniqueSuffix();
     let directivo: Awaited<ReturnType<typeof createMember>>;
+    let comun: Awaited<ReturnType<typeof createMember>>;
     let candidato: Awaited<ReturnType<typeof createApplicant>>;
     let otro: Awaited<ReturnType<typeof createApplicant>>;
     let inactivo: Awaited<ReturnType<typeof createApplicant>>;
+    let reservado: Awaited<ReturnType<typeof createApplicant>>;
     let cvDeOtro = 0;
     let cvPropio = 0;
+    let cvReservado = 0;
 
     beforeAll(async () => {
-      [directivo, candidato, otro, inactivo] = await Promise.all([
-        createMember('DIRECTIVO'),
-        createApplicant(),
-        createApplicant(),
-        createApplicant(),
-      ]);
+      [directivo, comun, candidato, otro, inactivo, reservado] =
+        await Promise.all([
+          createMember('DIRECTIVO'),
+          createMember('COMUN'),
+          createApplicant(),
+          createApplicant(),
+          createApplicant(),
+          createApplicant(),
+        ]);
 
       // Un apellido propio de este archivo: los demás corren en paralelo y
-      // también crean postulantes.
+      // también crean postulantes. El candidato y el inactivo eligieron que
+      // las empresas los encuentren; el reservado, no (lo que viene por
+      // defecto).
       await prisma.postulante.update({
         where: { id: candidato.postulanteId },
-        data: { apellido: `Candidato ${suffix}` },
+        data: { apellido: `Candidato ${suffix}`, visibleParaEmpresas: true },
       });
       await prisma.postulante.update({
         where: { id: inactivo.postulanteId },
-        data: { apellido: `Inactivo ${suffix}` },
+        data: { apellido: `Inactivo ${suffix}`, visibleParaEmpresas: true },
+      });
+      await prisma.postulante.update({
+        where: { id: reservado.postulanteId },
+        data: { apellido: `Reservado ${suffix}` },
       });
       await prisma.usuario.update({
         where: { id: inactivo.userId },
         data: { activo: false },
       });
 
-      const [propio, ajeno] = await Promise.all([
+      const [propio, ajeno, deReservado] = await Promise.all([
         prisma.cv.findFirstOrThrow({
           where: { postulanteId: candidato.postulanteId },
         }),
         prisma.cv.findFirstOrThrow({
           where: { postulanteId: otro.postulanteId },
         }),
+        prisma.cv.findFirstOrThrow({
+          where: { postulanteId: reservado.postulanteId },
+        }),
       ]);
       await prisma.cv.update({
         where: { id: propio.id },
         data: { archivoUrl: `cvs/postulante-${candidato.postulanteId}/cv.pdf` },
       });
+      await prisma.cv.update({
+        where: { id: deReservado.id },
+        data: { archivoUrl: `cvs/postulante-${reservado.postulanteId}/cv.pdf` },
+      });
       cvPropio = propio.id;
       cvDeOtro = ajeno.id;
+      cvReservado = deReservado.id;
     });
 
     afterAll(async () => {
       await deleteUsers([
         directivo.userId,
+        comun.userId,
         candidato.userId,
         otro.userId,
         inactivo.userId,
+        reservado.userId,
       ]);
     });
 
-    function search(query: string) {
+    function search(query: string, cookie = directivo.cookie) {
       return request(app)
         .get(`/postulantes/candidatos?${query}`)
-        .set('Cookie', directivo.cookie);
+        .set('Cookie', cookie);
     }
+
+    describe('solo quien eligió que las empresas lo encuentren', () => {
+      it.each([
+        ['un socio común', () => comun.cookie],
+        ['un socio directivo', () => directivo.cookie],
+      ])(
+        '%s encuentra al que eligió aparecer y no al que no',
+        async (_, cookie) => {
+          const visible = await search(`search=${suffix}`, cookie());
+          const noVisible = await search(
+            `search=${encodeURIComponent(`Reservado ${suffix}`)}`,
+            cookie(),
+          );
+
+          expect(visible.body.items.map((c: { id: number }) => c.id)).toEqual([
+            candidato.postulanteId,
+          ]);
+          expect(noVisible.body.total).toBe(0);
+        },
+      );
+
+      it.each([
+        ['un socio común', () => comun.cookie],
+        ['un socio directivo', () => directivo.cookie],
+      ])(
+        'a %s, la ficha y el PDF de quien no eligió aparecer le dan 404',
+        async (_, cookie) => {
+          const ficha = await request(app)
+            .get(`/postulantes/candidatos/${reservado.postulanteId}`)
+            .set('Cookie', cookie());
+          const pdf = await request(app)
+            .get(
+              `/postulantes/candidatos/${reservado.postulanteId}/cvs/${cvReservado}/archivo`,
+            )
+            .set('Cookie', cookie());
+
+          expect(ficha.status).toBe(404);
+          expect(pdf.status).toBe(404);
+        },
+      );
+
+      it('la administración ve a todos y sabe quién eligió aparecer', async () => {
+        const lista = await search(
+          `search=${encodeURIComponent(`Reservado ${suffix}`)}`,
+          admin.cookie,
+        );
+        const ficha = await request(app)
+          .get(`/postulantes/candidatos/${reservado.postulanteId}`)
+          .set('Cookie', admin.cookie);
+        const pdf = await request(app)
+          .get(
+            `/postulantes/candidatos/${reservado.postulanteId}/cvs/${cvReservado}/archivo`,
+          )
+          .set('Cookie', admin.cookie);
+
+        expect(lista.body.total).toBe(1);
+        expect(lista.body.items[0].visibleParaEmpresas).toBe(false);
+        expect(ficha.status).toBe(200);
+        expect(ficha.body.visibleParaEmpresas).toBe(false);
+        expect(pdf.status).toBe(200);
+      });
+    });
 
     it('encuentra por apellido', async () => {
       const response = await search(`search=${suffix}`);

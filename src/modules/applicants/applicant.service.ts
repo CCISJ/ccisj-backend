@@ -198,7 +198,19 @@ export async function remove(id: number) {
   return applicantRepository.remove(id);
 }
 
-export async function searchCandidates(query: Record<string, unknown>) {
+/**
+ * Quién mira la bolsa de candidatos. Una empresa socia (común o directiva)
+ * solo encuentra a los postulantes que eligieron que las empresas los
+ * encuentren ("Mi perfil"); la administración, a todos, porque gestiona las
+ * cuentas. La empresa de una oferta ve igual a quienes se postularon a ella:
+ * eso va por las postulaciones, no por la bolsa.
+ */
+export type CandidateViewer = { admin: boolean };
+
+export async function searchCandidates(
+  query: Record<string, unknown>,
+  viewer: CandidateViewer,
+) {
   const search = query.search;
 
   if (
@@ -237,6 +249,7 @@ export async function searchCandidates(query: Record<string, unknown>) {
     conExperiencia: parseBoolean(query.conExperiencia),
     page: parsePositiveInt(query.page, 1)!,
     limit: parsePositiveInt(query.limit, 10)!,
+    soloVisiblesParaEmpresas: !viewer.admin,
   };
 
   if (filters.limit > 50) {
@@ -250,11 +263,13 @@ export async function searchCandidates(query: Record<string, unknown>) {
  * La ficha de un candidato. La administración ve además su cuenta (el email
  * con el que entra), para poder restablecerle la contraseña; un directivo no.
  */
-export async function getCandidateById(
-  id: number,
-  { withAccount = false } = {},
-) {
-  const candidate = await applicantRepository.findCandidateById(id);
+export async function getCandidateById(id: number, viewer: CandidateViewer) {
+  // Un postulante que no eligió aparecer da 404 para una empresa, igual que
+  // uno que no existe: la empresa no puede averiguar quién está registrado.
+  const candidate = await applicantRepository.findCandidateById(
+    id,
+    !viewer.admin,
+  );
 
   if (!candidate) {
     throw new HttpError(404, 'Candidato no encontrado');
@@ -262,13 +277,21 @@ export async function getCandidateById(
 
   const { usuario, ...ficha } = candidate;
 
-  return withAccount
+  return viewer.admin
     ? { ...ficha, cuenta: { usuarioId: usuario.id, email: usuario.email } }
     : ficha;
 }
 
-export async function getCandidateCvFileUrl(candidateId: number, cvId: number) {
-  const file = await applicantRepository.findCandidateCvFile(candidateId, cvId);
+export async function getCandidateCvFileUrl(
+  candidateId: number,
+  cvId: number,
+  viewer: CandidateViewer,
+) {
+  const file = await applicantRepository.findCandidateCvFile(
+    candidateId,
+    cvId,
+    !viewer.admin,
+  );
 
   if (!file?.archivoUrl) {
     throw new HttpError(404, 'CV no encontrado');

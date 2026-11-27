@@ -303,6 +303,14 @@ export async function saveProfile(postulanteId: number, body: unknown) {
       'La fecha de nacimiento',
     ),
     categoriaIds: await parseCategoryPreferences(body.categoriaIds),
+    // Si las empresas socias lo pueden encontrar en la bolsa de candidatos.
+    // Si no viene, queda como estaba.
+    ...(body.visibleParaEmpresas !== undefined && {
+      visibleParaEmpresas: optionalBoolean(
+        body.visibleParaEmpresas,
+        'La opción de aparecer en la bolsa de candidatos',
+      ),
+    }),
   };
 
   await findCvOrFail(postulanteId);

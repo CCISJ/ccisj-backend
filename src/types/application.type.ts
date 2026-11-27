@@ -39,4 +39,7 @@ export type CandidateSearchFilters = {
   conExperiencia?: boolean;
   page: number;
   limit: number;
+  // Una empresa socia (común o directiva) solo ve a quienes eligieron que
+  // las empresas los encuentren; la administración ve a todos.
+  soloVisiblesParaEmpresas: boolean;
 };

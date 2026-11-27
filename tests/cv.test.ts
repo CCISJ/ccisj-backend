@@ -390,6 +390,37 @@ describe('Mi CV', () => {
     await prisma.categoria.delete({ where: { id: category.id } });
   });
 
+  it('en Mi perfil elige si las empresas lo encuentran en la bolsa: apagado por defecto', async () => {
+    const { cookie } = await applicant();
+    const perfil = { nombre: 'Ana', apellido: 'Pérez', telefono: '099000111' };
+
+    function save(extra: Record<string, unknown>) {
+      return request(app)
+        .patch('/postulantes/me/perfil')
+        .set('Cookie', cookie)
+        .send({ ...perfil, ...extra });
+    }
+
+    const inicial = await request(app)
+      .get('/postulantes/me/cv')
+      .set('Cookie', cookie);
+    expect(inicial.body.visibleParaEmpresas).toBe(false);
+
+    expect((await save({ visibleParaEmpresas: true })).body).toMatchObject({
+      visibleParaEmpresas: true,
+    });
+
+    // Un formulario que no lo manda no lo apaga.
+    expect((await save({})).body.visibleParaEmpresas).toBe(true);
+
+    expect(
+      (await save({ visibleParaEmpresas: false })).body.visibleParaEmpresas,
+    ).toBe(false);
+
+    const invalido = await save({ visibleParaEmpresas: 'si' });
+    expect(invalido.status).toBe(400);
+  });
+
   it('al postularse elige un PDF y la empresa ve solo ese', async () => {
     const { cookie } = await applicant();
     const other = await applicant();
