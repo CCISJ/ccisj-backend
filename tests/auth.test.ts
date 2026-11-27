@@ -408,9 +408,16 @@ describe('Auth', () => {
       const token = (await loginCookie()).split(';')[0].slice('token='.length);
       const payload = jwt.decode(token) as Record<string, unknown>;
 
-      expect(Object.keys(payload).sort()).toEqual(['exp', 'iat', 'id']);
+      // `iatMs` es el momento de emisión al milisegundo (`iat` va en segundos).
+      expect(Object.keys(payload).sort()).toEqual([
+        'exp',
+        'iat',
+        'iatMs',
+        'id',
+      ]);
       expect(payload.id).toBe(userId);
       expect((payload.exp as number) - (payload.iat as number)).toBe(8 * 3600);
+      expect(Math.floor((payload.iatMs as number) / 1000)).toBe(payload.iat);
     });
 
     it('rechaza un token vencido aunque la firma sea correcta', async () => {
